@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nyumba UG — Find Your Home in Kampala</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">Nyumba<span>UG</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="pages/listings.html">Browse Listings</a></li>
+      <li><a href="pages/list-property.html">List Property</a></li>
+      <li><a href="pages/contact.html">Contact</a></li>
+      <li><a href="pages/login.html">Login</a></li>
+      <li><a href="pages/register.html" class="nav-cta">Sign Up</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <div class="hero-badge">🏠 Kampala's #1 Rental Platform</div>
+      <h1>Find Your Perfect <em>Home</em> in Kampala</h1>
+      <p class="hero-sub">Browse hundreds of verified apartments and houses across Kampala. Connect directly with
+        landlords — no middlemen, no hidden fees.</p>
+      <div class="hero-actions">
+        <a href="pages/listings.html" class="btn btn-primary">Browse Listings</a>
+        <a href="pages/list-property.html" class="btn btn-outline">List Your Property</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-num">600+</div>
+          <div class="hero-stat-label">Active Listings</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">1,200+</div>
+          <div class="hero-stat-label">Happy Tenants</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">380+</div>
+          <div class="hero-stat-label">Verified Landlords</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80"
+        alt="Modern apartment in Kampala" />
+    </div>
+  </section>
+
+  <!-- SEARCH -->
+  <div class="search-section">
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search by location, e.g. Kololo, Ntinda..."
+        oninput="filterListings()" />
+      <select id="filter-type" onchange="filterListings()">
+        <option value="">All Types</option>
+        <option value="apartment">Apartment</option>
+        <option value="house">House</option>
+        <option value="studio">Studio</option>
+      </select>
+      <select id="filter-price" onchange="filterListings()">
+        <option value="">Any Price</option>
+        <option value="500000">Up to 500k</option>
+        <option value="1000000">Up to 1M</option>
+        <option value="2000000">Up to 2M</option>
+        <option value="5000000">Up to 5M</option>
+      </select>
+      <a href="pages/listings.html" class="btn btn-primary">Search</a>
+    </div>
+  </div>
+
+  <!-- FEATURED LISTINGS -->
+  <section id="featured">
+    <p class="section-label">Featured Properties</p>
+    <h2 class="section-title">Homes People Love</h2>
+    <p class="section-sub">Hand-picked, verified properties from trusted landlords across Kampala and surroundings.</p>
+
+    <div class="tab-bar">
+      <button class="tab active" data-filter="all">All</button>
+      <button class="tab" data-filter="apartment">Apartments</button>
+      <button class="tab" data-filter="house">Houses</button>
+      <button class="tab" data-filter="studio">Studios</button>
+    </div>
+
+    <div class="listings-grid" id="listings-container"></div>
+
+    <div style="text-align:center; margin-top: 40px;">
+      <a href="pages/listings.html" class="btn btn-green">View All Listings →</a>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works">
+    <p class="section-label">Simple Process</p>
+    <h2 class="section-title">How Nyumba UG Works</h2>
+    <p class="section-sub">Finding or renting out a home has never been easier. Three steps and you're set.</p>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Search & Discover</h3>
+        <p>Browse hundreds of verified listings across Kampala. Filter by location, price, and property type to find
+          your match.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>Contact Landlord</h3>
+        <p>Reach out directly to landlords via call or message. No agents, no commissions — direct honest communication.
+        </p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>Visit & Move In</h3>
+        <p>Schedule a viewing, sign your agreement, and move in. We make the whole process transparent and stress-free.
+        </p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <h3>List Your Property</h3>
+        <p>Landlords can list in minutes. Reach thousands of verified tenants searching in Kampala every week.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- POPULAR AREAS -->
+  <section style="background: var(--white);">
+    <p class="section-label">Explore by Area</p>
+    <h2 class="section-title">Popular Kampala Neighbourhoods</h2>
+    <p class="section-sub">Search properties in the most sought-after areas of Kampala.</p>
+
+    <div
+      style="display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-top: 36px;">
+      ${['Kololo', 'Bugolobi', 'Ntinda', 'Naguru', 'Muyenga', 'Bukoto', 'Kisaasi', 'Kira'].map(area => `
+      <a href="pages/listings.html?location=${area}" style="
+          display:flex; flex-direction:column; align-items:center; justify-content:center;
+          padding: 24px 16px;
+          background: var(--cream);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          font-weight: 600;
+          font-size: 0.95rem;
+          color: var(--green-dark);
+          text-align: center;
+          transition: all 0.2s;
+        " onmouseover="this.style.background='var(--green-dark)';this.style.color='var(--gold)'"
+        onmouseout="this.style.background='var(--cream)';this.style.color='var(--green-dark)'">
+        📍 ${area}
+      </a>
+      `).join('')}
+    </div>
+  </section>
+
+  <!-- LANDLORD CTA -->
+  <div class="landlord-cta">
+    <div>
+      <h2>Own Property in Kampala?</h2>
+      <p>List your apartments or houses for free. Reach thousands of tenants actively searching on Nyumba UG. Verified
+        leads, no commission.</p>
+      <a href="pages/list-property.html" class="btn btn-primary" style="margin-top:24px;">List Your Property — It's
+        Free</a>
+    </div>
+    <div style="font-size:5rem; opacity:0.3;">🏢</div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3>NyumbaUG</h3>
+        <p>Kampala's most trusted platform connecting landlords and tenants. Simple, transparent, and local.</p>
+        <div style="margin-top:20px; display:flex; gap:12px;">
+          <a href="#" style="color:var(--gold);">Facebook</a>
+          <a href="#" style="color:rgba(255,255,255,0.5);">Twitter/X</a>
+          <a href="#" style="color:rgba(255,255,255,0.5);">WhatsApp</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>For Tenants</h4>
+        <ul>
+          <li><a href="pages/listings.html">Browse Listings</a></li>
+          <li><a href="#">Save Favourites</a></li>
+          <li><a href="#">How it Works</a></li>
+          <li><a href="pages/register.html">Create Account</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>For Landlords</h4>
+        <ul>
+          <li><a href="pages/list-property.html">List Property</a></li>
+          <li><a href="#">Manage Listings</a></li>
+          <li><a href="#">Landlord Guide</a></li>
+          <li><a href="pages/contact.html">Get Support</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="pages/contact.html">Contact</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Use</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 NyumbaUG — Kampala, Uganda 🇺🇬</span>
+      <span>📞 +256 700 000 000 &nbsp;|&nbsp; info@nyumbaug.co.ug</span>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // Render featured listings on homepage
+    const featured = listings.filter(l => l.featured);
+    renderListings(featured, 'listings-container');
+    initTabs();
+    initScrollHighlight();
+    setTimeout(restoreFavs, 100);
+  </script>
+</body>
+
+</html>

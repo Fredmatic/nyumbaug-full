@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account — Nyumba UG</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .auth-wrapper {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    .auth-visual {
+      background: var(--green-dark);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .auth-visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=60') center/cover;
+      opacity: 0.15;
+    }
+
+    .auth-visual-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .auth-visual h2 {
+      color: var(--gold);
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .auth-visual p {
+      color: rgba(255, 255, 255, 0.7);
+      max-width: 320px;
+      line-height: 1.7;
+    }
+
+    .auth-perks {
+      margin-top: 36px;
+      text-align: left;
+    }
+
+    .auth-perk {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 14px;
+      font-size: 0.92rem;
+    }
+
+    .auth-perk span:first-child {
+      font-size: 1.2rem;
+    }
+
+    .auth-form-side {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 5%;
+      background: var(--cream);
+    }
+
+    .auth-form-box {
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .auth-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.4rem;
+      color: var(--green-dark);
+      margin-bottom: 32px;
+    }
+
+    .auth-logo em {
+      color: var(--gold);
+      font-style: italic;
+    }
+
+    .auth-form-box h1 {
+      font-size: 1.8rem;
+      color: var(--green-dark);
+      margin-bottom: 6px;
+    }
+
+    .auth-form-box>p {
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    .role-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      margin-bottom: 24px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1.5px solid var(--border);
+    }
+
+    .role-btn {
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+      background: var(--white);
+      color: var(--text-mid);
+      transition: all 0.2s;
+    }
+
+    .role-btn.active {
+      background: var(--green-dark);
+      color: var(--gold);
+    }
+
+    .divider {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 40%;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider::before {
+      left: 0;
+    }
+
+    .divider::after {
+      right: 0;
+    }
+
+    .error-msg {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 0.87rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .auth-wrapper {
+        grid-template-columns: 1fr;
+      }
+
+      .auth-visual {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="auth-wrapper">
+    <!-- VISUAL SIDE -->
+    <div class="auth-visual">
+      <div class="auth-visual-content">
+        <h2>Join NyumbaUG</h2>
+        <p>Kampala's most trusted platform for finding and listing residential properties.</p>
+        <div class="auth-perks">
+          <div class="auth-perk"><span>🏠</span> 600+ verified listings across Kampala</div>
+          <div class="auth-perk"><span>💬</span> Message landlords directly</div>
+          <div class="auth-perk"><span>❤️</span> Save your favourite properties</div>
+          <div class="auth-perk"><span>🔔</span> Get notified of new listings</div>
+          <div class="auth-perk"><span>🇺🇬</span> Built specifically for Uganda</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM SIDE -->
+    <div class="auth-form-side">
+      <div class="auth-form-box">
+        <div class="auth-logo"><a href="../index.html">Nyumba<em>UG</em></a></div>
+        <h1>Create Account</h1>
+        <p>Free to join. No credit card needed.</p>
+
+        <!-- ROLE TOGGLE -->
+        <div class="role-toggle">
+          <button class="role-btn active" id="role-tenant" onclick="setRole('tenant')">🔍 I'm a Tenant</button>
+          <button class="role-btn" id="role-landlord" onclick="setRole('landlord')">🏢 I'm a Landlord</button>
+        </div>
+
+        <div class="error-msg" id="error-msg"></div>
+
+        <form id="register-form" onsubmit="handleRegister(event)">
+          <input type="hidden" id="selected-role" value="tenant" />
+
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="reg-name" placeholder="Your full name" required autocomplete="name" />
+          </div>
+
+          <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" id="reg-email" placeholder="your@email.com" required autocomplete="email" />
+          </div>
+
+          <div class="form-group">
+            <label>Phone Number *</label>
+            <input type="tel" id="reg-phone" placeholder="+256 7XX XXX XXX" required />
+          </div>
+
+          <div class="form-group">
+            <label>Password *</label>
+            <input type="password" id="reg-password" placeholder="At least 6 characters" required minlength="6"
+              autocomplete="new-password" />
+          </div>
+
+          <button type="submit" class="btn btn-green" style="width:100%;justify-content:center;padding:14px;"
+            id="submit-btn">
+            Create Account
+          </button>
+        </form>
+
+        <div class="divider">or</div>
+
+        <p style="text-align:center; font-size:0.9rem; color:var(--text-mid);">
+          Already have an account?
+          <a href="login.html" style="color:var(--green-light); font-weight:600;">Log In</a>
+        </p>
+
+        <p style="text-align:center; font-size:0.78rem; color:var(--text-muted); margin-top:20px;">
+          By creating an account you agree to our
+          <a href="terms.html" style="color:var(--green-light);">Terms</a> and
+          <a href="privacy.html" style="color:var(--green-light);">Privacy Policy</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    function setRole(role) {
+      document.getElementById('selected-role').value = role;
+      document.getElementById('role-tenant').classList.toggle('active', role === 'tenant');
+      document.getElementById('role-landlord').classList.toggle('active', role === 'landlord');
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const errMsg = document.getElementById('error-msg');
+      errMsg.style.display = 'none';
+
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const phone = document.getElementById('reg-phone').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const role = document.getElementById('selected-role').value;
+
+      btn.textContent = 'Creating account...';
+      btn.disabled = true;
+
+      try {
+        await api.auth.register(name, email, phone, password, role);
+        // Redirect based on role
+        window.location.href = role === 'landlord' ? 'payment.html' : '../index.html';
+      } catch (err) {
+        errMsg.textContent = err.message;
+        errMsg.style.display = 'block';
+        btn.textContent = 'Create Account';
+        btn.disabled = false;
+      }
+    }
+
+    // Redirect if already logged in
+    if (api.auth.isLoggedIn()) { const u = api.auth.currentUser(); window.location.href = u?.role === 'landlord' ? 'payment.html' : '../index.html'; }
+  </script>
+</body>
+
+</html>

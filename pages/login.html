@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Nyumba UG</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .auth-wrapper {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    .auth-visual {
+      background: var(--green-dark);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .auth-visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=60') center/cover;
+      opacity: 0.15;
+    }
+
+    .auth-visual-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .auth-visual h2 {
+      color: var(--gold);
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .auth-visual p {
+      color: rgba(255, 255, 255, 0.7);
+      max-width: 320px;
+      line-height: 1.7;
+    }
+
+    .auth-form-side {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 5%;
+      background: var(--cream);
+    }
+
+    .auth-form-box {
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .auth-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.4rem;
+      color: var(--green-dark);
+      margin-bottom: 32px;
+    }
+
+    .auth-logo em {
+      color: var(--gold);
+      font-style: italic;
+    }
+
+    .auth-form-box h1 {
+      font-size: 1.8rem;
+      color: var(--green-dark);
+      margin-bottom: 6px;
+    }
+
+    .auth-form-box>p {
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    .error-msg {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 0.87rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .forgot-link {
+      font-size: 0.85rem;
+      color: var(--green-light);
+      float: right;
+      margin-top: -14px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .auth-wrapper {
+        grid-template-columns: 1fr;
+      }
+
+      .auth-visual {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="auth-wrapper">
+    <div class="auth-visual">
+      <div class="auth-visual-content">
+        <h2>Welcome Back</h2>
+        <p>Log in to manage your listings, enquiries, and messages on NyumbaUG.</p>
+      </div>
+    </div>
+
+    <div class="auth-form-side">
+      <div class="auth-form-box">
+        <div class="auth-logo"><a href="../index.html">Nyumba<em>UG</em></a></div>
+        <h1>Log In</h1>
+        <p>Good to have you back.</p>
+
+        <div class="error-msg" id="error-msg"></div>
+
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" id="login-email" placeholder="your@email.com" required autocomplete="email" />
+          </div>
+
+          <div class="form-group">
+            <label>Password *</label>
+            <input type="password" id="login-password" placeholder="Your password" required
+              autocomplete="current-password" />
+          </div>
+          <a href="forgot-password.html" class="forgot-link">Forgot password?</a>
+
+          <button type="submit" class="btn btn-green"
+            style="width:100%;justify-content:center;padding:14px;margin-top:8px;" id="submit-btn">
+            Log In
+          </button>
+        </form>
+
+        <p style="text-align:center;font-size:0.9rem;color:var(--text-mid);margin-top:24px;">
+          Don't have an account?
+          <a href="register.html" style="color:var(--green-light);font-weight:600;">Create Account</a>
+        </p>
+
+        <!-- Quick test logins -->
+        <div
+          style="margin-top:28px;padding:16px;background:var(--cream-dark);border-radius:var(--radius);border:1px solid var(--border);">
+          <p
+            style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px;">
+            Test Accounts</p>
+          <button onclick="quickLogin('james@example.com','password123')" class="btn-sm"
+            style="margin-right:8px;margin-bottom:6px;padding:6px 14px;">🏢 Landlord</button>
+          <button onclick="quickLogin('tenant@example.com','password123')" class="btn-sm" style="padding:6px 14px;">🔍
+            Tenant</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    if (api.auth.isLoggedIn()) {
+      const user = api.auth.currentUser();
+      const tok = localStorage.getItem('nyumba_token');
+      const sub = localStorage.getItem('nyumba_sub_expiry_' + tok?.slice(-10));
+      const paid = sub && new Date(sub) > new Date();
+
+      if (user?.role === 'admin') {
+        window.location.href = 'dashboard.html';
+      } else if (user?.role === 'landlord') {
+        window.location.href = paid ? 'dashboard.html' : 'payment.html';
+      } else {
+        window.location.href = '../index.html';
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const errMsg = document.getElementById('error-msg');
+      errMsg.style.display = 'none';
+
+      btn.textContent = 'Logging in...';
+      btn.disabled = true;
+
+      try {
+        const data = await api.auth.login(
+          document.getElementById('login-email').value,
+          document.getElementById('login-password').value
+        );
+        // Redirect based on role
+        const tok2 = data.token;
+        const sub2 = localStorage.getItem('nyumba_sub_expiry_' + tok2?.slice(-10));
+        const paid2 = sub2 && new Date(sub2) > new Date();
+
+        if (data.user.role === 'admin') {
+          window.location.href = 'dashboard.html';
+        } else if (data.user.role === 'landlord') {
+          window.location.href = paid2 ? 'dashboard.html' : 'payment.html';
+        } else {
+          window.location.href = '../index.html';
+        }
+      } catch (err) {
+        errMsg.textContent = err.message;
+        errMsg.style.display = 'block';
+        btn.textContent = 'Log In';
+        btn.disabled = false;
+      }
+    }
+
+    function quickLogin(email, pass) {
+      document.getElementById('login-email').value = email;
+      document.getElementById('login-password').value = pass;
+      document.getElementById('login-form').requestSubmit();
+    }
+  </script>
+</body>
+
+</html>

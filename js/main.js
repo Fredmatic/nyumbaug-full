@@ -1,0 +1,253 @@
+// ── NYUMBA UG — Main JS ──
+
+// Sample listing data (replace with real API/backend)
+const listings = [
+  {
+    id: 1,
+    title: "Modern 3-Bedroom Apartment",
+    location: "Kololo, Kampala",
+    price: 1800000,
+    type: "apartment",
+    bedrooms: 3,
+    bathrooms: 2,
+    area: 140,
+    badge: "new",
+    image: "https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=600&q=80",
+    featured: true,
+    description: "Spacious modern apartment in the heart of Kololo with stunning city views, fully fitted kitchen, and 24/7 security.",
+    amenities: ["WiFi", "Parking", "Generator", "Security", "Water Tank", "Balcony"],
+    landlord: "Mr. Ssemakula James",
+    phone: "+256 772 123 456",
+    available: "Immediately"
+  },
+  {
+    id: 2,
+    title: "Executive 2-Bedroom Flat",
+    location: "Bugolobi, Kampala",
+    price: 1200000,
+    type: "apartment",
+    bedrooms: 2,
+    bathrooms: 2,
+    area: 95,
+    badge: "available",
+    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80",
+    featured: true,
+    description: "Well-maintained executive flat in quiet Bugolobi estate. Ideal for professionals and small families.",
+    amenities: ["Parking", "Security", "Water Tank", "Tiled Floors"],
+    landlord: "Mrs. Nalwoga Grace",
+    phone: "+256 701 987 654",
+    available: "1st Jan 2025"
+  },
+  {
+    id: 3,
+    title: "Self-Contained Studio",
+    location: "Ntinda, Kampala",
+    price: 450000,
+    type: "studio",
+    bedrooms: 1,
+    bathrooms: 1,
+    area: 35,
+    badge: "available",
+    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80",
+    featured: false,
+    description: "Cozy self-contained studio perfect for a single professional. Close to Ntinda market and major roads.",
+    amenities: ["Water Tank", "Security"],
+    landlord: "Mr. Kigongo Peter",
+    phone: "+256 788 654 321",
+    available: "Immediately"
+  },
+  {
+    id: 4,
+    title: "Spacious Family Home",
+    location: "Muyenga, Kampala",
+    price: 3500000,
+    type: "house",
+    bedrooms: 5,
+    bathrooms: 3,
+    area: 280,
+    badge: "new",
+    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80",
+    featured: true,
+    description: "Beautiful standalone house with large garden in prestigious Muyenga. Perfect for families who value space and privacy.",
+    amenities: ["WiFi", "Parking", "Generator", "Security", "Garden", "Water Tank", "DSTV"],
+    landlord: "Dr. Wamala Robert",
+    phone: "+256 777 321 987",
+    available: "15th Jan 2025"
+  },
+  {
+    id: 5,
+    title: "3-Bedroom Bungalow",
+    location: "Kira, Wakiso",
+    price: 900000,
+    type: "house",
+    bedrooms: 3,
+    bathrooms: 2,
+    area: 120,
+    badge: "available",
+    image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80",
+    featured: false,
+    description: "Affordable and spacious bungalow in developing Kira suburb. Great for families looking for value.",
+    amenities: ["Parking", "Water Tank", "Compound"],
+    landlord: "Mrs. Namutebi Sarah",
+    phone: "+256 754 456 789",
+    available: "Immediately"
+  },
+  {
+    id: 6,
+    title: "Luxury 4-Bedroom Duplex",
+    location: "Naguru, Kampala",
+    price: 4200000,
+    type: "apartment",
+    bedrooms: 4,
+    bathrooms: 3,
+    area: 220,
+    badge: "available",
+    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80",
+    featured: true,
+    description: "Prestigious duplex apartment in Naguru with panoramic views of Kampala. High-end finishes throughout.",
+    amenities: ["WiFi", "Parking", "Generator", "Security", "Swimming Pool", "Gym", "Water Tank"],
+    landlord: "Mr. Musoke Brian",
+    phone: "+256 792 789 123",
+    available: "1st Feb 2025"
+  }
+];
+
+// Format UGX price
+function formatUGX(amount) {
+  return "UGX " + amount.toLocaleString('en-UG');
+}
+
+// Render listing cards
+function renderListings(data, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = data.map(l => `
+    <div class="listing-card" onclick="window.location.href='pages/listing-detail.html?id=${l.id}'">
+      <div class="listing-img">
+        <img src="${l.image}" alt="${l.title}" loading="lazy" />
+        <span class="listing-badge ${l.badge === 'new' ? 'new' : ''}">${l.badge === 'new' ? '🆕 New' : 'Available'}</span>
+        <button class="listing-fav" onclick="toggleFav(event, this, ${l.id})" aria-label="Save listing">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        </button>
+      </div>
+      <div class="listing-body">
+        <div class="listing-price">${formatUGX(l.price)} <span>/ month</span></div>
+        <div class="listing-title">${l.title}</div>
+        <div class="listing-location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${l.location}
+        </div>
+        <div class="listing-amenities">
+          <div class="amenity">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            ${l.bedrooms} Bed${l.bedrooms > 1 ? 's' : ''}
+          </div>
+          <div class="amenity">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M4 6h16M4 18h16"/></svg>
+            ${l.bathrooms} Bath${l.bathrooms > 1 ? 's' : ''}
+          </div>
+          <div class="amenity">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            ${l.area} m²
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Favourite toggle
+function toggleFav(e, btn, id) {
+  e.stopPropagation();
+  btn.classList.toggle('liked');
+  const saved = JSON.parse(localStorage.getItem('nyumba-favs') || '[]');
+  const idx = saved.indexOf(id);
+  if (idx === -1) {
+    saved.push(id);
+    showToast('❤️ Saved to favourites');
+  } else {
+    saved.splice(idx, 1);
+    showToast('Removed from favourites');
+  }
+  localStorage.setItem('nyumba-favs', JSON.stringify(saved));
+}
+
+// Filter listings
+function filterListings() {
+  const search = document.getElementById('search-input')?.value.toLowerCase() || '';
+  const type = document.getElementById('filter-type')?.value || '';
+  const maxPrice = document.getElementById('filter-price')?.value || '';
+  const tab = document.querySelector('.tab.active')?.dataset.filter || 'all';
+
+  let filtered = listings.filter(l => {
+    const matchSearch = l.location.toLowerCase().includes(search) || l.title.toLowerCase().includes(search);
+    const matchType = !type || l.type === type;
+    const matchPrice = !maxPrice || l.price <= parseInt(maxPrice);
+    const matchTab = tab === 'all' || l.type === tab;
+    return matchSearch && matchType && matchPrice && matchTab;
+  });
+
+  renderListings(filtered, 'listings-container');
+}
+
+// Tab switching
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      filterListings();
+    });
+  });
+}
+
+// Toast notification
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.id = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+// Smooth scroll nav highlight
+function initScrollHighlight() {
+  const links = document.querySelectorAll('.nav-links a');
+  window.addEventListener('scroll', () => {
+    links.forEach(link => link.classList.remove('active'));
+    const path = location.pathname.split('/').pop() || 'index.html';
+    links.forEach(link => {
+      if (link.getAttribute('href') === path || link.getAttribute('href') === '..' + '/' + path) {
+        link.classList.add('active');
+      }
+    });
+  });
+}
+
+// Load saved favs on cards
+function restoreFavs() {
+  const saved = JSON.parse(localStorage.getItem('nyumba-favs') || '[]');
+  document.querySelectorAll('.listing-fav').forEach(btn => {
+    const card = btn.closest('.listing-card');
+    if (!card) return;
+    const id = parseInt(btn.getAttribute('onclick').match(/\d+/)?.[0] || 0);
+    if (saved.includes(id)) btn.classList.add('liked');
+  });
+}
+
+// Export for inline use
+window.listings = listings;
+window.formatUGX = formatUGX;
+window.renderListings = renderListings;
+window.toggleFav = toggleFav;
+window.filterListings = filterListings;
+window.initTabs = initTabs;
+window.showToast = showToast;
+window.initScrollHighlight = initScrollHighlight;
+window.restoreFavs = restoreFavs;

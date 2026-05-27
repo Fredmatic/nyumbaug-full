@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>List Your Property — Nyumba UG</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .list-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 48px;
+      padding: 60px 5%;
+    }
+
+    .form-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 36px;
+    }
+
+    .form-section-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.1rem;
+      color: var(--green-dark);
+      margin: 28px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-section-title:first-child {
+      margin-top: 0;
+    }
+
+    .amenity-checkboxes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .amenity-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: var(--text-mid);
+      cursor: pointer;
+    }
+
+    .amenity-check input {
+      accent-color: var(--green-dark);
+      width: 16px;
+      height: 16px;
+    }
+
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 36px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .upload-area:hover {
+      border-color: var(--green-light);
+    }
+
+    .upload-area p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+
+    .step-sidebar {
+      position: sticky;
+      top: calc(var(--nav-h) + 24px);
+      align-self: start;
+    }
+
+    .sidebar-card {
+      background: var(--green-dark);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      color: var(--white);
+      margin-bottom: 20px;
+    }
+
+    .sidebar-card h3 {
+      color: var(--gold);
+      margin-bottom: 16px;
+      font-size: 1.1rem;
+    }
+
+    .sidebar-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .sidebar-step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(212, 168, 67, 0.2);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .sidebar-step p {
+      font-size: 0.87rem;
+      color: rgba(255, 255, 255, 0.75);
+      line-height: 1.5;
+    }
+
+    .sidebar-step strong {
+      color: var(--white);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 10px;
+    }
+
+    .success-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 54, 34, 0.9);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .success-overlay.show {
+      display: flex;
+    }
+
+    .success-box {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 48px;
+      text-align: center;
+      max-width: 440px;
+    }
+
+    @media (max-width: 768px) {
+      .list-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .step-sidebar {
+        position: static;
+      }
+
+      .amenity-checkboxes {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <div class="nav-logo"><a href="../index.html">Nyumba<span>UG</span></a></div>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="listings.html">Browse Listings</a></li>
+      <li><a href="list-property.html" class="active">List Property</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="login.html">Login</a></li>
+      <li><a href="register.html" class="nav-cta">Sign Up</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-header">
+    <h1>List Your Property</h1>
+    <p>Reach thousands of verified tenants actively searching in Kampala — for free.</p>
+  </div>
+
+  <div class="list-layout">
+
+    <!-- FORM -->
+    <div>
+      <div class="form-card">
+        <form id="list-form" onsubmit="handleSubmit(event)">
+
+          <div class="form-section-title">Property Details</div>
+
+          <div class="form-group">
+            <label for="prop-title">Property Title *</label>
+            <input type="text" id="prop-title" placeholder="e.g. Modern 3-Bedroom Apartment in Kololo" required />
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="prop-type">Property Type *</label>
+              <select id="prop-type" required>
+                <option value="">Select type</option>
+                <option>Apartment</option>
+                <option>House / Bungalow</option>
+                <option>Studio / Single Room</option>
+                <option>Townhouse</option>
+                <option>Mansion</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="prop-price">Monthly Rent (UGX) *</label>
+              <input type="number" id="prop-price" placeholder="e.g. 1500000" min="50000" step="50000" required />
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="prop-beds">Bedrooms *</label>
+              <select id="prop-beds" required>
+                <option value="">Select</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5+</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="prop-baths">Bathrooms *</label>
+              <select id="prop-baths" required>
+                <option value="">Select</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4+</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="prop-area">Floor Area (m²)</label>
+              <input type="number" id="prop-area" placeholder="e.g. 120" />
+            </div>
+            <div class="form-group">
+              <label for="prop-available">Available From *</label>
+              <input type="date" id="prop-available" required />
+            </div>
+          </div>
+
+          <div class="form-section-title">Location</div>
+
+          <div class="form-group">
+            <label for="prop-address">Full Address *</label>
+            <input type="text" id="prop-address" placeholder="e.g. Plot 14, Kololo Hill Drive, Kampala" required />
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="prop-area-select">Area / Neighbourhood *</label>
+              <select id="prop-area-select" required>
+                <option value="">Select area</option>
+                <option>Kololo</option>
+                <option>Bugolobi</option>
+                <option>Ntinda</option>
+                <option>Naguru</option>
+                <option>Muyenga</option>
+                <option>Bukoto</option>
+                <option>Kisaasi</option>
+                <option>Kira</option>
+                <option>Naalya</option>
+                <option>Kyanja</option>
+                <option>Mengo</option>
+                <option>Rubaga</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="prop-district">District *</label>
+              <select id="prop-district" required>
+                <option value="">Select</option>
+                <option>Kampala</option>
+                <option>Wakiso</option>
+                <option>Mukono</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-section-title">Description & Amenities</div>
+
+          <div class="form-group">
+            <label for="prop-desc">Property Description *</label>
+            <textarea id="prop-desc" rows="5"
+              placeholder="Describe the property — layout, condition, nearby landmarks, any special features..."
+              required style="resize:vertical;"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Amenities (select all that apply)</label>
+            <div class="amenity-checkboxes">
+              <label class="amenity-check"><input type="checkbox" value="WiFi" /> WiFi / Internet</label>
+              <label class="amenity-check"><input type="checkbox" value="Parking" /> Parking Space</label>
+              <label class="amenity-check"><input type="checkbox" value="Generator" /> Generator</label>
+              <label class="amenity-check"><input type="checkbox" value="Security" /> 24/7 Security</label>
+              <label class="amenity-check"><input type="checkbox" value="Water Tank" /> Water Storage Tank</label>
+              <label class="amenity-check"><input type="checkbox" value="DSTV" /> DSTV / Satellite</label>
+              <label class="amenity-check"><input type="checkbox" value="Swimming Pool" /> Swimming Pool</label>
+              <label class="amenity-check"><input type="checkbox" value="Gym" /> Gym / Fitness</label>
+              <label class="amenity-check"><input type="checkbox" value="Garden" /> Garden / Compound</label>
+              <label class="amenity-check"><input type="checkbox" value="Balcony" /> Balcony</label>
+              <label class="amenity-check"><input type="checkbox" value="Furnished" /> Furnished</label>
+              <label class="amenity-check"><input type="checkbox" value="Lift" /> Lift / Elevator</label>
+            </div>
+          </div>
+
+          <div class="form-section-title">Photos</div>
+
+          <div class="upload-area" onclick="document.getElementById('photo-upload').click()">
+            <div style="font-size: 2.5rem;">📸</div>
+            <p><strong>Click to upload photos</strong></p>
+            <p>JPG, PNG up to 10MB each. First photo will be the cover image.</p>
+            <input type="file" id="photo-upload" multiple accept="image/*" style="display:none"
+              onchange="previewPhotos(this)" />
+          </div>
+          <div id="photo-preview" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;"></div>
+
+          <div class="form-section-title">Property Video <span
+              style="font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:400;color:var(--text-muted);background:var(--cream-dark);padding:2px 10px;border-radius:50px;margin-left:8px;">Optional</span>
+          </div>
+
+          <div class="upload-area" id="video-upload-area" onclick="document.getElementById('video-upload').click()"
+            style="border-color:#c4b5a0;">
+            <div style="font-size:2.5rem;">🎥</div>
+            <p><strong>Click to upload a property video</strong></p>
+            <p>MP4, MOV or AVI · Max 100MB · Short tour videos work best</p>
+            <input type="file" id="video-upload" accept="video/mp4,video/mov,video/avi,video/*" style="display:none"
+              onchange="previewVideo(this)" />
+          </div>
+
+          <div id="video-preview" style="margin-top:12px;display:none;">
+            <video id="video-player" controls
+              style="width:100%;max-height:240px;border-radius:var(--radius);border:1px solid var(--border);background:#000;"></video>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <span id="video-name" style="font-size:0.82rem;color:var(--text-muted);"></span>
+              <button onclick="removeVideo()"
+                style="font-size:0.82rem;color:#dc2626;background:none;border:none;cursor:pointer;">✕ Remove</button>
+            </div>
+          </div>
+
+          <div class="form-section-title">Your Contact Details</div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="landlord-name">Full Name *</label>
+              <input type="text" id="landlord-name" placeholder="Your full name" required />
+            </div>
+            <div class="form-group">
+              <label for="landlord-phone">Phone Number *</label>
+              <input type="tel" id="landlord-phone" placeholder="+256 7XX XXX XXX" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="landlord-email">Email Address</label>
+            <input type="email" id="landlord-email" placeholder="your@email.com" />
+          </div>
+
+          <div class="form-group" style="margin-top: 8px;">
+            <label class="amenity-check">
+              <input type="checkbox" id="agree-terms" required />
+              I agree to the <a href="#" style="color:var(--green-light);">Terms of Service</a> and confirm this
+              property belongs to me or I have authority to list it.
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary"
+            style="width:100%; justify-content:center; margin-top:16px; padding: 14px;">
+            Submit Listing — It's Free
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="step-sidebar">
+      <div class="sidebar-card">
+        <h3>Why List on Nyumba UG?</h3>
+        <div class="benefit-item">✅ 100% Free to list your property</div>
+        <div class="benefit-item">👥 1,200+ active tenants searching</div>
+        <div class="benefit-item">🔒 Verified tenant profiles</div>
+        <div class="benefit-item">📱 WhatsApp integration built-in</div>
+        <div class="benefit-item">📊 See how many people view your listing</div>
+        <div class="benefit-item">🇺🇬 Built specifically for Kampala</div>
+      </div>
+
+      <div class="sidebar-card">
+        <h3>What Happens Next?</h3>
+        <div class="sidebar-step">
+          <div class="sidebar-step-num">1</div>
+          <p><strong>Submit your listing</strong>We review it within 24 hours</p>
+        </div>
+        <div class="sidebar-step">
+          <div class="sidebar-step-num">2</div>
+          <p><strong>Go Live</strong>Your property appears in search results</p>
+        </div>
+        <div class="sidebar-step">
+          <div class="sidebar-step-num">3</div>
+          <p><strong>Get Contacted</strong>Tenants call or WhatsApp you directly</p>
+        </div>
+        <div class="sidebar-step">
+          <div class="sidebar-step-num">4</div>
+          <p><strong>Sign & Move In</strong>Agree terms and finalise the tenancy</p>
+        </div>
+      </div>
+
+      <div
+        style="background: var(--cream-dark); border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--border);">
+        <p style="font-size: 0.85rem; color: var(--text-mid); line-height: 1.7;">
+          <strong style="color:var(--green-dark);">Need help listing?</strong><br />
+          Call our support team:<br />
+          📞 <a href="tel:+256700000000" style="color:var(--green-light);">+256 700 000 000</a><br />
+          Mon–Sat, 8am–6pm
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCCESS OVERLAY -->
+  <div class="success-overlay" id="success-overlay">
+    <div class="success-box">
+      <div style="font-size:4rem; margin-bottom:16px;">🎉</div>
+      <h2 style="color:var(--green-dark); margin-bottom:12px;">Listing Submitted!</h2>
+      <p style="color:var(--text-mid); line-height:1.7; margin-bottom:28px;">
+        Thank you! Your property has been submitted for review. We'll verify it within 24 hours and notify you once it
+        goes live.
+      </p>
+      <a href="listings.html" class="btn btn-green" style="display:inline-flex;">Browse Listings</a>
+      <button onclick="document.getElementById('success-overlay').classList.remove('show')"
+        style="display:block; margin: 12px auto 0; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.9rem;">
+        Submit another listing
+      </button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3>NyumbaUG</h3>
+        <p>Kampala's most trusted rental platform.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="listings.html">Browse Listings</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Landlord Guide</a></li>
+          <li><a href="#">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Terms of Use</a></li>
+          <li><a href="#">Privacy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 NyumbaUG — Kampala, Uganda 🇺🇬</span>
+    </div>
+  </footer>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/main.js"></script>
+  <script>
+    function previewPhotos(input) {
+      const preview = document.getElementById('photo-preview');
+      preview.innerHTML = '';
+      [...input.files].forEach((file, i) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.innerHTML += `
+            <div style="position:relative;">
+              <img src="${e.target.result}" style="width:90px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" />
+              ${i === 0 ? '<span style="position:absolute;bottom:4px;left:4px;background:var(--green-dark);color:var(--gold);font-size:9px;padding:2px 6px;border-radius:4px;">Cover</span>' : ''}
+            </div>
+          `;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ── VIDEO PREVIEW ──
+    function previewVideo(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      // Check size (100MB max)
+      if (file.size > 100 * 1024 * 1024) {
+        alert('Video is too large. Please upload a video under 100MB.');
+        input.value = '';
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      document.getElementById('video-player').src = url;
+      document.getElementById('video-name').textContent = file.name + ' (' + (file.size / (1024 * 1024)).toFixed(1) + ' MB)';
+      document.getElementById('video-preview').style.display = 'block';
+      document.getElementById('video-upload-area').style.display = 'none';
+    }
+
+    function removeVideo() {
+      document.getElementById('video-upload').value = '';
+      document.getElementById('video-player').src = '';
+      document.getElementById('video-preview').style.display = 'none';
+      document.getElementById('video-upload-area').style.display = 'block';
+    }
+
+    function handleSubmit(e) {
+      e.preventDefault();
+
+      // Build FormData to support file uploads
+      const formData = new FormData(document.getElementById('list-form'));
+
+      // Attach photos
+      const photos = document.getElementById('photo-upload').files;
+      for (let i = 0; i < photos.length; i++) {
+        formData.append('images', photos[i]);
+      }
+
+      // Attach video if selected (optional)
+      const video = document.getElementById('video-upload').files[0];
+      if (video) formData.append('video', video);
+
+      // In production: send to backend
+      // api.listings.create(formData).then(() => { ... })
+
+      // Show success overlay
+      document.getElementById('success-overlay').classList.add('show');
+      document.getElementById('list-form').reset();
+      document.getElementById('photo-preview').innerHTML = '';
+      removeVideo();
+    }
+
+    // ── GUARD: only logged-in landlords can access this page ──
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!api.auth.isLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
+      }
+      const user = api.auth.currentUser();
+      if (user?.role !== 'landlord' && user?.role !== 'admin') {
+        alert('Only landlords can list properties. Please register as a landlord.');
+        window.location.href = '../index.html';
+      }
+
+      // Check subscription
+      const token = localStorage.getItem('nyumba_token');
+      const sub = localStorage.getItem('nyumba_sub_expiry_' + token?.slice(-10));
+      const paid = sub && new Date(sub) > new Date();
+      if (user?.role === 'landlord' && !paid) {
+        window.location.href = 'payment.html';
+      }
+    });
+  </script>
+</body>
+
+</html>

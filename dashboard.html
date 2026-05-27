@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Nyumba UG</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    body {
+      background: #f4f6f5;
+    }
+
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+      padding-top: var(--nav-h);
+    }
+
+    /* ── SIDEBAR ── */
+    .dash-sidebar {
+      background: var(--green-dark);
+      padding: 32px 0;
+      position: sticky;
+      top: var(--nav-h);
+      height: calc(100vh - var(--nav-h));
+      overflow-y: auto;
+    }
+
+    .dash-user {
+      padding: 0 20px 28px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 16px;
+    }
+
+    .dash-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(212, 168, 67, 0.2);
+      border: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fraunces', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .dash-user-name {
+      font-weight: 600;
+      color: var(--white);
+      font-size: 0.95rem;
+    }
+
+    .dash-user-role {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .dash-nav {
+      list-style: none;
+    }
+
+    .dash-nav li a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .dash-nav li a:hover,
+    .dash-nav li a.active {
+      color: var(--white);
+      background: rgba(255, 255, 255, 0.06);
+      border-left-color: var(--gold);
+    }
+
+    .dash-nav li a .icon {
+      font-size: 1.1rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    .dash-nav .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.3);
+      padding: 20px 20px 8px;
+    }
+
+    /* ── MAIN ── */
+    .dash-main {
+      padding: 32px;
+    }
+
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .dash-header h1 {
+      font-size: 1.6rem;
+      color: var(--green-dark);
+    }
+
+    .dash-header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 2px;
+    }
+
+    /* ── STAT CARDS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gold);
+    }
+
+    .stat-card.green::after {
+      background: var(--green-light);
+    }
+
+    .stat-card.blue::after {
+      background: #3b82f6;
+    }
+
+    .stat-card.red::after {
+      background: #ef4444;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-family: 'Fraunces', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--green-dark);
+    }
+
+    .stat-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-header h2 {
+      font-size: 1.05rem;
+      color: var(--green-dark);
+    }
+
+    .panel-body {
+      padding: 0;
+    }
+
+    /* ── LISTINGS TABLE ── */
+    .listings-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .listings-table th {
+      text-align: left;
+      padding: 12px 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .listings-table td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+      color: var(--text-mid);
+      vertical-align: middle;
+    }
+
+    .listings-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .listings-table tr:hover td {
+      background: var(--cream);
+    }
+
+    .listing-title-cell {
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .listing-title-cell small {
+      display: block;
+      font-weight: 400;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-active {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-pending {
+      background: #fef9c3;
+      color: #854d0e;
+    }
+
+    .status-inactive {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+
+    .status-rented {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-sm {
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text-mid);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+    }
+
+    .btn-sm:hover {
+      background: var(--green-dark);
+      color: var(--white);
+      border-color: var(--green-dark);
+    }
+
+    .btn-sm.danger:hover {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: var(--white);
+    }
+
+    /* ── ENQUIRIES ── */
+    .enquiry-item {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .enquiry-item:last-child {
+      border-bottom: none;
+    }
+
+    .enquiry-item.unread {
+      background: #f0fdf4;
+    }
+
+    .enquiry-name {
+      font-weight: 600;
+      color: var(--text-dark);
+      font-size: 0.92rem;
+    }
+
+    .enquiry-listing {
+      font-size: 0.8rem;
+      color: var(--green-light);
+      margin: 2px 0;
+    }
+
+    .enquiry-msg {
+      font-size: 0.87rem;
+      color: var(--text-mid);
+      line-height: 1.5;
+      margin-top: 4px;
+    }
+
+    .enquiry-time {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .enquiry-contact {
+      font-size: 0.82rem;
+      color: var(--text-mid);
+      margin-top: 6px;
+    }
+
+    .enquiry-contact a {
+      color: var(--green-light);
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      width: 90%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal h2 {
+      color: var(--green-dark);
+      margin-bottom: 20px;
+      font-size: 1.3rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .emoji {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 0.9rem;
+    }
+
+    /* ── TABS ── */
+    .dash-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--cream);
+      padding: 4px;
+      border-radius: 8px;
+    }
+
+    .dash-tab {
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .dash-tab.active {
+      background: var(--white);
+      color: var(--green-dark);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .dash-sidebar {
+        display: none;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <div class="nav-logo"><a href="../index.html">Nyumba<span>UG</span></a></div>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="listings.html">Browse</a></li>
+      <li><a href="dashboard.html" class="active">Dashboard</a></li>
+      <li><a href="#" onclick="api.auth.logout()" class="nav-cta" style="background:#ef4444;">Logout</a></li>
+    </ul>
+  </nav>
+
+  <div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="dash-sidebar">
+      <div class="dash-user">
+        <div class="dash-avatar" id="sidebar-avatar">?</div>
+        <div class="dash-user-name" id="sidebar-name">Loading...</div>
+        <div class="dash-user-role" id="sidebar-role">landlord</div>
+      </div>
+
+      <ul class="dash-nav">
+        <div class="section-label">Overview</div>
+        <li><a href="#" class="active" onclick="showSection('overview', this)"><span class="icon">📊</span>
+            Dashboard</a></li>
+
+        <div class="section-label">Listings</div>
+        <li><a href="#" onclick="showSection('listings', this)"><span class="icon">🏠</span> My Listings</a></li>
+        <li><a href="list-property.html"><span class="icon">➕</span> Add New Listing</a></li>
+
+        <div class="section-label">Tenants</div>
+        <li><a href="#" onclick="showSection('enquiries', this)"><span class="icon">📩</span> Enquiries <span
+              id="enquiry-badge"
+              style="background:var(--gold);color:var(--green-dark);padding:1px 7px;border-radius:50px;font-size:0.7rem;margin-left:4px;display:none;"></span></a>
+        </li>
+        <li><a href="#" onclick="showSection('messages', this)"><span class="icon">💬</span> Messages</a></li>
+
+        <div class="section-label">Account</div>
+        <li><a href="#" onclick="showSection('settings', this)"><span class="icon">⚙️</span> Settings</a></li>
+        <li><a href="#" onclick="api.auth.logout()"><span class="icon">🚪</span> Logout</a></li>
+      </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="dash-main">
+
+      <!-- ── OVERVIEW ── -->
+      <div id="section-overview">
+        <div class="dash-header">
+          <div>
+            <h1>Good day, <span id="header-name">...</span> 👋</h1>
+            <p>Here's what's happening with your properties today.</p>
+          </div>
+          <a href="list-property.html" class="btn btn-primary">+ Add Listing</a>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card green">
+            <div class="stat-label">Active Listings</div>
+            <div class="stat-value" id="stat-active">—</div>
+            <div class="stat-sub">Live on platform</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Views</div>
+            <div class="stat-value" id="stat-views">—</div>
+            <div class="stat-sub">Across all listings</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">New Enquiries</div>
+            <div class="stat-value" id="stat-enquiries">—</div>
+            <div class="stat-sub">Awaiting response</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-label">Pending Review</div>
+            <div class="stat-value" id="stat-pending">—</div>
+            <div class="stat-sub">Awaiting approval</div>
+          </div>
+        </div>
+
+        <!-- Recent listings preview -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Recent Listings</h2>
+            <button class="btn-sm" onclick="showSection('listings', null)">View All →</button>
+          </div>
+          <div class="panel-body">
+            <table class="listings-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Views</th>
+                </tr>
+              </thead>
+              <tbody id="overview-listings-body">
+                <tr>
+                  <td colspan="4" style="text-align:center;padding:24px;color:var(--text-muted);">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent enquiries preview -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Recent Enquiries</h2>
+            <button class="btn-sm" onclick="showSection('enquiries', null)">View All →</button>
+          </div>
+          <div class="panel-body" id="overview-enquiries">
+            <div style="text-align:center;padding:24px;color:var(--text-muted);">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MY LISTINGS ── -->
+      <div id="section-listings" style="display:none;">
+        <div class="dash-header">
+          <div>
+            <h1>My Listings</h1>
+            <p>Manage all your properties.</p>
+          </div>
+          <a href="list-property.html" class="btn btn-primary">+ Add New</a>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>All Properties</h2>
+            <div class="dash-tabs">
+              <button class="dash-tab active" onclick="filterMyListings('all', this)">All</button>
+              <button class="dash-tab" onclick="filterMyListings('active', this)">Active</button>
+              <button class="dash-tab" onclick="filterMyListings('pending', this)">Pending</button>
+              <button class="dash-tab" onclick="filterMyListings('rented', this)">Rented</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <table class="listings-table">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Type</th>
+                  <th>Price/month</th>
+                  <th>Status</th>
+                  <th>Views</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="my-listings-body">
+                <tr>
+                  <td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ENQUIRIES ── -->
+      <div id="section-enquiries" style="display:none;">
+        <div class="dash-header">
+          <div>
+            <h1>Enquiries</h1>
+            <p>Tenants interested in your properties.</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>All Enquiries</h2>
+            <div class="dash-tabs">
+              <button class="dash-tab active" onclick="filterEnquiries('all', this)">All</button>
+              <button class="dash-tab" onclick="filterEnquiries('new', this)">New</button>
+              <button class="dash-tab" onclick="filterEnquiries('read', this)">Read</button>
+              <button class="dash-tab" onclick="filterEnquiries('replied', this)">Replied</button>
+            </div>
+          </div>
+          <div class="panel-body" id="enquiries-list">
+            <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MESSAGES ── -->
+      <div id="section-messages" style="display:none;">
+        <div class="dash-header">
+          <div>
+            <h1>Messages</h1>
+            <p>Direct messages from tenants.</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-body" id="messages-list">
+            <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS ── -->
+      <div id="section-settings" style="display:none;">
+        <div class="dash-header">
+          <div>
+            <h1>Account Settings</h1>
+            <p>Update your profile and password.</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Profile Details</h2>
+          </div>
+          <div class="panel-body" style="padding:28px;">
+            <form onsubmit="updateProfile(event)">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Full Name</label>
+                  <input type="text" id="settings-name" />
+                </div>
+                <div class="form-group">
+                  <label>Phone Number</label>
+                  <input type="tel" id="settings-phone" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="settings-email" disabled style="opacity:0.6;" />
+              </div>
+              <button type="submit" class="btn btn-green">Save Changes</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Change Password</h2>
+          </div>
+          <div class="panel-body" style="padding:28px;">
+            <form onsubmit="changePassword(event)">
+              <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" id="current-pass" required />
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>New Password</label>
+                  <input type="password" id="new-pass" required minlength="6" />
+                </div>
+                <div class="form-group">
+                  <label>Confirm New Password</label>
+                  <input type="password" id="confirm-pass" required />
+                </div>
+              </div>
+              <button type="submit" class="btn btn-green">Update Password</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- EDIT LISTING MODAL -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal">
+      <h2>Edit Listing</h2>
+      <input type="hidden" id="edit-listing-id" />
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="edit-title" />
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Price (UGX/month)</label>
+          <input type="number" id="edit-price" />
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="edit-status">
+            <option value="active">Active</option>
+            <option value="rented">Rented</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="edit-desc" rows="4"
+          style="resize:vertical;width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sm" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-green" onclick="saveListing()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    // ── STATE ──
+    let myListings = [];
+    let myEnquiries = [];
+    let currentFilter = 'all';
+    let currentEnqFilter = 'all';
+
+    // ── INIT ──
+    async function init() {
+      if (!api.auth.isLoggedIn()) {
+        window.location.href = 'register.html';
+        return;
+      }
+
+      try {
+        const { user } = await api.auth.getMe();
+        const initials = user.name.split(' ').map(n => n[0]).slice(0, 2).join('');
+        document.getElementById('sidebar-avatar').textContent = initials;
+        document.getElementById('sidebar-name').textContent = user.name;
+        document.getElementById('sidebar-role').textContent = user.role;
+        document.getElementById('header-name').textContent = user.name.split(' ')[0];
+        document.getElementById('settings-name').value = user.name;
+        document.getElementById('settings-phone').value = user.phone || '';
+        document.getElementById('settings-email').value = user.email;
+      } catch (e) { }
+
+      await Promise.all([loadMyListings(), loadEnquiries()]);
+    }
+
+    // ── LOAD DATA ──
+    async function loadMyListings() {
+      try {
+        const data = await api.listings.getMy();
+        myListings = data.listings;
+
+        const active = myListings.filter(l => l.status === 'active').length;
+        const pending = myListings.filter(l => l.status === 'pending').length;
+        const views = myListings.reduce((s, l) => s + (l.views || 0), 0);
+
+        document.getElementById('stat-active').textContent = active;
+        document.getElementById('stat-pending').textContent = pending;
+        document.getElementById('stat-views').textContent = views;
+
+        renderOverviewListings();
+        renderMyListings();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadEnquiries() {
+      try {
+        const data = await api.enquiries.getMy();
+        myEnquiries = data.enquiries;
+
+        const newCount = myEnquiries.filter(e => e.status === 'new').length;
+        document.getElementById('stat-enquiries').textContent = newCount;
+
+        if (newCount > 0) {
+          const badge = document.getElementById('enquiry-badge');
+          badge.textContent = newCount;
+          badge.style.display = 'inline';
+        }
+
+        renderOverviewEnquiries();
+        renderEnquiries();
+      } catch (e) { }
+    }
+
+    // ── RENDER OVERVIEW ──
+    function renderOverviewListings() {
+      const tbody = document.getElementById('overview-listings-body');
+      const recent = myListings.slice(0, 5);
+
+      if (!recent.length) {
+        tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="emoji">🏠</div><p>No listings yet. <a href="list-property.html" style="color:var(--green-light);">Add your first property →</a></p></div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = recent.map(l => `
+        <tr>
+          <td class="listing-title-cell">${l.title}<small>${l.neighbourhood}, ${l.district}</small></td>
+          <td>UGX ${l.price.toLocaleString()}</td>
+          <td><span class="status-badge status-${l.status}">${l.status}</span></td>
+          <td>${l.views || 0}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderOverviewEnquiries() {
+      const container = document.getElementById('overview-enquiries');
+      const recent = myEnquiries.slice(0, 3);
+
+      if (!recent.length) {
+        container.innerHTML = `<div class="empty-state"><div class="emoji">📩</div><p>No enquiries yet.</p></div>`;
+        return;
+      }
+
+      container.innerHTML = recent.map(e => `
+        <div class="enquiry-item ${e.status === 'new' ? 'unread' : ''}">
+          <div>
+            <div class="enquiry-name">${e.name} ${e.status === 'new' ? '<span style="background:var(--gold);color:var(--green-dark);font-size:0.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">NEW</span>' : ''}</div>
+            <div class="enquiry-listing">Re: ${e.listing_title}</div>
+            <div class="enquiry-msg">${e.message}</div>
+            <div class="enquiry-contact">📞 <a href="tel:${e.phone}">${e.phone}</a>${e.email ? ` · ✉️ <a href="mailto:${e.email}">${e.email}</a>` : ''}</div>
+          </div>
+          <div class="enquiry-time">${timeAgo(e.created_at)}</div>
+        </div>
+      `).join('');
+    }
+
+    // ── RENDER MY LISTINGS ──
+    function renderMyListings() {
+      const tbody = document.getElementById('my-listings-body');
+      const filtered = currentFilter === 'all' ? myListings : myListings.filter(l => l.status === currentFilter);
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="emoji">🏠</div><p>No listings found.</p></div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(l => `
+        <tr>
+          <td class="listing-title-cell">${l.title}<small>${l.neighbourhood} · ${l.bedrooms} bed · ${l.bathrooms} bath</small></td>
+          <td>${l.type}</td>
+          <td>UGX ${l.price.toLocaleString()}</td>
+          <td><span class="status-badge status-${l.status}">${l.status}</span></td>
+          <td>${l.views || 0}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-sm" onclick="openEditModal('${l.id}')">Edit</button>
+              <a href="listing-detail.html?id=${l.id}" class="btn-sm">View</a>
+              <button class="btn-sm danger" onclick="deleteListing('${l.id}', '${l.title}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterMyListings(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('#section-listings .dash-tab').forEach(t => t.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderMyListings();
+    }
+
+    // ── RENDER ENQUIRIES ──
+    function renderEnquiries() {
+      const container = document.getElementById('enquiries-list');
+      const filtered = currentEnqFilter === 'all' ? myEnquiries : myEnquiries.filter(e => e.status === currentEnqFilter);
+
+      if (!filtered.length) {
+        container.innerHTML = `<div class="empty-state"><div class="emoji">📩</div><p>No enquiries found.</p></div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(e => `
+        <div class="enquiry-item ${e.status === 'new' ? 'unread' : ''}">
+          <div>
+            <div class="enquiry-name">${e.name} ${e.status === 'new' ? '<span style="background:var(--gold);color:var(--green-dark);font-size:0.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">NEW</span>' : ''}</div>
+            <div class="enquiry-listing">Re: ${e.listing_title} · ${e.neighbourhood}</div>
+            <div class="enquiry-msg">${e.message}</div>
+            <div class="enquiry-contact" style="margin-top:8px;">
+              📞 <a href="tel:${e.phone}">${e.phone}</a>
+              ${e.email ? `· ✉️ <a href="mailto:${e.email}">${e.email}</a>` : ''}
+              &nbsp;·&nbsp;
+              <a href="https://wa.me/${e.phone.replace(/[\s+]/g, '')}" target="_blank" style="color:#25D366;">💬 WhatsApp</a>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div class="enquiry-time">${timeAgo(e.created_at)}</div>
+            <div style="margin-top:8px;">
+              <select class="btn-sm" onchange="updateEnquiryStatus('${e.id}', this.value)" style="padding:4px 8px;">
+                <option value="new"     ${e.status === 'new' ? 'selected' : ''}>New</option>
+                <option value="read"    ${e.status === 'read' ? 'selected' : ''}>Read</option>
+                <option value="replied" ${e.status === 'replied' ? 'selected' : ''}>Replied</option>
+                <option value="closed"  ${e.status === 'closed' ? 'selected' : ''}>Closed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterEnquiries(filter, btn) {
+      currentEnqFilter = filter;
+      document.querySelectorAll('#section-enquiries .dash-tab').forEach(t => t.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderEnquiries();
+    }
+
+    async function updateEnquiryStatus(id, status) {
+      try {
+        await api.enquiries.updateStatus(id, status);
+        const enq = myEnquiries.find(e => e.id === id);
+        if (enq) enq.status = status;
+        showToast('✅ Status updated');
+      } catch (e) { showToast('❌ ' + e.message); }
+    }
+
+    // ── MESSAGES ──
+    async function loadMessages() {
+      try {
+        const data = await api.messages.getAll();
+        const container = document.getElementById('messages-list');
+
+        if (!data.threads || !data.threads.length) {
+          container.innerHTML = `<div class="empty-state"><div class="emoji">💬</div><p>No messages yet.</p></div>`;
+          return;
+        }
+
+        container.innerHTML = data.threads.map(t => `
+          <div class="enquiry-item ${t.unread_count > 0 ? 'unread' : ''}">
+            <div>
+              <div class="enquiry-name">${t.partner_name} ${t.unread_count > 0 ? `<span style="background:var(--gold);color:var(--green-dark);font-size:0.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">${t.unread_count} new</span>` : ''}</div>
+              <div class="enquiry-msg">${t.last_message}</div>
+            </div>
+            <div class="enquiry-time">${timeAgo(t.last_at)}</div>
+          </div>
+        `).join('');
+      } catch (e) { }
+    }
+
+    // ── EDIT MODAL ──
+    function openEditModal(id) {
+      const l = myListings.find(l => l.id === id);
+      if (!l) return;
+      document.getElementById('edit-listing-id').value = l.id;
+      document.getElementById('edit-title').value = l.title;
+      document.getElementById('edit-price').value = l.price;
+      document.getElementById('edit-status').value = l.status;
+      document.getElementById('edit-desc').value = l.description || '';
+      document.getElementById('edit-modal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('edit-modal').classList.remove('show');
+    }
+
+    async function saveListing() {
+      const id = document.getElementById('edit-listing-id').value;
+      try {
+        await api.listings.update(id, {
+          title: document.getElementById('edit-title').value,
+          price: document.getElementById('edit-price').value,
+          status: document.getElementById('edit-status').value,
+          description: document.getElementById('edit-desc').value,
+        });
+        closeModal();
+        showToast('✅ Listing updated!');
+        await loadMyListings();
+      } catch (e) { showToast('❌ ' + e.message); }
+    }
+
+    async function deleteListing(id, title) {
+      if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+      try {
+        await api.listings.delete(id);
+        showToast('🗑️ Listing deleted');
+        await loadMyListings();
+      } catch (e) { showToast('❌ ' + e.message); }
+    }
+
+    // ── SETTINGS ──
+    async function updateProfile(e) {
+      e.preventDefault();
+      try {
+        await api.auth.updateProfile?.({
+          name: document.getElementById('settings-name').value,
+          phone: document.getElementById('settings-phone').value,
+        });
+        showToast('✅ Profile updated!');
+      } catch (err) { showToast('❌ ' + err.message); }
+    }
+
+    async function changePassword(e) {
+      e.preventDefault();
+      const np = document.getElementById('new-pass').value;
+      const cp = document.getElementById('confirm-pass').value;
+      if (np !== cp) { showToast('❌ Passwords do not match'); return; }
+      try {
+        const res = await fetch('https://nyumbaug-b8qh.onrender.com/api/auth/change-password', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` },
+          body: JSON.stringify({ currentPassword: document.getElementById('current-pass').value, newPassword: np }),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        showToast('✅ Password changed!');
+        e.target.reset();
+      } catch (err) { showToast('❌ ' + err.message); }
+    }
+
+    // ── SECTION SWITCHING ──
+    function showSection(name, clickedLink) {
+      document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
+      document.getElementById('section-' + name).style.display = 'block';
+      document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
+      if (clickedLink) clickedLink.classList.add('active');
+      if (name === 'messages') loadMessages();
+    }
+
+    // ── UTILS ──
+    function timeAgo(dateStr) {
+      const diff = Date.now() - new Date(dateStr);
+      const m = Math.floor(diff / 60000);
+      if (m < 1) return 'just now';
+      if (m < 60) return `${m}m ago`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h}h ago`;
+      return `${Math.floor(h / 24)}d ago`;
+    }
+
+    function showToast(msg) {
+      let t = document.getElementById('toast');
+      if (!t) { t = document.createElement('div'); t.className = 'toast'; t.id = 'toast'; document.body.appendChild(t); }
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    init();
+  </script>
+</body>
+
+</html>
