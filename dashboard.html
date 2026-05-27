@@ -787,7 +787,7 @@
         document.getElementById('settings-name').value = user.name;
         document.getElementById('settings-phone').value = user.phone || '';
         document.getElementById('settings-email').value = user.email;
-      } catch (e) { }
+      } catch (e) { console.error('getMe failed:', e); }
 
       await Promise.all([loadMyListings(), loadEnquiries()]);
     }
