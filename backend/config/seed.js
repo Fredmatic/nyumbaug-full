@@ -30,7 +30,7 @@ async function seed() {
     `, [passwordHash]);
 
     if (landlords.rows.length > 0) {
-      const [fred, momo, claude] = landlords.rows;
+      const [fred, momo, claude, fred2, joshua] = landlords.rows;
 
       const listingsData = [
         {
@@ -43,6 +43,15 @@ async function seed() {
           status: 'active', is_featured: true,
         },
         {
+          landlord_id: fred2.id,
+          title: 'Modern 4-Bedroom Apartment',
+          description: 'Spacious modern apartment in the heart of Kololo with stunning city views, fully fitted kitchen, and 24/7 security.',
+          type: 'Self-Contained', price: 2000000, bedrooms: 4, bathrooms: 2, area_sqm: 220,
+          address: 'Plot 15, Kawempe Hillside', neighbourhood: 'Kawanda', district: 'Kampala',
+          amenities: ['WiFi', 'Parking', 'Generator', 'Security', 'Balcony'],
+          status: 'active', is_featured: true,
+        },
+        {
           landlord_id: momo.id,
           title: 'Executive 2-Bedroom Flat',
           description: 'Well-maintained executive flat in quiet Bugolobi estate. Ideal for professionals and small families.',
@@ -52,7 +61,7 @@ async function seed() {
           status: 'active', is_featured: true,
         },
         {
-          landlord_id: fred.id,
+          landlord_id: joshua.id,
           title: 'Self-Contained Studio',
           description: 'Cozy self-contained studio perfect for a single professional. Close to Ntinda market and major roads.',
           type: 'studio', price: 450000, bedrooms: 1, bathrooms: 1, area_sqm: 35,
