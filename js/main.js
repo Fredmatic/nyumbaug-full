@@ -73,7 +73,7 @@ const listings = [
     amenities: ["WiFi", "Parking", "Generator", "Security", "Garden", "Water Tank", "DSTV"],
     landlord: "Dr. Baliyambala Uthor",
     phone: "+256 743 692 523",
-    available: "SoldOut"
+    available: "Immediately"
   },
   {
     id: 5,
@@ -180,7 +180,7 @@ const listings = [
     bathrooms: 2,
     area: 120,
     badge: "available",
-    image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80",
+    image: "/images/fancy.jpg",
     featured: false,
     description: "Affordable and spacious bungalow in developing Kira suburb. Great for families looking for value.",
     amenities: ["Parking", "Water Tank", "Compound"],
