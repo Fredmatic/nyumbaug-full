@@ -221,7 +221,7 @@ function renderListings(data, containerId) {
   container.innerHTML = data.map(l => `
     <div class="listing-card" onclick="window.location.href='listing-detail.html?id=${l.id}'">
       <div class="listing-img">
-        <img src="${l.image}" alt="${l.title}" loading="lazy" />
+        <img src="${l.cover_image || l.image || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80'}" alt="${l.title}" loading="lazy" />
         <span class="listing-badge ${l.badge === 'new' ? 'new' : ''}">${l.badge === 'new' ? '🆕 New' : 'Available'}</span>
         <button class="listing-fav" onclick="toggleFav(event, this, ${l.id})" aria-label="Save listing">
           <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
@@ -232,7 +232,7 @@ function renderListings(data, containerId) {
         <div class="listing-title">${l.title}</div>
         <div class="listing-location">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          ${l.location}
+          ${l.neighbourhood || l.location || 'Kampala'}
         </div>
         <div class="listing-amenities">
           <div class="amenity">
