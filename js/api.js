@@ -1,5 +1,5 @@
 // ── NYUMBA UG — API Service ──
-const API_BASE = 'https://nyumbaug.onrender.com/api';
+const API_BASE = 'https://nyumbaug-b8qh.onrender.com/api';
 
 const getToken = () => localStorage.getItem('nyumba_token');
 const getUser = () => JSON.parse(localStorage.getItem('nyumba_user') || 'null');
