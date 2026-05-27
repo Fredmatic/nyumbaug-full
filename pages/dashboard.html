@@ -1336,43 +1336,47 @@
         document.getElementById('admin-stat-pending').textContent = pending?.count || 0;
         document.getElementById('admin-stat-active').textContent = active?.count || 0;
 
-        const userStats = data.stats.users;
-        const landlords = userStats.find(u => u.role === 'landlord');
-        const tenants = userStats.find(u => u.role === 'tenant');
-        document.getElementById('admin-stat-landlords').textContent = landlords?.count || 0;
-        document.getElementById('admin-stat-tenants').textContent = tenants?.count || 0;
+        const overviewActiveCard = document.getElementById('stat-active');
+        if (overviewActiveCard) {
+          overviewActiveCard.textContent = active?.count || 0;
 
-        // Update badge
-        const pendingCount = parseInt(pending?.count || 0);
-        if (pendingCount > 0) {
-          document.getElementById('admin-badge').textContent = pendingCount;
-        }
-      } catch (e) { console.error(e); }
-    }
+          const userStats = data.stats.users;
+          const landlords = userStats.find(u => u.role === 'landlord');
+          const tenants = userStats.find(u => u.role === 'tenant');
+          document.getElementById('admin-stat-landlords').textContent = landlords?.count || 0;
+          document.getElementById('admin-stat-tenants').textContent = tenants?.count || 0;
 
-    async function loadAdminListings(status, btn) {
-      currentAdminFilter = status;
-      if (btn) {
-        document.querySelectorAll('#section-admin .dash-tab').forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
+          // Update badge
+          const pendingCount = parseInt(pending?.count || 0);
+          if (pendingCount > 0) {
+            document.getElementById('admin-badge').textContent = pendingCount;
+          }
+        } catch (e) { console.error(e); }
       }
 
-      const container = document.getElementById('admin-listings-body');
-      container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>';
-
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/listings?status=' + status, {
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
-        });
-        const data = await res.json();
-        const listings = data.listings || [];
-
-        if (!listings.length) {
-          container.innerHTML = '<div class="empty-state"><div class="emoji">✅</div><p>No ' + status + ' listings.</p></div>';
-          return;
+    async function loadAdminListings(status, btn) {
+        currentAdminFilter = status;
+        if (btn) {
+          document.querySelectorAll('#section-admin .dash-tab').forEach(t => t.classList.remove('active'));
+          btn.classList.add('active');
         }
 
-        container.innerHTML = listings.map(l => `
+        const container = document.getElementById('admin-listings-body');
+        container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>';
+
+        try {
+          const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/listings?status=' + status, {
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
+          });
+          const data = await res.json();
+          const listings = data.listings || [];
+
+          if (!listings.length) {
+            container.innerHTML = '<div class="empty-state"><div class="emoji">✅</div><p>No ' + status + ' listings.</p></div>';
+            return;
+          }
+
+          container.innerHTML = listings.map(l => `
           <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start;">
             <div>
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
@@ -1407,73 +1411,73 @@
             </div>
           </div>
         `).join('');
-      } catch (e) {
-        container.innerHTML = '<div class="empty-state"><p>Failed to load listings.</p></div>';
+        } catch (e) {
+          container.innerHTML = '<div class="empty-state"><p>Failed to load listings.</p></div>';
+        }
       }
-    }
 
-    async function approveListing(id, title) {
-      if (!confirm('Approve "' + title + '"? It will go live immediately.')) return;
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/listings/' + id + '/approve', {
-          method: 'PATCH',
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('✅ Listing approved and now live!');
-        await loadAdminListings(currentAdminFilter);
-        await loadAdminStats();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
-    async function rejectListing(id, title) {
-      if (!confirm('Reject and delete "' + title + '"? This cannot be undone.')) return;
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/listings/' + id, {
-          method: 'DELETE',
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('🗑️ Listing rejected and removed.');
-        await loadAdminListings(currentAdminFilter);
-        await loadAdminStats();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
-    async function changeListingStatus(id, status) {
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/listings/' + id, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
-          body: JSON.stringify({ status })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('✅ Status updated to ' + status);
-        await loadAdminListings(currentAdminFilter);
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
-    async function loadAdminUsers() {
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users', {
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
-        });
-        const data = await res.json();
-        allUsers = data.users || [];
-        renderUsers(allUsers);
-      } catch (e) { }
-    }
-
-    function renderUsers(users) {
-      const tbody = document.getElementById('admin-users-body');
-      if (!users.length) {
-        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>No users found.</p></div></td></tr>';
-        return;
+      async function approveListing(id, title) {
+        if (!confirm('Approve "' + title + '"? It will go live immediately.')) return;
+        try {
+          const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/listings/' + id + '/approve', {
+            method: 'PATCH',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
+          });
+          const data = await res.json();
+          if (!data.success) throw new Error(data.message);
+          showToast('✅ Listing approved and now live!');
+          await loadAdminListings(currentAdminFilter);
+          await loadAdminStats();
+        } catch (e) { showToast('❌ ' + e.message); }
       }
-      tbody.innerHTML = users.map(u => `
+
+      async function rejectListing(id, title) {
+        if (!confirm('Reject and delete "' + title + '"? This cannot be undone.')) return;
+        try {
+          const res = await fetch('https://nyumbaug-full.onrender.com/api/listings/' + id, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
+          });
+          const data = await res.json();
+          if (!data.success) throw new Error(data.message);
+          showToast('🗑️ Listing rejected and removed.');
+          await loadAdminListings(currentAdminFilter);
+          await loadAdminStats();
+        } catch (e) { showToast('❌ ' + e.message); }
+      }
+
+      async function changeListingStatus(id, status) {
+        try {
+          const res = await fetch('https://nyumbaug-full.onrender.com/api/listings/' + id, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
+            body: JSON.stringify({ status })
+          });
+          const data = await res.json();
+          if (!data.success) throw new Error(data.message);
+          showToast('✅ Status updated to ' + status);
+          await loadAdminListings(currentAdminFilter);
+        } catch (e) { showToast('❌ ' + e.message); }
+      }
+
+      async function loadAdminUsers() {
+        try {
+          const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users', {
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
+          });
+          const data = await res.json();
+          allUsers = data.users || [];
+          renderUsers(allUsers);
+        } catch (e) { }
+      }
+
+      function renderUsers(users) {
+        const tbody = document.getElementById('admin-users-body');
+        if (!users.length) {
+          tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>No users found.</p></div></td></tr>';
+          return;
+        }
+        tbody.innerHTML = users.map(u => `
         <tr>
           <td style="font-weight:600;color:var(--text-dark);display:flex;align-items:center;gap:10px;">
             <div style="width:34px;height:34px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">
@@ -1493,53 +1497,55 @@
           </td>
         </tr>
       `).join('');
-    }
+      }
 
-    function filterUsers() {
-      const q = document.getElementById('user-search').value.toLowerCase();
-      const filtered = allUsers.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
-      renderUsers(filtered);
-    }
+      function filterUsers() {
+        const q = document.getElementById('user-search').value.toLowerCase();
+        const filtered = allUsers.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+        renderUsers(filtered);
+      }
 
-    async function makeAdmin(id, name) {
-      if (!confirm('Give admin access to ' + name + '?')) return;
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users/' + id + '/role', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
-          body: JSON.stringify({ role: 'admin' })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('✅ ' + name + ' is now an admin');
-        await loadAdminUsers();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
+      async function makeAdmin(id, name) {
+        if (!confirm('Give admin access to ' + name + '?')) return;
+        try {
+          const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users/' + id + '/role', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
+            body: JSON.stringify({ role: 'admin' })
+          });
+          const data = await res.json();
+          if (!data.success) throw new Error(data.message);
+          showToast('✅ ' + name + ' is now an admin');
+          await loadAdminUsers();
 
-    async function toggleUser(id, active, name) {
-      const action = active ? 'Restore' : 'Suspend';
-      if (!confirm(action + ' account for ' + name + '?')) return;
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users/' + id + '/toggle', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
-          body: JSON.stringify({ is_active: active })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('✅ Account ' + (active ? 'restored' : 'suspended'));
-        await loadAdminUsers();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
+          await loadAdminStats();
+        } catch (e) { showToast('❌ ' + e.message); }
+      }
 
-    // Override showSection to load admin data when tab opens
-    const _origShowSection = showSection;
-    showSection = function (name, link) {
-      _origShowSection(name, link);
-      if (name === 'admin') loadAdminData();
-    };
+      async function toggleUser(id, active, name) {
+        const action = active ? 'Restore' : 'Suspend';
+        if (!confirm(action + ' account for ' + name + '?')) return;
+        try {
+          const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users/' + id + '/toggle', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
+            body: JSON.stringify({ is_active: active })
+          });
+          const data = await res.json();
+          if (!data.success) throw new Error(data.message);
+          showToast('✅ Account ' + (active ? 'restored' : 'suspended'));
+          await loadAdminUsers();
+        } catch (e) { showToast('❌ ' + e.message); }
+      }
 
-    init();
+      // Override showSection to load admin data when tab opens
+      const _origShowSection = showSection;
+      showSection = function (name, link) {
+        _origShowSection(name, link);
+        if (name === 'admin') loadAdminData();
+      };
+
+      init();
   </script>
 </body>
 
