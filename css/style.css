@@ -859,3 +859,25 @@ footer {
     display: none;
   }
 }
+
+/* ── AREA BUTTONS ── */
+.area-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--green-dark);
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.area-btn:hover {
+  background: var(--green-dark);
+  color: var(--gold);
+  border-color: var(--green-dark);
+}
