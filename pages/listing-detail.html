@@ -1,61 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Property Detail — Nyumba UG</title>
   <link rel="stylesheet" href="../css/style.css" />
   <style>
-    .detail-wrapper { padding: 32px 5% 80px; }
+    .detail-wrapper {
+      padding: 32px 5% 80px;
+    }
+
     .breadcrumb {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 0.85rem; color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
       margin-bottom: 24px;
     }
-    .breadcrumb a { color: var(--green-light); }
-    .breadcrumb a:hover { text-decoration: underline; }
-    .detail-title { font-size: clamp(1.6rem, 3vw, 2.2rem); color: var(--green-dark); margin-bottom: 8px; }
+
+    .breadcrumb a {
+      color: var(--green-light);
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .detail-title {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      color: var(--green-dark);
+      margin-bottom: 8px;
+    }
+
     .detail-location {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 0.95rem; color: var(--text-mid);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.95rem;
+      color: var(--text-mid);
       margin-bottom: 24px;
     }
-    .detail-location svg { width: 16px; height: 16px; stroke: var(--green-light); }
+
+    .detail-location svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--green-light);
+    }
+
     .detail-price-big {
       font-family: 'Fraunces', serif;
-      font-size: 2rem; font-weight: 700;
+      font-size: 2rem;
+      font-weight: 700;
       color: var(--green-dark);
     }
+
     .detail-price-big span {
       font-family: 'DM Sans', sans-serif;
-      font-size: 1rem; font-weight: 400;
+      font-size: 1rem;
+      font-weight: 400;
       color: var(--text-muted);
     }
+
     .contact-card-label {
-      font-size: 0.78rem; font-weight: 600; letter-spacing: 1px;
-      text-transform: uppercase; color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
       margin-bottom: 4px;
     }
+
     .landlord-info {
-      display: flex; align-items: center; gap: 14px;
-      padding: 16px 0; border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
       margin-bottom: 16px;
     }
+
     .landlord-avatar {
-      width: 48px; height: 48px; border-radius: 50%;
-      background: var(--green-dark); color: var(--gold);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 700;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--green-dark);
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fraunces', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
     }
-    .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
     .tag {
-      background: var(--cream-dark); color: var(--green-dark);
-      padding: 5px 14px; border-radius: 50px;
-      font-size: 0.82rem; font-weight: 500;
+      background: var(--cream-dark);
+      color: var(--green-dark);
+      padding: 5px 14px;
+      border-radius: 50px;
+      font-size: 0.82rem;
+      font-weight: 500;
     }
-    .similar-section { margin-top: 64px; }
+
+    .similar-section {
+      margin-top: 64px;
+    }
   </style>
 </head>
+
 <body>
 
   <nav>
@@ -65,7 +126,8 @@
       <li><a href="listings.html" class="active">Browse Listings</a></li>
       <li><a href="list-property.html">List Property</a></li>
       <li><a href="contact.html">Contact</a></li>
-      <li><a href="login.html">Login</a></li><li><a href="register.html" class="nav-cta">Sign Up</a></li>
+      <li><a href="login.html">Login</a></li>
+      <li><a href="register.html" class="nav-cta">Sign Up</a></li>
     </ul>
   </nav>
 
@@ -111,8 +173,8 @@
               <img src="${listing.image}" alt="${listing.title}" />
             </div>
             <div class="gallery-side">
-              <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80" alt="Kitchen" />
-              <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80" alt="Living room" />
+               <img src="/images/kitchen.jpg" alt="Kitchen">
+              <img src="/images/livingroom.jpg" alt="living">
             </div>
           </div>
 
@@ -191,11 +253,11 @@
                   <div style="font-weight: 500; color: var(--green-light);">✓ ${listing.available}</div>
                 </div>
 
-                <a href="tel:${listing.phone.replace(/\s/g,'')}" class="btn btn-green" style="width:100%; justify-content:center; margin-bottom: 10px;">
+                <a href="tel:${listing.phone.replace(/\s/g, '')}" class="btn btn-green" style="width:100%; justify-content:center; margin-bottom: 10px;">
                   📞 Call Landlord
                 </a>
 
-                <a href="https://wa.me/${listing.phone.replace(/[\s+]/g,'')}" target="_blank" class="btn btn-primary" style="width:100%; justify-content:center; background: #25D366; margin-bottom: 10px;">
+                <a href="https://wa.me/${listing.phone.replace(/[\s+]/g, '')}" target="_blank" class="btn btn-primary" style="width:100%; justify-content:center; background: #25D366; margin-bottom: 10px;">
                   💬 WhatsApp
                 </a>
 
@@ -227,4 +289,5 @@
     }
   </script>
 </body>
+
 </html>

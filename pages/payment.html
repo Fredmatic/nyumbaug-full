@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Activate Landlord Account — Nyumba UG</title>
   <link rel="stylesheet" href="../css/style.css" />
   <style>
-    body { background: var(--green-dark); min-height: 100vh; }
+    body {
+      background: var(--green-dark);
+      min-height: 100vh;
+    }
 
     .payment-wrapper {
       max-width: 960px;
@@ -15,22 +19,44 @@
     }
 
     /* ── HEADER ── */
-    .pay-header { text-align: center; margin-bottom: 48px; }
-    .pay-header .badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(212,168,67,0.15);
-      border: 1px solid rgba(212,168,67,0.4);
-      color: var(--gold); padding: 6px 18px;
-      border-radius: 50px; font-size: 0.8rem;
-      font-weight: 600; letter-spacing: 1.5px;
-      text-transform: uppercase; margin-bottom: 20px;
+    .pay-header {
+      text-align: center;
+      margin-bottom: 48px;
     }
+
+    .pay-header .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(212, 168, 67, 0.15);
+      border: 1px solid rgba(212, 168, 67, 0.4);
+      color: var(--gold);
+      padding: 6px 18px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
     .pay-header h1 {
       font-size: clamp(1.8rem, 4vw, 2.8rem);
-      color: var(--white); margin-bottom: 14px;
+      color: var(--white);
+      margin-bottom: 14px;
     }
-    .pay-header h1 em { color: var(--gold); font-style: italic; }
-    .pay-header p { color: rgba(255,255,255,0.65); font-size: 1.05rem; max-width: 520px; margin: 0 auto; }
+
+    .pay-header h1 em {
+      color: var(--gold);
+      font-style: italic;
+    }
+
+    .pay-header p {
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 1.05rem;
+      max-width: 520px;
+      margin: 0 auto;
+    }
 
     /* ── PLAN CARD ── */
     .plan-layout {
@@ -41,8 +67,8 @@
     }
 
     .plan-card {
-      background: rgba(255,255,255,0.05);
-      border: 1.5px solid rgba(255,255,255,0.12);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
       border-radius: var(--radius-lg);
       padding: 28px;
       cursor: pointer;
@@ -50,41 +76,98 @@
       position: relative;
     }
 
-    .plan-card:hover { border-color: var(--gold); background: rgba(212,168,67,0.06); }
+    .plan-card:hover {
+      border-color: var(--gold);
+      background: rgba(212, 168, 67, 0.06);
+    }
+
     .plan-card.selected {
       border-color: var(--gold);
-      background: rgba(212,168,67,0.1);
+      background: rgba(212, 168, 67, 0.1);
     }
 
     .plan-card.selected::after {
       content: '✓';
-      position: absolute; top: 16px; right: 16px;
-      width: 26px; height: 26px; border-radius: 50%;
-      background: var(--gold); color: var(--green-dark);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.85rem;
-      display: grid; place-items: center;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--green-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: grid;
+      place-items: center;
     }
 
     .plan-popular {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      background: var(--gold); color: var(--green-dark);
-      font-size: 0.72rem; font-weight: 700; letter-spacing: 1px;
-      text-transform: uppercase; padding: 3px 14px; border-radius: 50px;
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gold);
+      color: var(--green-dark);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 14px;
+      border-radius: 50px;
     }
 
-    .plan-name { font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
-    .plan-price { font-family: 'Fraunces', serif; font-size: 2.4rem; font-weight: 700; color: var(--white); }
-    .plan-price span { font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: rgba(255,255,255,0.5); font-weight: 400; }
-    .plan-desc { font-size: 0.88rem; color: rgba(255,255,255,0.6); margin: 10px 0 18px; line-height: 1.6; }
+    .plan-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 10px;
+    }
 
-    .plan-features { list-style: none; }
+    .plan-price {
+      font-family: 'Fraunces', serif;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .plan-price span {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 400;
+    }
+
+    .plan-desc {
+      font-size: 0.88rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin: 10px 0 18px;
+      line-height: 1.6;
+    }
+
+    .plan-features {
+      list-style: none;
+    }
+
     .plan-features li {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 0.87rem; color: rgba(255,255,255,0.75);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.87rem;
+      color: rgba(255, 255, 255, 0.75);
       margin-bottom: 8px;
     }
-    .plan-features li::before { content: '✓'; color: var(--gold); font-weight: 700; }
+
+    .plan-features li::before {
+      content: '✓';
+      color: var(--gold);
+      font-weight: 700;
+    }
 
     /* ── PAYMENT FORM ── */
     .payment-form-card {
@@ -99,11 +182,19 @@
     }
 
     .pay-tab {
-      flex: 1; padding: 18px;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      font-weight: 600; font-size: 0.92rem;
-      cursor: pointer; border: none; background: var(--cream);
-      color: var(--text-muted); transition: all 0.2s;
+      flex: 1;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      border: none;
+      background: var(--cream);
+      color: var(--text-muted);
+      transition: all 0.2s;
       border-bottom: 3px solid transparent;
     }
 
@@ -113,33 +204,66 @@
       border-bottom-color: var(--gold);
     }
 
-    .pay-tab-icon { font-size: 1.3rem; }
+    .pay-tab-icon {
+      font-size: 1.3rem;
+    }
 
-    .payment-body { padding: 32px; }
+    .payment-body {
+      padding: 32px;
+    }
 
-    .method-section { display: none; }
-    .method-section.active { display: block; }
+    .method-section {
+      display: none;
+    }
+
+    .method-section.active {
+      display: block;
+    }
 
     /* Mobile Money */
     .momo-provider {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
       margin-bottom: 24px;
     }
 
     .provider-btn {
-      padding: 14px; border-radius: var(--radius);
+      padding: 14px;
+      border-radius: var(--radius);
       border: 2px solid var(--border);
-      cursor: pointer; transition: all 0.2s;
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 600; font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
       background: var(--cream);
     }
 
-    .provider-btn:hover { border-color: var(--green-light); }
-    .provider-btn.selected { border-color: var(--green-dark); background: var(--white); }
-    .provider-btn .dot { width: 12px; height: 12px; border-radius: 50%; }
-    .dot-mtn { background: #FFCC00; }
-    .dot-airtel { background: #EF1C25; }
+    .provider-btn:hover {
+      border-color: var(--green-light);
+    }
+
+    .provider-btn.selected {
+      border-color: var(--green-dark);
+      background: var(--white);
+    }
+
+    .provider-btn .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .dot-mtn {
+      background: #FFCC00;
+    }
+
+    .dot-airtel {
+      background: #EF1C25;
+    }
 
     /* Steps */
     .pay-steps {
@@ -150,44 +274,89 @@
     }
 
     .pay-steps h4 {
-      font-size: 0.82rem; font-weight: 700; letter-spacing: 1px;
-      text-transform: uppercase; color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
       margin-bottom: 14px;
     }
 
     .pay-step {
-      display: flex; align-items: flex-start; gap: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
       margin-bottom: 12px;
     }
 
     .pay-step-num {
-      width: 24px; height: 24px; border-radius: 50%;
-      background: var(--green-dark); color: var(--gold);
-      font-size: 0.75rem; font-weight: 700;
-      display: grid; place-items: center; flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--green-dark);
+      color: var(--gold);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
     }
 
-    .pay-step p { font-size: 0.88rem; color: var(--text-mid); line-height: 1.5; margin: 0; }
-    .pay-step strong { color: var(--text-dark); }
+    .pay-step p {
+      font-size: 0.88rem;
+      color: var(--text-mid);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .pay-step strong {
+      color: var(--text-dark);
+    }
 
     /* Bank transfer */
     .bank-detail {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 14px 0;
       border-bottom: 1px solid var(--border);
     }
 
-    .bank-detail:last-of-type { border-bottom: none; }
-    .bank-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .bank-value { font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
+    .bank-detail:last-of-type {
+      border-bottom: none;
+    }
+
+    .bank-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .bank-value {
+      font-weight: 600;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
     .copy-btn {
-      background: var(--cream); border: 1px solid var(--border);
-      border-radius: 6px; padding: 3px 8px;
-      font-size: 0.75rem; cursor: pointer;
-      transition: all 0.2s; color: var(--text-muted);
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-muted);
     }
-    .copy-btn:hover { background: var(--green-dark); color: var(--white); }
+
+    .copy-btn:hover {
+      background: var(--green-dark);
+      color: var(--white);
+    }
 
     /* Reference input */
     .ref-box {
@@ -199,70 +368,129 @@
     }
 
     .ref-box label {
-      display: block; font-size: 0.82rem; font-weight: 600;
-      color: var(--text-muted); margin-bottom: 8px;
-      text-transform: uppercase; letter-spacing: 0.5px;
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .ref-box input {
-      width: 100%; padding: 11px 14px;
-      border: 1.5px solid var(--border); border-radius: var(--radius);
-      font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
-      background: var(--white); outline: none;
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      background: var(--white);
+      outline: none;
       transition: border-color 0.2s;
     }
 
-    .ref-box input:focus { border-color: var(--green-light); }
+    .ref-box input:focus {
+      border-color: var(--green-light);
+    }
 
     /* Summary */
     .order-summary {
       background: var(--green-dark);
       border-radius: var(--radius);
-      padding: 20px; margin-bottom: 20px;
-      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .order-summary .label { color: rgba(255,255,255,0.7); font-size: 0.88rem; }
+    .order-summary .label {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.88rem;
+    }
+
     .order-summary .amount {
       font-family: 'Fraunces', serif;
-      font-size: 1.6rem; font-weight: 700; color: var(--gold);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--gold);
     }
 
     .submit-btn {
-      width: 100%; padding: 16px;
-      background: var(--gold); color: var(--green-dark);
-      border: none; border-radius: 50px;
+      width: 100%;
+      padding: 16px;
+      background: var(--gold);
+      color: var(--green-dark);
+      border: none;
+      border-radius: 50px;
       font-family: 'Fraunces', serif;
-      font-size: 1.1rem; font-weight: 700;
-      cursor: pointer; transition: all 0.2s;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
 
-    .submit-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
-    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .submit-btn:hover {
+      background: var(--gold-light);
+      transform: translateY(-1px);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
 
     .secure-note {
-      text-align: center; font-size: 0.78rem; color: var(--text-muted);
-      margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 6px;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
     /* ── SUCCESS SCREEN ── */
     .success-screen {
       display: none;
-      text-align: center; padding: 60px 40px;
+      text-align: center;
+      padding: 60px 40px;
     }
 
-    .success-screen.show { display: block; }
+    .success-screen.show {
+      display: block;
+    }
 
     .success-icon {
-      width: 80px; height: 80px; border-radius: 50%;
-      background: #dcfce7; border: 3px solid #16a34a;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2.2rem; margin: 0 auto 24px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #dcfce7;
+      border: 3px solid #16a34a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin: 0 auto 24px;
     }
 
-    .success-screen h2 { color: var(--green-dark); margin-bottom: 10px; }
-    .success-screen p { color: var(--text-mid); line-height: 1.7; max-width: 400px; margin: 0 auto 28px; }
+    .success-screen h2 {
+      color: var(--green-dark);
+      margin-bottom: 10px;
+    }
+
+    .success-screen p {
+      color: var(--text-mid);
+      line-height: 1.7;
+      max-width: 400px;
+      margin: 0 auto 28px;
+    }
 
     /* ── PENDING SCREEN ── */
     .pending-screen {
@@ -273,23 +501,47 @@
       text-align: center;
     }
 
-    .pending-screen.show { display: block; }
-    .pending-icon { font-size: 3rem; margin-bottom: 16px; }
-    .pending-screen h2 { color: var(--green-dark); margin-bottom: 10px; }
-    .pending-screen p { color: var(--text-mid); line-height: 1.7; max-width: 440px; margin: 0 auto 20px; }
+    .pending-screen.show {
+      display: block;
+    }
+
+    .pending-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+
+    .pending-screen h2 {
+      color: var(--green-dark);
+      margin-bottom: 10px;
+    }
+
+    .pending-screen p {
+      color: var(--text-mid);
+      line-height: 1.7;
+      max-width: 440px;
+      margin: 0 auto 20px;
+    }
 
     .countdown {
       font-family: 'Fraunces', serif;
-      font-size: 2rem; color: var(--gold); font-weight: 700;
+      font-size: 2rem;
+      color: var(--gold);
+      font-weight: 700;
       margin: 16px 0;
     }
 
     @media (max-width: 640px) {
-      .plan-layout { grid-template-columns: 1fr; }
-      .momo-provider { grid-template-columns: 1fr; }
+      .plan-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .momo-provider {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <nav>
@@ -307,7 +559,8 @@
     <div class="pay-header">
       <div class="badge">🔐 Landlord Subscription</div>
       <h1>Activate Your <em>Landlord</em> Account</h1>
-      <p>Join hundreds of landlords already connecting with verified tenants across Kampala. One simple monthly subscription.</p>
+      <p>Join hundreds of landlords already connecting with verified tenants across Kampala. One simple monthly
+        subscription.</p>
     </div>
 
     <!-- PLAN SELECTION -->
@@ -358,7 +611,8 @@
 
         <!-- ── MOBILE MONEY ── -->
         <div class="method-section active" id="method-momo">
-          <p style="color:var(--text-mid);margin-bottom:20px;font-size:0.92rem;">Choose your mobile money provider and follow the steps below to complete payment.</p>
+          <p style="color:var(--text-mid);margin-bottom:20px;font-size:0.92rem;">Choose your mobile money provider and
+            follow the steps below to complete payment.</p>
 
           <div class="momo-provider">
             <div class="provider-btn selected" id="btn-mtn" onclick="selectProvider('mtn')">
@@ -424,13 +678,15 @@
           <div class="ref-box">
             <label>Your MoMo Transaction ID *</label>
             <input type="text" id="momo-ref" placeholder="e.g. 1234567890 — from your SMS confirmation" />
-            <p style="font-size:0.78rem;color:var(--text-muted);margin-top:8px;">After paying, MTN/Airtel sends you a confirmation SMS with a transaction ID. Enter it above.</p>
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-top:8px;">After paying, MTN/Airtel sends you a
+              confirmation SMS with a transaction ID. Enter it above.</p>
           </div>
         </div>
 
         <!-- ── BANK TRANSFER ── -->
         <div class="method-section" id="method-bank">
-          <p style="color:var(--text-mid);margin-bottom:20px;font-size:0.92rem;">Transfer directly to our bank account. Upload your receipt after payment.</p>
+          <p style="color:var(--text-mid);margin-bottom:20px;font-size:0.92rem;">Transfer directly to our bank account.
+            Upload your receipt after payment.</p>
 
           <div style="background:var(--cream);border-radius:var(--radius);padding:20px;margin-bottom:20px;">
             <div class="bank-detail">
@@ -458,8 +714,10 @@
             </div>
           </div>
 
-          <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:var(--radius);padding:14px;margin-bottom:20px;font-size:0.85rem;color:#854d0e;">
-            ⚠️ <strong>Important:</strong> Use your registered email address as the payment reference so we can identify your payment quickly.
+          <div
+            style="background:#fef9c3;border:1px solid #fde68a;border-radius:var(--radius);padding:14px;margin-bottom:20px;font-size:0.85rem;color:#854d0e;">
+            ⚠️ <strong>Important:</strong> Use your registered email address as the payment reference so we can identify
+            your payment quickly.
           </div>
 
           <div class="ref-box">
@@ -468,7 +726,9 @@
           </div>
 
           <div class="form-group">
-            <label style="font-size:0.85rem;font-weight:600;color:var(--text-mid);display:block;margin-bottom:6px;">Upload Receipt (optional but recommended)</label>
+            <label
+              style="font-size:0.85rem;font-weight:600;color:var(--text-mid);display:block;margin-bottom:6px;">Upload
+              Receipt (optional but recommended)</label>
             <input type="file" accept="image/*,.pdf" id="bank-receipt"
               style="width:100%;padding:10px;border:1.5px dashed var(--border);border-radius:var(--radius);cursor:pointer;font-family:'DM Sans',sans-serif;" />
           </div>
@@ -497,14 +757,18 @@
     <div class="pending-screen" id="pending-screen">
       <div class="pending-icon">⏳</div>
       <h2>Payment Submitted!</h2>
-      <p>Thank you, <strong id="pending-name"></strong>. We've received your payment details and are verifying your transaction. You'll receive a confirmation within <strong>2 hours</strong>.</p>
+      <p>Thank you, <strong id="pending-name"></strong>. We've received your payment details and are verifying your
+        transaction. You'll receive a confirmation within <strong>2 hours</strong>.</p>
       <div class="countdown" id="countdown-display"></div>
-      <p style="font-size:0.85rem;">We'll send a confirmation to <strong id="pending-email"></strong> once your account is activated.</p>
-      <div style="margin-top:32px;padding:20px;background:var(--cream);border-radius:var(--radius);text-align:left;max-width:400px;margin-left:auto;margin-right:auto;">
-        <p style="font-size:0.85rem;color:var(--text-mid);"><strong style="color:var(--green-dark);">Need faster activation?</strong><br/>
-        Call or WhatsApp us directly:<br/>
-        📞 <a href="tel:+256700000000" style="color:var(--green-light);">+256 700 000 000</a><br/>
-        We're available Mon–Sat, 8am–6pm.</p>
+      <p style="font-size:0.85rem;">We'll send a confirmation to <strong id="pending-email"></strong> once your account
+        is activated.</p>
+      <div
+        style="margin-top:32px;padding:20px;background:var(--cream);border-radius:var(--radius);text-align:left;max-width:400px;margin-left:auto;margin-right:auto;">
+        <p style="font-size:0.85rem;color:var(--text-mid);"><strong style="color:var(--green-dark);">Need faster
+            activation?</strong><br />
+          Call or WhatsApp us directly:<br />
+          📞 <a href="tel:+256740193837" style="color:var(--green-light);">+256 740 193 837</a><br />
+          We're available Mon–Sat, 8am–6pm.</p>
       </div>
       <a href="dashboard.html" class="btn btn-green" style="margin-top:28px;display:inline-flex;">
         Go to Dashboard →
@@ -574,7 +838,7 @@
       selectedProvider = provider;
       document.getElementById('btn-mtn').classList.toggle('selected', provider === 'mtn');
       document.getElementById('btn-airtel').classList.toggle('selected', provider === 'airtel');
-      document.getElementById('steps-mtn').style.display    = provider === 'mtn'    ? 'block' : 'none';
+      document.getElementById('steps-mtn').style.display = provider === 'mtn' ? 'block' : 'none';
       document.getElementById('steps-airtel').style.display = provider === 'airtel' ? 'block' : 'none';
     }
 
@@ -641,11 +905,12 @@
         const m = Math.floor((seconds % 3600) / 60);
         const s = seconds % 60;
         document.getElementById('countdown-display').textContent =
-          `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+          `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         if (seconds > 0) { seconds--; setTimeout(tick, 1000); }
       };
       tick();
     }
   </script>
 </body>
+
 </html>

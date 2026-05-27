@@ -1241,7 +1241,7 @@
         formData.append('phone', document.getElementById('settings-phone').value);
         if (newAvatarFile) formData.append('avatar', newAvatarFile);
 
-        const res = await fetch('https://nyumbaug-b8qh.onrender.com/api/auth/update-profile', {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/auth/update-profile', {
           method: 'PATCH',
           headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
           body: formData,
@@ -1271,7 +1271,7 @@
       const cp = document.getElementById('confirm-pass').value;
       if (np !== cp) { showToast('❌ Passwords do not match'); return; }
       try {
-        const res = await fetch('https://nyumbaug-b8qh.onrender.com/api/auth/change-password', {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/auth/change-password', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` },
           body: JSON.stringify({ currentPassword: document.getElementById('current-pass').value, newPassword: np }),
@@ -1321,7 +1321,7 @@
 
     async function loadAdminStats() {
       try {
-        const res = await fetch('https://nyumbaug-b8qh.onrender.com/api/admin/stats', {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/stats', {
           headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
         });
         const data = await res.json();
@@ -1358,7 +1358,7 @@
       container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>';
 
       try {
-        const res = await fetch('https://nyumbaug-b8qh.onrender.com/api/admin/listings?status=' + status, {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/listings?status=' + status, {
           headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
         });
         const data = await res.json();
@@ -1412,7 +1412,7 @@
     async function approveListing(id, title) {
       if (!confirm('Approve "' + title + '"? It will go live immediately.')) return;
       try {
-        const res = await fetch('https://nyumbaug-b8qh.onrender.com/api/admin/listings/' + id + '/approve', {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/listings/' + id + '/approve', {
           method: 'PATCH',
           headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
         });
@@ -1427,7 +1427,7 @@
     async function rejectListing(id, title) {
       if (!confirm('Reject and delete "' + title + '"? This cannot be undone.')) return;
       try {
-        const res = await fetch('https://nyumbaug-b8qh.onrender.com/api/listings/' + id, {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/listings/' + id, {
           method: 'DELETE',
           headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
         });
@@ -1441,7 +1441,7 @@
 
     async function changeListingStatus(id, status) {
       try {
-        const res = await fetch('https://nyumbaug-b8qh.onrender.com/api/listings/' + id, {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/listings/' + id, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
           body: JSON.stringify({ status })
@@ -1455,7 +1455,7 @@
 
     async function loadAdminUsers() {
       try {
-        const res = await fetch('https://nyumbaug-b8qh.onrender.com/api/admin/users', {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users', {
           headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
         });
         const data = await res.json();
@@ -1501,7 +1501,7 @@
     async function makeAdmin(id, name) {
       if (!confirm('Give admin access to ' + name + '?')) return;
       try {
-        const res = await fetch('https://nyumbaug-b8qh.onrender.com/api/admin/users/' + id + '/role', {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users/' + id + '/role', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
           body: JSON.stringify({ role: 'admin' })
@@ -1517,7 +1517,7 @@
       const action = active ? 'Restore' : 'Suspend';
       if (!confirm(action + ' account for ' + name + '?')) return;
       try {
-        const res = await fetch('https://nyumbaug-b8qh.onrender.com/api/admin/users/' + id + '/toggle', {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users/' + id + '/toggle', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
           body: JSON.stringify({ is_active: active })

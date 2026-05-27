@@ -9,7 +9,7 @@ const routes = require('./routes/index');
 const { errorHandler } = require('./middleware/error');
 
 const app = express();
-app.set('trust proxy', 1);
+app.set('trust proxy', 1); WebGL2RenderingContext.com
 
 // ── SECURITY MIDDLEWARE ──
 app.use(helmet());
