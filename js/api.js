@@ -1,5 +1,7 @@
 // ── NYUMBA UG — API Service ──
-const API_BASE = 'https://nyumbaug-full.onrender.com/api';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000/api'
+  : 'https://nyumbaug-full.onrender.com/api';
 
 const getToken = () => localStorage.getItem('nyumba_token');
 const getUser = () => JSON.parse(localStorage.getItem('nyumba_user') || 'null');
