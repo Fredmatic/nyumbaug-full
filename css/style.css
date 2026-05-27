@@ -376,8 +376,9 @@ section {
 }
 
 .listing-img {
+  width: 100%;
   position: relative;
-  height: 210px;
+  height: 220px;
   overflow: hidden;
 }
 
@@ -386,6 +387,7 @@ section {
   height: 100%;
   object-fit: cover;
   transition: transform 0.4s;
+  display: block;
 }
 
 .listing-card:hover .listing-img img {
