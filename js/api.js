@@ -251,9 +251,27 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ── MOBILE NAV ──
+function toggleNav() {
+  const nav = document.getElementById('nav-links');
+  if (nav) nav.classList.toggle('open');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+      const nav = document.getElementById('nav-links');
+      if (nav) nav.classList.remove('open');
+    });
+  });
+});
+
+window.toggleNav = toggleNav;
+
 document.addEventListener('DOMContentLoaded', updateNav);
 
 window.api = api;
 window.requireAuth = requireAuth;
 window.updateNav = updateNav;
 window.showToast = showToast;
+
