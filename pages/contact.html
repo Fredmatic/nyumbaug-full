@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,6 +13,7 @@
       gap: 60px;
       padding: 60px 5%;
     }
+
     .contact-info-card {
       background: var(--green-dark);
       border-radius: var(--radius-lg);
@@ -19,54 +21,116 @@
       color: var(--white);
       height: fit-content;
     }
-    .contact-info-card h2 { color: var(--gold); margin-bottom: 8px; }
-    .contact-info-card p { color: rgba(255,255,255,0.7); margin-bottom: 32px; line-height: 1.7; }
+
+    .contact-info-card h2 {
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .contact-info-card p {
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 32px;
+      line-height: 1.7;
+    }
+
     .contact-item {
-      display: flex; align-items: flex-start; gap: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
       margin-bottom: 24px;
     }
+
     .contact-icon {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: rgba(212,168,67,0.15);
-      border: 1px solid rgba(212,168,67,0.3);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(212, 168, 67, 0.15);
+      border: 1px solid rgba(212, 168, 67, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
     }
-    .contact-item h4 { color: var(--gold); font-size: 0.85rem; margin-bottom: 4px; }
-    .contact-item p { color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0; }
-    .contact-item a { color: rgba(255,255,255,0.9); }
-    .social-links { display: flex; gap: 12px; margin-top: 32px; }
+
+    .contact-item h4 {
+      color: var(--gold);
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
+
+    .contact-item p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .contact-item a {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
     .social-btn {
-      padding: 8px 16px; border-radius: 50px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: var(--white); font-size: 0.85rem; font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--white);
+      font-size: 0.85rem;
+      font-weight: 500;
       transition: background 0.2s;
     }
-    .social-btn:hover { background: rgba(212,168,67,0.2); border-color: var(--gold); color: var(--gold); }
+
+    .social-btn:hover {
+      background: rgba(212, 168, 67, 0.2);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
     .form-card {
       background: var(--white);
       border-radius: var(--radius-lg);
       border: 1px solid var(--border);
       padding: 40px;
     }
-    .form-card h2 { color: var(--green-dark); margin-bottom: 8px; }
-    .form-card > p { color: var(--text-mid); margin-bottom: 28px; }
+
+    .form-card h2 {
+      color: var(--green-dark);
+      margin-bottom: 8px;
+    }
+
+    .form-card>p {
+      color: var(--text-mid);
+      margin-bottom: 28px;
+    }
+
     @media (max-width: 768px) {
-      .contact-layout { grid-template-columns: 1fr; }
+      .contact-layout {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <nav>
     <div class="nav-logo"><a href="../index.html">Nyumba<span>UG</span></a></div>
-    <ul class="nav-links">
+    <button class="nav-toggle" onclick="toggleNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="nav-links">
       <li><a href="../index.html">Home</a></li>
       <li><a href="listings.html">Browse Listings</a></li>
       <li><a href="list-property.html">List Property</a></li>
       <li><a href="contact.html" class="active">Contact</a></li>
-      <li><a href="login.html">Login</a></li><li><a href="register.html" class="nav-cta">Sign Up</a></li>
+      <li><a href="login.html">Login</a></li>
+      <li><a href="register.html" class="nav-cta">Sign Up</a></li>
     </ul>
   </nav>
 
@@ -104,7 +168,7 @@
         <div class="contact-icon">📍</div>
         <div>
           <h4>Office</h4>
-          <p>Plot 22, Bombo Road<br/>Kampala, Uganda</p>
+          <p>Plot 22, Bombo Road<br />Kampala, Uganda</p>
         </div>
       </div>
 
@@ -180,20 +244,28 @@
 
     <div style="max-width: 720px; margin-top: 36px;">
       ${[
-        ["Is it free to list a property?", "Yes! Listing your property on Nyumba UG is completely free. We believe in connecting landlords and tenants without barriers. Premium features may be available in the future."],
-        ["How do I contact a landlord?", "On any listing page you'll find the landlord's phone number and a direct WhatsApp link. Click to call or message them instantly."],
-        ["Are listings verified?", "We review all listings before they go live to ensure accuracy. We encourage you to always visit a property in person before making payments."],
-        ["How long does it take for my listing to go live?", "We review new listings within 24 hours (usually faster on working days). You'll receive a notification when your listing is approved."],
-        ["Can I edit or remove my listing?", "Yes. Contact our team or use your landlord account (coming soon) to update or remove your listings at any time."],
-        ["What areas do you cover?", "We currently focus on Kampala and Greater Kampala including Wakiso and Mukono districts. We're expanding across Uganda soon."]
+      ["Is it free to list a property?", "Yes! Listing your property on Nyumba UG is completely free. We believe in
+      connecting landlords and tenants without barriers. Premium features may be available in the future."],
+      ["How do I contact a landlord?", "On any listing page you'll find the landlord's phone number and a direct
+      WhatsApp link. Click to call or message them instantly."],
+      ["Are listings verified?", "We review all listings before they go live to ensure accuracy. We encourage you to
+      always visit a property in person before making payments."],
+      ["How long does it take for my listing to go live?", "We review new listings within 24 hours (usually faster on
+      working days). You'll receive a notification when your listing is approved."],
+      ["Can I edit or remove my listing?", "Yes. Contact our team or use your landlord account (coming soon) to update
+      or remove your listings at any time."],
+      ["What areas do you cover?", "We currently focus on Kampala and Greater Kampala including Wakiso and Mukono
+      districts. We're expanding across Uganda soon."]
       ].map(([q, a]) => `
-        <details style="margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;">
-          <summary style="padding: 18px 20px; cursor:pointer; font-weight:600; color: var(--green-dark); font-family: 'Fraunces', serif; list-style:none; display:flex; justify-content:space-between; align-items:center;">
-            ${q}
-            <span style="font-size:1.2rem; transition: transform 0.2s;">▾</span>
-          </summary>
-          <div style="padding: 0 20px 18px; color: var(--text-mid); font-size: 0.95rem; line-height: 1.7;">${a}</div>
-        </details>
+      <details
+        style="margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;">
+        <summary
+          style="padding: 18px 20px; cursor:pointer; font-weight:600; color: var(--green-dark); font-family: 'Fraunces', serif; list-style:none; display:flex; justify-content:space-between; align-items:center;">
+          ${q}
+          <span style="font-size:1.2rem; transition: transform 0.2s;">▾</span>
+        </summary>
+        <div style="padding: 0 20px 18px; color: var(--text-mid); font-size: 0.95rem; line-height: 1.7;">${a}</div>
+      </details>
       `).join('')}
     </div>
   </section>
@@ -241,4 +313,5 @@
     }
   </script>
 </body>
+
 </html>
