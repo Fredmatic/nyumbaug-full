@@ -245,7 +245,7 @@ function renderListings(data, containerId) {
           </div>
           <div class="amenity">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-            ${l.area} m²
+            ${l.area_sqm || l.area || '—'} m²
           </div>
         </div>
       </div>
