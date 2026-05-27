@@ -219,7 +219,7 @@ function renderListings(data, containerId) {
   if (!container) return;
 
   container.innerHTML = data.map(l => `
-    <div class="listing-card" onclick="window.location.href='pages/listing-detail.html?id=${listing.id}'">
+    <div class="listing-card" onclick="window.location.href='pages/listing-detail.html?id=${l.id}'">
       <div class="listing-img">
         <img src="${l.cover_image || l.image || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80'}" alt="${l.title}" loading="lazy" />
         <span class="listing-badge ${l.badge === 'new' ? 'new' : ''}">${l.badge === 'new' ? '🆕 New' : 'Available'}</span>
@@ -347,3 +347,21 @@ window.initTabs = initTabs;
 window.showToast = showToast;
 window.initScrollHighlight = initScrollHighlight;
 window.restoreFavs = restoreFavs;
+// Init homepage featured listings
+document.addEventListener('DOMContentLoaded', () => {
+  const featuredContainer = document.getElementById('featured-listings');
+  if (featuredContainer) {
+    const featured = listings.filter(l => l.featured);
+    renderListings(featured, 'featured-listings');
+  }
+
+  // Init listings page
+  const listingsContainer = document.getElementById('listings-container');
+  if (listingsContainer) {
+    renderListings(listings, 'listings-container');
+    initTabs();
+  }
+
+  restoreFavs();
+  initScrollHighlight();
+});

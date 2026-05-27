@@ -135,26 +135,16 @@
     <p class="section-label">Explore by Area</p>
     <h2 class="section-title">Popular Kampala Neighbourhoods</h2>
     <p class="section-sub">Search properties in the most sought-after areas of Kampala.</p>
-
     <div
       style="display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-top: 36px;">
-      ${['Kololo', 'Bugolobi', 'Ntinda', 'Naguru', 'Muyenga', 'Bukoto', 'Kisaasi', 'Kira'].map(area => `
-      <a href="pages/listings.html?location=${area}" style="
-          display:flex; flex-direction:column; align-items:center; justify-content:center;
-          padding: 24px 16px;
-          background: var(--cream);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          font-weight: 600;
-          font-size: 0.95rem;
-          color: var(--green-dark);
-          text-align: center;
-          transition: all 0.2s;
-        " onmouseover="this.style.background='var(--green-dark)';this.style.color='var(--gold)'"
-        onmouseout="this.style.background='var(--cream)';this.style.color='var(--green-dark)'">
-        📍 ${area}
-      </a>
-      `).join('')}
+      <a href="pages/listings.html?location=Kololo" class="area-btn">📍 Kololo</a>
+      <a href="pages/listings.html?location=Bugolobi" class="area-btn">📍 Bugolobi</a>
+      <a href="pages/listings.html?location=Ntinda" class="area-btn">📍 Ntinda</a>
+      <a href="pages/listings.html?location=Naguru" class="area-btn">📍 Naguru</a>
+      <a href="pages/listings.html?location=Muyenga" class="area-btn">📍 Muyenga</a>
+      <a href="pages/listings.html?location=Bukoto" class="area-btn">📍 Bukoto</a>
+      <a href="pages/listings.html?location=Kisaasi" class="area-btn">📍 Kisaasi</a>
+      <a href="pages/listings.html?location=Kira" class="area-btn">📍 Kira</a>
     </div>
   </section>
 
@@ -219,26 +209,20 @@
   <script src="js/api.js"></script>
   <script src="js/main.js"></script>
   <script>
-    // Render featured listings on homepage
     async function loadFeatured() {
       try {
         const data = await api.listings.getAll({ featured: 'true', limit: 6 });
         if (data.listings && data.listings.length > 0) {
           renderListings(data.listings, 'listings-container');
         } else {
-          const featured = listings.filter(l => l.featured);
-          renderListings(featured, 'listings-container');
+          renderListings(listings.filter(l => l.featured), 'listings-container');
         }
       } catch (e) {
-        const featured = listings.filter(l => l.featured);
-        renderListings(featured, 'listings-container');
+        renderListings(listings.filter(l => l.featured), 'listings-container');
       }
     }
 
     loadFeatured();
-    initTabs();
-    initScrollHighlight();
-    setTimeout(restoreFavs, 100);
     initTabs();
     initScrollHighlight();
     setTimeout(restoreFavs, 100);
