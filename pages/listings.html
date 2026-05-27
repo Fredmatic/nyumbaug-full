@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,6 +13,7 @@
       gap: 32px;
       padding: 40px 5%;
     }
+
     .sidebar {
       position: sticky;
       top: calc(var(--nav-h) + 20px);
@@ -21,6 +23,7 @@
       border: 1px solid var(--border);
       padding: 24px;
     }
+
     .sidebar h3 {
       font-size: 1rem;
       color: var(--green-dark);
@@ -28,7 +31,11 @@
       padding-bottom: 12px;
       border-bottom: 1px solid var(--border);
     }
-    .filter-section { margin-bottom: 24px; }
+
+    .filter-section {
+      margin-bottom: 24px;
+    }
+
     .filter-section label {
       display: block;
       font-size: 0.83rem;
@@ -38,6 +45,7 @@
       color: var(--text-muted);
       margin-bottom: 10px;
     }
+
     .filter-section select,
     .filter-section input[type="number"] {
       width: 100%;
@@ -49,22 +57,58 @@
       background: var(--cream);
       outline: none;
     }
-    .price-range { display: flex; gap: 8px; align-items: center; }
-    .price-range input { flex: 1; }
-    .price-range span { color: var(--text-muted); font-size: 0.85rem; }
-    .checkbox-group { display: flex; flex-direction: column; gap: 8px; }
+
+    .price-range {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .price-range input {
+      flex: 1;
+    }
+
+    .price-range span {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
     .checkbox-group label {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 0.9rem; color: var(--text-mid);
-      font-weight: 400; text-transform: none; letter-spacing: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: var(--text-mid);
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
       cursor: pointer;
     }
-    .checkbox-group input[type=checkbox] { accent-color: var(--green-dark); width: 16px; height: 16px; }
+
+    .checkbox-group input[type=checkbox] {
+      accent-color: var(--green-dark);
+      width: 16px;
+      height: 16px;
+    }
+
     .result-header {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 24px;
     }
-    .result-count { font-size: 0.9rem; color: var(--text-muted); }
+
+    .result-count {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
     .sort-select {
       padding: 8px 14px;
       border: 1.5px solid var(--border);
@@ -74,12 +118,19 @@
       background: var(--white);
       cursor: pointer;
     }
+
     @media (max-width: 768px) {
-      .listings-layout { grid-template-columns: 1fr; }
-      .sidebar { position: static; }
+      .listings-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <nav>
@@ -89,7 +140,8 @@
       <li><a href="listings.html" class="active">Browse Listings</a></li>
       <li><a href="list-property.html">List Property</a></li>
       <li><a href="contact.html">Contact</a></li>
-      <li><a href="login.html">Login</a></li><li><a href="register.html" class="nav-cta">Sign Up</a></li>
+      <li><a href="login.html">Login</a></li>
+      <li><a href="register.html" class="nav-cta">Sign Up</a></li>
     </ul>
   </nav>
 
@@ -161,7 +213,8 @@
         </div>
       </div>
 
-      <button class="btn btn-outline" style="width:100%;color:var(--green-dark);border-color:var(--border);" onclick="clearFilters()">Clear Filters</button>
+      <button class="btn btn-outline" style="width:100%;color:var(--green-dark);border-color:var(--border);"
+        onclick="clearFilters()">Clear Filters</button>
     </aside>
 
     <!-- LISTINGS AREA -->
@@ -232,7 +285,7 @@
   <script>
     // Override card links for pages subfolder
     const origRender = window.renderListings;
-    window.renderListings = function(data, containerId) {
+    window.renderListings = function (data, containerId) {
       const container = document.getElementById(containerId);
       if (!container) return;
       if (data.length === 0) {
@@ -339,4 +392,5 @@
     });
   </script>
 </body>
+
 </html>

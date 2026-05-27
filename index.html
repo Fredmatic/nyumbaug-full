@@ -220,8 +220,25 @@
   <script src="js/main.js"></script>
   <script>
     // Render featured listings on homepage
-    const featured = listings.filter(l => l.featured);
-    renderListings(featured, 'listings-container');
+    async function loadFeatured() {
+      try {
+        const data = await api.listings.getAll({ featured: 'true', limit: 6 });
+        if (data.listings && data.listings.length > 0) {
+          renderListings(data.listings, 'listings-container');
+        } else {
+          const featured = listings.filter(l => l.featured);
+          renderListings(featured, 'listings-container');
+        }
+      } catch (e) {
+        const featured = listings.filter(l => l.featured);
+        renderListings(featured, 'listings-container');
+      }
+    }
+
+    loadFeatured();
+    initTabs();
+    initScrollHighlight();
+    setTimeout(restoreFavs, 100);
     initTabs();
     initScrollHighlight();
     setTimeout(restoreFavs, 100);

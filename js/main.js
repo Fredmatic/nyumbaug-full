@@ -219,7 +219,7 @@ function renderListings(data, containerId) {
   if (!container) return;
 
   container.innerHTML = data.map(l => `
-    <div class="listing-card" onclick="window.location.href='pages/listing-detail.html?id=${l.id}'">
+    <div class="listing-card" onclick="window.location.href='listing-detail.html?id=${l.id}'">
       <div class="listing-img">
         <img src="${l.image}" alt="${l.title}" loading="lazy" />
         <span class="listing-badge ${l.badge === 'new' ? 'new' : ''}">${l.badge === 'new' ? '🆕 New' : 'Available'}</span>
