@@ -281,7 +281,7 @@
                   <span class="tag">📍 ${location}</span>
                   <span class="tag">🛏 ${l.bedrooms} Bedroom${l.bedrooms > 1 ? 's' : ''}</span>
                   <span class="tag">📐 ${l.area_sqm || l.area || '—'} m²</span>
-                  <span class="tag">✅ Available: ${available}</span>
+                  <span class="tag">✅ Available: ${l.available_from ? new Date(l.available_from).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Immediately'}</span>
                 </div>
               </div>
 
@@ -345,7 +345,7 @@
 
                 <div style="margin-bottom:14px;">
                   <div class="contact-card-label">Availability</div>
-                  <div style="font-weight:500;color:var(--green-light);">✓ ${available}</div>
+                  <div style="font-weight:500;color:var(--green-light);">✓ ${l.available_from ? new Date(l.available_from).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Immediately'}</div>
                 </div>
 
                 <a href="tel:${(l.landlord_phone || l.phone || '').replace(/\s/g, '')}" class="btn btn-green" style="width:100%;justify-content:center;margin-bottom:10px;">

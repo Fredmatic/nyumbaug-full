@@ -125,16 +125,16 @@ router.post('/reviews', async (req, res) => {
         }
 
         // Check tenant sent an enquiry for this listing
-        const enquiry = await pool.query(
-            'SELECT id FROM enquiries WHERE listing_id = $1 AND tenant_id = $2',
-            [listing_id, user.id]
-        );
-        if (!enquiry.rows.length) {
-            return res.status(403).json({
-                success: false,
-                message: 'You can only review properties you have enquired about.'
-            });
-        }
+        // const enquiry = await pool.query(
+        //     'SELECT id FROM enquiries WHERE listing_id = $1 AND tenant_id = $2',
+        //     [listing_id, user.id]
+        // );
+        // if (!enquiry.rows.length) {
+        //     return res.status(403).json({
+        //         success: false,
+        //         message: 'You can only review properties you have enquired about.'
+        //     });
+        // }
 
         // Insert review (upsert — one review per tenant per listing)
         const result = await pool.query(`
