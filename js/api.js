@@ -1,8 +1,9 @@
 // ── NYUMBA UG — API Service ──
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:5000/api'
-  : 'https://nyumbaug-full.onrender.com/api';
-
+if (typeof API_BASE === 'undefined') {
+  var API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://nyumbaug-full.onrender.com/api';
+}
 const getToken = () => localStorage.getItem('nyumba_token');
 const getUser = () => JSON.parse(localStorage.getItem('nyumba_user') || 'null');
 
@@ -287,12 +288,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
-
-window.toggleNav = toggleNav;
 // Restore avatar from server response
 if (data.user.avatar_url) {
   localStorage.setItem('nyumba_avatar', data.user.avatar_url);
 }
+window.toggleNav = toggleNav;
 
 document.addEventListener('DOMContentLoaded', updateNav);
 
