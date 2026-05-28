@@ -120,12 +120,12 @@ router.get('/auth/me', async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         const result = await pool.query(
-            'SELECT id, name, email, phone, role, avatar_url, is_active FROM users WHERE id = $1',
+            'SELECT id, name, email, phone, role, avatar_url, is_active FROM users WHERE id = $1  AND is_active = true',
             [decoded.id]
         );
 
         if (!result.rows.length) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
+            return res.status(401).json({ success: false, message: 'Account Suspended.' });
         }
 
         res.json({ success: true, user: result.rows[0] });
@@ -173,32 +173,69 @@ router.patch('/auth/change-password', async (req, res) => {
 });
 
 // ---------------- UPDATE PROFILE ----------------
-router.patch('/auth/update-profile', async (req, res) => {
-    try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ success: false, message: 'Not authorized.' });
-        }
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
 
-        const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const { name, phone } = req.body;
-
-        const result = await pool.query(
-            `UPDATE users 
-             SET name = COALESCE($1, name), 
-                 phone = COALESCE($2, phone), 
-                 updated_at = NOW() 
-             WHERE id = $3 
-             RETURNING id, name, email, phone, role, avatar_url`,
-            [name || null, phone || null, decoded.id]
-        );
-
-        res.json({ success: true, user: result.rows[0] });
-
-    } catch (err) {
-        res.status(401).json({ success: false, message: 'Invalid token.' });
-    }
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const uploadMiddleware = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }
+}).single('avatar');
+
+router.patch('/auth/update-profile', (req, res) => {
+    uploadMiddleware(req, res, async (err) => {
+        if (err) return res.status(400).json({ success: false, message: err.message });
+
+        try {
+            const authHeader = req.headers.authorization;
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                return res.status(401).json({ success: false, message: 'Not authorized.' });
+            }
+
+            const token = authHeader.split(' ')[1];
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const { name, phone } = req.body;
+
+            let avatarUrl = null;
+
+            // Upload avatar to Cloudinary if file provided
+            if (req.file) {
+                const result = await new Promise((resolve, reject) => {
+                    const stream = cloudinary.uploader.upload_stream(
+                        { folder: 'nyumbaug/avatars', transformation: [{ width: 200, height: 200, crop: 'fill' }] },
+                        (error, result) => error ? reject(error) : resolve(result)
+                    );
+                    stream.end(req.file.buffer);
+                });
+                avatarUrl = result.secure_url;
+            }
+
+            const fields = [];
+            const values = [];
+            let idx = 1;
+
+            if (name) { fields.push(`name = $${idx++}`); values.push(name); }
+            if (phone) { fields.push(`phone = $${idx++}`); values.push(phone); }
+            if (avatarUrl) { fields.push(`avatar_url = $${idx++}`); values.push(avatarUrl); }
+            fields.push(`updated_at = NOW()`);
+            values.push(decoded.id);
+
+            const result = await pool.query(
+                `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING id, name, email, phone, role, avatar_url`,
+                values
+            );
+
+            res.json({ success: true, user: result.rows[0] });
+
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, message: 'Failed to update profile.' });
+        }
+    });
+});
 module.exports = router;

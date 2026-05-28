@@ -265,6 +265,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+// Restore avatar from server response
+if (data.user.avatar_url) {
+  localStorage.setItem('nyumba_avatar', data.user.avatar_url);
+}
 
 window.toggleNav = toggleNav;
 
