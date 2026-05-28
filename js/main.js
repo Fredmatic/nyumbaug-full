@@ -13,7 +13,6 @@ const listings = [
     area: 140,
     badge: "new",
     image: "https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=600&q=80",
-    image: "https://res.cloudinary.com/dxvium3me/image/upload/f_auto,q_auto/house2_czitcz",
     featured: true,
     description: "Spacious modern apartment in the heart of Kololo with stunning city views, fully fitted kitchen, and 24/7 security.",
     amenities: ["WiFi", "Parking", "Generator", "Security", "Water Tank", "Balcony"],
@@ -153,7 +152,7 @@ const listings = [
     available: "20th May 2026"
   },
   {
-    id: 4,
+    id: 9,
     title: "Spacious Family Home",
     location: "Muyenga, Kampala",
     price: 3500000,
@@ -171,7 +170,7 @@ const listings = [
     available: "15th Jan 2026"
   },
   {
-    id: 5,
+    id: 10,
     title: "3-Bedroom Bungalow",
     location: "Kira, Wakiso",
     price: 900000,
@@ -189,7 +188,7 @@ const listings = [
     available: "Immediately"
   },
   {
-    id: 6,
+    id: 11,
     title: "Luxury 4-Bedroom Duplex",
     location: "Naguru, Kampala",
     price: 4200000,
