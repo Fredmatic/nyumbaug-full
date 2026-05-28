@@ -7,18 +7,18 @@ const listings = [
     title: "Modern 3-Bedroom Apartment",
     location: "Kololo, Kampala",
     price: 1800000,
-    type: "apartment",
+    type: "house",
     bedrooms: 3,
     bathrooms: 2,
     area: 140,
     badge: "new",
     image: "https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=600&q=80",
     featured: true,
-    description: "Spacious modern apartment in the heart of Kololo with stunning city views, fully fitted kitchen, and 24/7 security.",
+    description: "Spacious modern house in the heart of Kololo with stunning city views, fully fitted kitchen, and 24/7 security.",
     amenities: ["WiFi", "Parking", "Generator", "Security", "Water Tank", "Balcony"],
     landlord: "Mr. Ssekate Isaac",
     phone: "+256 783 641 973",
-    available: "Sold Out"
+    available: "Available"
   },
   {
     id: 2,
