@@ -232,7 +232,14 @@ function renderListings(data, containerId) {
     const isNew = l.badge === 'new' || l.status === 'active';
     const badgeText = l.badge === 'new' ? '🆕 New' : 'Available';
     const badgeClass = l.badge === 'new' ? 'new' : '';
-    const image = l.cover_image || l.image || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80';
+    const fallbacks = {
+      apartment: 'https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=600&q=80',
+      house: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80',
+      studio: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80',
+      townhouse: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80',
+      mansion: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80',
+    };
+    const image = l.cover_image || l.image || fallbacks[l.type] || fallbacks.apartment;
     const location = l.neighbourhood || l.location || 'Kampala';
     const area = l.area_sqm || l.area || '—';
     const beds = l.bedrooms || 0;
@@ -241,7 +248,7 @@ function renderListings(data, containerId) {
     return `
     <div class="listing-card" onclick="window.location.href='${detailPath}?id=${l.id}'">
       <div class="listing-img">
-        <img src="${image}" alt="${l.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80'" />
+        <img src="${image}" alt="${l.title}" loading="lazy" onerror="this.src='https://images.unspla                    sh.com/photo-1560448204-e02f11c3d0e2?w=600&q=80'" />
         <span class="listing-badge ${badgeClass}">${badgeText}</span>
         <button class="listing-fav" onclick="toggleFav(event, this, '${l.id}')" aria-label="Save listing">
           <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
