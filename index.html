@@ -148,6 +148,7 @@
       <a href="pages/listings.html?location=Bukoto" class="area-btn">📍 Bukoto</a>
       <a href="pages/listings.html?location=Kisaasi" class="area-btn">📍 Kisaasi</a>
       <a href="pages/listings.html?location=Kira" class="area-btn">📍 Kira</a>
+      <a href="pages/listings.html?location=Kansanga" class="area-btn">📍 Kansanga</a>
     </div>
   </section>
 
@@ -225,8 +226,17 @@
           renderListings(apiListings, 'listings-container');
         }
       } catch (e) {
-        apiListings = listings.filter(l => l.featured);
-        renderListings(apiListings, 'listings-container');
+        console.error('API error:', e);
+        // Show loading message while server wakes up
+        document.getElementById('listings-container').innerHTML = `
+          <div style="text-align:center;padding:48px;color:var(--text-muted);grid-column:1/-1;">
+            <div style="font-size:2rem;margin-bottom:12px;">⏳</div>
+            <p>Loading properties...</p>
+            <p style="font-size:0.85rem;margin-top:8px;">Server is starting up, please wait a moment.</p>
+            <button onclick="loadFeatured()" class="btn btn-green" style="margin-top:16px;">Try Again</button>
+          </div>`;
+        // Auto retry after 5 seconds
+        setTimeout(loadFeatured, 5000);
       }
       setTimeout(restoreFavs, 100);
     }
@@ -247,6 +257,12 @@
 
     loadFeatured();
     initScrollHighlight();
+
+
+    // Keep Render server awake by pinging every 10 minutes
+    setInterval(() => {
+      fetch('https://nyumbaug-full.onrender.com/health').catch(() => { });
+    }, 10 * 60 * 1000);
   </script>
 </body>
 
