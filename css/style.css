@@ -857,9 +857,12 @@ footer {
     display: flex;
   }
 
+
   .nav-links {
+    display: none;
     position: fixed;
     top: var(--nav-h);
+
     left: 0;
     right: 0;
     background: var(--green-dark);
@@ -907,15 +910,8 @@ footer {
     font-size: 0.95rem !important;
   }
 
-  .nav-toggle span {
-    display: block;
-    width: 22px;
-    height: 2px;
-    background-color: #ffffff;
-    border-radius: 2px;
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-  }
+
+
 
   .nav-toggle.open span:nth-child(1) {
     transform: rotate(45deg) translate(5px, 5px);
