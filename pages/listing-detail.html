@@ -125,7 +125,6 @@
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links" id="nav-links">
-
       <li><a href="../index.html">Home</a></li>
       <li><a href="listings.html" class="active">Browse Listings</a></li>
       <li><a href="list-property.html">List Property</a></li>
@@ -142,8 +141,14 @@
   <script src="../js/api.js"></script>
   <script src="../js/main.js"></script>
   <script>
+    // ── API BASE (defined first so all functions can use it) ──
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:5000/api'
+      : 'https://nyumbaug-full.onrender.com/api';
+
     const params = new URLSearchParams(location.search);
     const id = parseInt(params.get('id'));
+    const listingId = params.get('id');
     const listing = listings.find(l => l.id === id);
 
     function getInitials(name) {
@@ -159,7 +164,9 @@
         </div>
       `;
     } else {
-      const similar = listings.filter(l => l.id !== listing.id && (l.type === listing.type || l.location.includes(listing.location.split(',')[0]))).slice(0, 3);
+      const similar = listings
+        .filter(l => l.id !== listing.id && (l.type === listing.type || l.location.includes(listing.location.split(',')[0])))
+        .slice(0, 3);
 
       document.title = listing.title + ' — Nyumba UG';
 
@@ -277,18 +284,200 @@
             </div>
           </div>
 
-          <!-- SIMILAR LISTINGS -->
-          ${similar.length > 0 ? `
-          <div class="similar-section">
-            <h2 class="section-title" style="margin-bottom: 24px;">Similar Properties</h2>
-            <div class="listings-grid" id="similar-container"></div>
+          <!-- ── REVIEWS SECTION (always rendered, outside similar check) ── -->
+          <div style="margin-top:48px;" id="reviews-section">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+              <div>
+                <h2 class="section-title" style="margin-bottom:4px;">Tenant Reviews</h2>
+                <div id="reviews-summary" style="color:var(--text-muted);font-size:0.9rem;"></div>
+              </div>
+              <button class="btn btn-green" id="write-review-btn" onclick="toggleReviewForm()" style="display:none;">
+                ✍️ Write a Review
+              </button>
+            </div>
+
+            <!-- REVIEW FORM -->
+            <div id="review-form-wrapper" style="display:none;background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:28px;margin-bottom:28px;">
+              <h3 style="color:var(--green-dark);margin-bottom:20px;">Your Review</h3>
+              <div style="margin-bottom:20px;">
+                <label style="display:block;font-size:0.87rem;font-weight:500;color:var(--text-mid);margin-bottom:10px;">Rating *</label>
+                <div id="star-selector" style="display:flex;gap:8px;">
+                  <button type="button" onclick="setRating(1)" data-star="1" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(1)" onmouseout="resetHover()">☆</button>
+                  <button type="button" onclick="setRating(2)" data-star="2" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(2)" onmouseout="resetHover()">☆</button>
+                  <button type="button" onclick="setRating(3)" data-star="3" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(3)" onmouseout="resetHover()">☆</button>
+                  <button type="button" onclick="setRating(4)" data-star="4" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(4)" onmouseout="resetHover()">☆</button>
+                  <button type="button" onclick="setRating(5)" data-star="5" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(5)" onmouseout="resetHover()">☆</button>
+                </div>
+                <input type="hidden" id="review-rating" value="0" />
+              </div>
+              <div class="form-group">
+                <label>Review Title</label>
+                <input type="text" id="review-title" placeholder="Summarise your experience (optional)" maxlength="120" />
+              </div>
+              <div class="form-group">
+                <label>Your Review *</label>
+                <textarea id="review-body" rows="4" placeholder="Share your experience with this property..." style="resize:vertical;"></textarea>
+              </div>
+              <div style="display:flex;gap:12px;">
+                <button class="btn btn-green" onclick="submitReview()">Submit Review</button>
+                <button class="btn-sm" onclick="toggleReviewForm()" style="padding:10px 20px;">Cancel</button>
+              </div>
+              <div id="review-error" style="color:#dc2626;font-size:0.85rem;margin-top:12px;display:none;"></div>
+            </div>
+
+            <!-- REVIEWS LIST -->
+            <div id="reviews-list">
+              <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading reviews...</div>
+            </div>
           </div>
+
+          <!-- SIMILAR LISTINGS (only if they exist) -->
+          ${similar.length > 0 ? `
+            <div class="similar-section">
+              <h2 class="section-title" style="margin-bottom: 24px;">Similar Properties</h2>
+              <div class="listings-grid" id="similar-container"></div>
+            </div>
           ` : ''}
+
         </div>
       `;
 
+      // Render similar listings now that the DOM is ready
       if (similar.length > 0) {
         renderListings(similar, 'similar-container');
+      }
+
+      // ── Load reviews immediately (DOMContentLoaded already fired) ──
+      loadReviews();
+    }
+
+    // ── REVIEWS LOGIC ──
+    let currentRating = 0;
+
+    async function loadReviews() {
+      const summaryEl = document.getElementById('reviews-summary');
+      const listEl = document.getElementById('reviews-list');
+
+      // Guard: if elements don't exist, bail out
+      if (!summaryEl || !listEl) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/reviews/listing/${listingId}`);
+        const data = await res.json();
+
+        // Summary
+        if (data.total > 0) {
+          summaryEl.innerHTML = `${renderStars(data.average)} <strong>${data.average}</strong> out of 5 &nbsp;·&nbsp; ${data.total} review${data.total !== 1 ? 's' : ''}`;
+        } else {
+          summaryEl.textContent = 'No reviews yet — be the first!';
+        }
+
+        // Show write-review button for logged-in tenants
+        const user = typeof api !== 'undefined' && api.auth ? api.auth.currentUser() : null;
+        if (user && user.role === 'tenant') {
+          const btn = document.getElementById('write-review-btn');
+          if (btn) btn.style.display = 'flex';
+        }
+
+        // Render reviews
+        if (!data.reviews || !data.reviews.length) {
+          listEl.innerHTML = `
+            <div style="text-align:center;padding:40px;color:var(--text-muted);">
+              <div style="font-size:2.5rem;margin-bottom:12px;">⭐</div>
+              <p>No reviews yet for this property.</p>
+            </div>`;
+          return;
+        }
+
+        listEl.innerHTML = data.reviews.map(r => `
+          <div style="background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:24px;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:40px;height:40px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;">
+                  ${r.tenant_name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                </div>
+                <div>
+                  <div style="font-weight:600;color:var(--text-dark);">${r.tenant_name}</div>
+                  <div style="font-size:0.8rem;color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                </div>
+              </div>
+              <div style="font-size:1.1rem;">${renderStars(r.rating)}</div>
+            </div>
+            ${r.title ? `<div style="font-weight:600;color:var(--text-dark);margin-bottom:6px;">${r.title}</div>` : ''}
+            <p style="color:var(--text-mid);line-height:1.7;font-size:0.95rem;">${r.body}</p>
+          </div>
+        `).join('');
+
+      } catch (e) {
+        console.error('Reviews failed to load:', e);
+        if (listEl) listEl.innerHTML = `
+          <div style="text-align:center;padding:32px;color:var(--text-muted);">
+            Could not load reviews at this time.
+          </div>`;
+      }
+    }
+
+    function renderStars(rating) {
+      return [1, 2, 3, 4, 5].map(n =>
+        `<span style="color:${n <= Math.round(rating) ? '#f59e0b' : '#d1d5db'};">★</span>`
+      ).join('');
+    }
+
+    function setRating(n) {
+      currentRating = n;
+      document.getElementById('review-rating').value = n;
+      document.querySelectorAll('#star-selector button').forEach((btn, i) => {
+        btn.textContent = i < n ? '★' : '☆';
+        btn.style.color = i < n ? '#f59e0b' : '#888';
+      });
+    }
+
+    function hoverRating(n) {
+      document.querySelectorAll('#star-selector button').forEach((btn, i) => {
+        btn.textContent = i < n ? '★' : '☆';
+        btn.style.color = i < n ? '#f59e0b' : '#888';
+      });
+    }
+
+    function resetHover() { setRating(currentRating); }
+
+    function toggleReviewForm() {
+      const form = document.getElementById('review-form-wrapper');
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function submitReview() {
+      const rating = parseInt(document.getElementById('review-rating').value);
+      const title = document.getElementById('review-title').value.trim();
+      const body = document.getElementById('review-body').value.trim();
+      const errEl = document.getElementById('review-error');
+
+      errEl.style.display = 'none';
+
+      if (!rating) { errEl.textContent = 'Please select a star rating.'; errEl.style.display = 'block'; return; }
+      if (!body || body.length < 10) { errEl.textContent = 'Please write at least 10 characters.'; errEl.style.display = 'block'; return; }
+
+      try {
+        const res = await fetch(`${API_BASE}/reviews`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token')
+          },
+          body: JSON.stringify({ listing_id: listingId, rating, title, body })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+
+        showToast('✅ Review submitted!');
+        document.getElementById('review-form-wrapper').style.display = 'none';
+        document.getElementById('review-title').value = '';
+        document.getElementById('review-body').value = '';
+        setRating(0);
+        loadReviews();
+      } catch (e) {
+        errEl.textContent = e.message;
+        errEl.style.display = 'block';
       }
     }
   </script>
