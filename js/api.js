@@ -13,6 +13,15 @@ const authHeaders = () => ({
 
 const handleResponse = async (res) => {
   const data = await res.json();
+  if (res.status === 401 || res.status === 403) {
+    // Token invalid or account suspended — force logout
+    localStorage.removeItem('nyumba_token');
+    localStorage.removeItem('nyumba_user');
+    localStorage.removeItem('nyumba_avatar');
+    if (!window.location.pathname.includes('login')) {
+      window.location.href = (window.location.pathname.includes('/pages/') ? '' : 'pages/') + 'login.html';
+    }
+  }
   if (!res.ok) throw new Error(data.message || 'Something went wrong');
   return data;
 };
@@ -55,7 +64,14 @@ const api = {
 
     async getMe() {
       const res = await fetch(`${API_BASE}/auth/me`, { headers: authHeaders() });
-      return handleResponse(res);
+      const data = await handleResponse(res);
+      // Update stored avatar
+      if (data.user?.avatar_url) {
+        const stored = JSON.parse(localStorage.getItem('nyumba_user') || '{}');
+        stored.avatar_url = data.user.avatar_url;
+        localStorage.setItem('nyumba_user', JSON.stringify(stored));
+      }
+      return data;
     },
 
     async updateProfile(data) {
