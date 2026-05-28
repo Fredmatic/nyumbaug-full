@@ -79,7 +79,7 @@ router.post('/auth/login', async (req, res) => {
         const user = result.rows[0];
 
         if (!user.is_active) {
-            return res.status(403).json({ success: false, message: 'Your account has been deactivated.' });
+            return res.status(403).json({ success: false, message: 'Your account has been Suspended.' });
         }
 
         const match = await bcrypt.compare(password, user.password);
