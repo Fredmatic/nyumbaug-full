@@ -114,6 +114,21 @@
     .similar-section {
       margin-top: 64px;
     }
+
+    @media(max-width:768px) {
+      .detail-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .detail-gallery {
+        grid-template-columns: 1fr;
+        height: 240px;
+      }
+
+      .gallery-side {
+        display: none;
+      }
+    }
   </style>
 </head>
 
@@ -125,9 +140,8 @@
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links" id="nav-links">
-
       <li><a href="../index.html">Home</a></li>
-      <li><a href="listing-detail.html" class="active">Browse Listings</a></li>
+      <li><a href="listings.html" class="active">Browse Listings</a></li>
       <li><a href="list-property.html">List Property</a></li>
       <li><a href="contact.html">Contact</a></li>
       <li><a href="login.html">Login</a></li>
@@ -135,51 +149,72 @@
     </ul>
   </nav>
 
-  <div id="detail-content" style="padding-top: var(--nav-h);">
-    <div style="text-align:center; padding: 80px; color: var(--text-muted);">Loading property...</div>
+  <div id="detail-content" style="padding-top:var(--nav-h);">
+    <div style="text-align:center;padding:80px;color:var(--text-muted);">Loading property...</div>
   </div>
 
   <script src="../js/api.js"></script>
   <script src="../js/main.js"></script>
   <script>
-    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    const APIBASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:5000/api'
       : 'https://nyumbaug-full.onrender.com/api';
 
     const listingId = new URLSearchParams(location.search).get('id');
+    let currentRating = 0;
 
     function getInitials(name) {
       if (!name) return '?';
       return name.split(' ').map(n => n[0]).slice(0, 2).join('');
     }
 
-    function showNotFound() {
-      document.getElementById('detail-content').innerHTML = `
-      <div style="text-align:center; padding: 80px;">
-        <h2 style="color:var(--green-dark);">Property Not Found</h2>
-        <p style="color:var(--text-muted); margin: 12px 0 24px;">This listing may have been removed.</p>
-        <a href="listings.html" class="btn btn-green">Browse All Listings</a>
-      </div>`;
-    }
-
     async function loadListing() {
       if (!listingId) { showNotFound(); return; }
 
       try {
-        const res = await fetch(`${API_BASE}/listings/${listingId}`);
+        const res = await fetch(`${APIBASE}/listings/${listingId}`);
         const data = await res.json();
-        if (!data.success || !data.listing) { showNotFound(); return; }
+        if (!data.success) throw new Error('Not found');
+        renderDetail(data.listing);
+      } catch (e) {
+        // Try fallback to hardcoded listings
+        const fallback = listings.find(l => String(l.id) === String(listingId));
+        if (fallback) {
+          fallback.neighbourhood = fallback.neighbourhood || fallback.location?.split(',')[0] || 'Kampala';
+          fallback.district = fallback.district || 'Kampala';
+          fallback.landlord_name = fallback.landlord;
+          fallback.landlord_phone = fallback.phone;
+          fallback.available_from = fallback.available;
+          fallback.area_sqm = fallback.area;
+          fallback.images = [{ url: fallback.image }];
+          renderDetail(fallback);
+        } else {
+          showNotFound();
+        }
+      }
+    }
 
-        const l = data.listing;
-        const image = l.images?.[0]?.url || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80';
-        const location = (l.neighbourhood || '') + (l.district ? ', ' + l.district : '');
-        const area = l.area_sqm || l.area || '—';
-        const amenities = l.amenities || [];
-        const similar = [];
+    function showNotFound() {
+      document.getElementById('detail-content').innerHTML = `
+        <div style="text-align:center;padding:80px;">
+          <h2 style="color:var(--green-dark);">Property Not Found</h2>
+          <p style="color:var(--text-muted);margin:12px 0 24px;">This listing may have been removed.</p>
+          <a href="listings.html" class="btn btn-green">Browse All Listings</a>
+        </div>`;
+    }
 
-        document.title = l.title + ' — Nyumba UG';
+    function renderDetail(l) {
+      const image = l.images?.[0]?.url || l.cover_image || l.image ||
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80';
+      const location = `${l.neighbourhood || ''}, ${l.district || 'Kampala'}`;
+      const amenities = Array.isArray(l.amenities) ? l.amenities : [];
+      const available = l.available_from
+        ? new Date(l.available_from).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })
+        : 'Immediately';
 
-        document.getElementById('detail-content').innerHTML = `
+      document.title = l.title + ' — Nyumba UG';
+
+      document.getElementById('detail-content').innerHTML = `
         <div class="detail-wrapper">
           <div class="breadcrumb">
             <a href="../index.html">Home</a> ›
@@ -217,7 +252,7 @@
                   <div style="font-size:0.8rem;color:var(--text-muted);">Bathrooms</div>
                 </div>
                 <div style="text-align:center;">
-                  <div style="font-size:1.4rem;font-weight:700;color:var(--green-dark);">${area}</div>
+                  <div style="font-size:1.4rem;font-weight:700;color:var(--green-dark);">${l.area_sqm || l.area || '—'}</div>
                   <div style="font-size:0.8rem;color:var(--text-muted);">m² Area</div>
                 </div>
                 <div style="text-align:center;">
@@ -227,7 +262,7 @@
               </div>
 
               <h3 style="color:var(--green-dark);margin-bottom:12px;">About this Property</h3>
-              <p style="color:var(--text-mid);line-height:1.8;font-size:0.97rem;">${l.description}</p>
+              <p style="color:var(--text-mid);line-height:1.8;font-size:0.97rem;">${l.description || 'No description available.'}</p>
 
               ${amenities.length ? `
               <h3 style="color:var(--green-dark);margin:28px 0 16px;">Amenities & Features</h3>
@@ -245,8 +280,8 @@
                   <span class="tag">${l.type === 'apartment' ? '🏢 Apartment' : l.type === 'house' ? '🏠 House' : '🏨 Studio'}</span>
                   <span class="tag">📍 ${location}</span>
                   <span class="tag">🛏 ${l.bedrooms} Bedroom${l.bedrooms > 1 ? 's' : ''}</span>
-                  <span class="tag">📐 ${area} m²</span>
-                  <span class="tag">✅ Available: ${l.available_from || 'Immediately'}</span>
+                  <span class="tag">📐 ${l.area_sqm || l.area || '—'} m²</span>
+                  <span class="tag">✅ Available: ${available}</span>
                 </div>
               </div>
 
@@ -254,12 +289,10 @@
               <div style="margin-top:48px;" id="reviews-section">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
                   <div>
-                    <h2 style="font-family:'Fraunces',serif;font-size:1.6rem;color:var(--green-dark);margin-bottom:4px;">Tenant Reviews</h2>
-                    <div id="reviews-summary" style="color:var(--text-muted);font-size:0.9rem;"></div>
+                    <h2 style="font-family:'Fraunces',serif;font-size:1.5rem;color:var(--green-dark);margin-bottom:4px;">Tenant Reviews</h2>
+                    <div id="reviews-summary" style="color:var(--text-muted);font-size:0.9rem;">Loading...</div>
                   </div>
-                  <button class="btn btn-green" id="write-review-btn" onclick="toggleReviewForm()" style="display:none;">
-                    ✍️ Write a Review
-                  </button>
+                  <button class="btn btn-green" id="write-review-btn" onclick="toggleReviewForm()" style="display:none;">✍️ Write a Review</button>
                 </div>
 
                 <div id="review-form-wrapper" style="display:none;background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:28px;margin-bottom:28px;">
@@ -267,21 +300,21 @@
                   <div style="margin-bottom:20px;">
                     <label style="display:block;font-size:0.87rem;font-weight:500;color:var(--text-mid);margin-bottom:10px;">Rating *</label>
                     <div id="star-selector" style="display:flex;gap:8px;">
-                      <button type="button" onclick="setRating(1)" style="font-size:2rem;background:none;border:none;cursor:pointer;color:#888;" onmouseover="hoverRating(1)" onmouseout="resetHover()">☆</button>
-                      <button type="button" onclick="setRating(2)" style="font-size:2rem;background:none;border:none;cursor:pointer;color:#888;" onmouseover="hoverRating(2)" onmouseout="resetHover()">☆</button>
-                      <button type="button" onclick="setRating(3)" style="font-size:2rem;background:none;border:none;cursor:pointer;color:#888;" onmouseover="hoverRating(3)" onmouseout="resetHover()">☆</button>
-                      <button type="button" onclick="setRating(4)" style="font-size:2rem;background:none;border:none;cursor:pointer;color:#888;" onmouseover="hoverRating(4)" onmouseout="resetHover()">☆</button>
-                      <button type="button" onclick="setRating(5)" style="font-size:2rem;background:none;border:none;cursor:pointer;color:#888;" onmouseover="hoverRating(5)" onmouseout="resetHover()">☆</button>
+                      <button type="button" onclick="setRating(1)" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(1)" onmouseout="resetHover()">☆</button>
+                      <button type="button" onclick="setRating(2)" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(2)" onmouseout="resetHover()">☆</button>
+                      <button type="button" onclick="setRating(3)" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(3)" onmouseout="resetHover()">☆</button>
+                      <button type="button" onclick="setRating(4)" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(4)" onmouseout="resetHover()">☆</button>
+                      <button type="button" onclick="setRating(5)" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(5)" onmouseout="resetHover()">☆</button>
                     </div>
                     <input type="hidden" id="review-rating" value="0" />
                   </div>
                   <div class="form-group">
-                    <label>Review Title (optional)</label>
-                    <input type="text" id="review-title" placeholder="Summarise your experience" maxlength="120" />
+                    <label>Review Title</label>
+                    <input type="text" id="review-title" placeholder="Summarise your experience (optional)" maxlength="120" />
                   </div>
                   <div class="form-group">
                     <label>Your Review *</label>
-                    <textarea id="review-body" rows="4" placeholder="Share your experience with this property..." style="resize:vertical;"></textarea>
+                    <textarea id="review-body" rows="4" placeholder="Share your experience with this property..." style="resize:vertical;width:100%;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:0.95rem;outline:none;"></textarea>
                   </div>
                   <div style="display:flex;gap:12px;">
                     <button class="btn btn-green" onclick="submitReview()">Submit Review</button>
@@ -303,23 +336,23 @@
                 <div class="detail-price-big" style="margin-bottom:20px;">${formatUGX(l.price)} <span>/ mo</span></div>
 
                 <div class="landlord-info">
-                  <div class="landlord-avatar">${getInitials(l.landlord_name)}</div>
+                  <div class="landlord-avatar">${getInitials(l.landlord_name || l.landlord)}</div>
                   <div>
-                    <div style="font-weight:600;color:var(--text-dark);">${l.landlord_name || 'Landlord'}</div>
+                    <div style="font-weight:600;color:var(--text-dark);">${l.landlord_name || l.landlord || 'Landlord'}</div>
                     <div style="font-size:0.8rem;color:var(--text-muted);">Property Owner · Verified ✓</div>
                   </div>
                 </div>
 
                 <div style="margin-bottom:14px;">
                   <div class="contact-card-label">Availability</div>
-                  <div style="font-weight:500;color:var(--green-light);">✓ ${l.available_from || 'Immediately'}</div>
+                  <div style="font-weight:500;color:var(--green-light);">✓ ${available}</div>
                 </div>
 
-                <a href="tel:${(l.landlord_phone || '').replace(/\s/g, '')}" class="btn btn-green" style="width:100%;justify-content:center;margin-bottom:10px;">
+                <a href="tel:${(l.landlord_phone || l.phone || '').replace(/\s/g, '')}" class="btn btn-green" style="width:100%;justify-content:center;margin-bottom:10px;">
                   📞 Call Landlord
                 </a>
 
-                <a href="https://wa.me/${(l.landlord_phone || '').replace(/[\s+]/g, '')}" target="_blank" class="btn btn-primary" style="width:100%;justify-content:center;background:#25D366;margin-bottom:10px;">
+                <a href="https://wa.me/${(l.landlord_phone || l.phone || '').replace(/[\s+]/g, '')}" target="_blank" class="btn btn-primary" style="width:100%;justify-content:center;background:#25D366;margin-bottom:10px;">
                   💬 WhatsApp
                 </a>
 
@@ -335,27 +368,25 @@
             </div>
           </div>
 
+          <!-- SIMILAR LISTINGS -->
           <div class="similar-section" id="similar-section" style="display:none;">
-            <h2 style="font-family:'Fraunces',serif;font-size:1.6rem;color:var(--green-dark);margin-bottom:24px;">Similar Properties</h2>
+            <h2 class="section-title" style="margin-bottom:24px;">Similar Properties</h2>
             <div class="listings-grid" id="similar-container"></div>
           </div>
-        </div>`;
+        </div>
+      `;
 
-        // Load reviews and similar listings
-        loadReviews();
-        loadSimilar(l.type, l.neighbourhood, l.id);
-
-      } catch (e) {
-        console.error(e);
-        showNotFound();
-      }
+      // Load similar listings
+      loadSimilar(l);
+      // Load reviews
+      loadReviews();
     }
 
-    async function loadSimilar(type, neighbourhood, excludeId) {
+    async function loadSimilar(listing) {
       try {
-        const res = await fetch(`${API_BASE}/listings?type=${type}&limit=3`);
+        const res = await fetch(`${APIBASE}/listings?type=${listing.type}&limit=3`);
         const data = await res.json();
-        const similar = (data.listings || []).filter(l => l.id !== excludeId).slice(0, 3);
+        const similar = (data.listings || []).filter(l => l.id !== listing.id).slice(0, 3);
         if (similar.length) {
           document.getElementById('similar-section').style.display = 'block';
           renderListings(similar, 'similar-container');
@@ -364,17 +395,16 @@
     }
 
     // ── REVIEWS ──
-    let currentRating = 0;
-
     async function loadReviews() {
       try {
-        const res = await fetch(`${API_BASE}/reviews/listing/${listingId}`);
+        const res = await fetch(`${APIBASE}/reviews/listing/${listingId}`);
         const data = await res.json();
+
         const summary = document.getElementById('reviews-summary');
         if (!summary) return;
 
         if (data.total > 0) {
-          summary.innerHTML = renderStars(data.average) + ` <strong>${data.average}</strong> out of 5 &nbsp;·&nbsp; ${data.total} review${data.total !== 1 ? 's' : ''}`;
+          summary.innerHTML = `${renderStars(data.average)} <strong>${data.average}</strong> out of 5 &nbsp;·&nbsp; ${data.total} review${data.total !== 1 ? 's' : ''}`;
         } else {
           summary.textContent = 'No reviews yet — be the first!';
         }
@@ -389,30 +419,27 @@
         if (!container) return;
 
         if (!data.reviews || !data.reviews.length) {
-          container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);">
-          <div style="font-size:2.5rem;margin-bottom:12px;">⭐</div>
-          <p>No reviews yet for this property.</p>
-        </div>`;
+          container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);"><div style="font-size:2.5rem;margin-bottom:12px;">⭐</div><p>No reviews yet for this property.</p></div>`;
           return;
         }
 
         container.innerHTML = data.reviews.map(r => `
-        <div style="background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:24px;margin-bottom:16px;">
-          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div style="width:40px;height:40px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;">
-                ${r.tenant_name.split(' ').map(n => n[0]).slice(0, 2).join('')}
+          <div style="background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:24px;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:40px;height:40px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;">
+                  ${getInitials(r.tenant_name)}
+                </div>
+                <div>
+                  <div style="font-weight:600;color:var(--text-dark);">${r.tenant_name}</div>
+                  <div style="font-size:0.8rem;color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                </div>
               </div>
-              <div>
-                <div style="font-weight:600;color:var(--text-dark);">${r.tenant_name}</div>
-                <div style="font-size:0.8rem;color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-              </div>
+              <div style="font-size:1.2rem;">${renderStars(r.rating)}</div>
             </div>
-            <div style="font-size:1.1rem;">${renderStars(r.rating)}</div>
-          </div>
-          ${r.title ? `<div style="font-weight:600;color:var(--text-dark);margin-bottom:6px;">${r.title}</div>` : ''}
-          <p style="color:var(--text-mid);line-height:1.7;font-size:0.95rem;">${r.body}</p>
-        </div>`).join('');
+            ${r.title ? `<div style="font-weight:600;color:var(--text-dark);margin-bottom:6px;">${r.title}</div>` : ''}
+            <p style="color:var(--text-mid);line-height:1.7;font-size:0.95rem;">${r.body}</p>
+          </div>`).join('');
       } catch (e) {
         const container = document.getElementById('reviews-list');
         if (container) container.innerHTML = '';
@@ -427,7 +454,8 @@
 
     function setRating(n) {
       currentRating = n;
-      document.getElementById('review-rating').value = n;
+      const inp = document.getElementById('review-rating');
+      if (inp) inp.value = n;
       document.querySelectorAll('#star-selector button').forEach((btn, i) => {
         btn.textContent = i < n ? '★' : '☆';
         btn.style.color = i < n ? '#f59e0b' : '#888';
@@ -453,13 +481,13 @@
       const title = document.getElementById('review-title').value.trim();
       const body = document.getElementById('review-body').value.trim();
       const errEl = document.getElementById('review-error');
-      errEl.style.display = 'none';
 
+      errEl.style.display = 'none';
       if (!rating) { errEl.textContent = 'Please select a star rating.'; errEl.style.display = 'block'; return; }
       if (!body || body.length < 10) { errEl.textContent = 'Please write at least 10 characters.'; errEl.style.display = 'block'; return; }
 
       try {
-        const res = await fetch(`${API_BASE}/reviews`, {
+        const res = await fetch(`${APIBASE}/reviews`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
           body: JSON.stringify({ listing_id: listingId, rating, title, body })
