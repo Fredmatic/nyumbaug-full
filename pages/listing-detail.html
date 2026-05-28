@@ -125,6 +125,7 @@
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links" id="nav-links">
+
       <li><a href="../index.html">Home</a></li>
       <li><a href="listings.html" class="active">Browse Listings</a></li>
       <li><a href="list-property.html">List Property</a></li>
@@ -141,47 +142,54 @@
   <script src="../js/api.js"></script>
   <script src="../js/main.js"></script>
   <script>
-    // ── API BASE (defined first so all functions can use it) ──
     const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:5000/api'
       : 'https://nyumbaug-full.onrender.com/api';
 
-    const params = new URLSearchParams(location.search);
-    const id = parseInt(params.get('id'));
-    const listingId = params.get('id');
-    const listing = listings.find(l => l.id === id);
+    const listingId = new URLSearchParams(location.search).get('id');
 
     function getInitials(name) {
+      if (!name) return '?';
       return name.split(' ').map(n => n[0]).slice(0, 2).join('');
     }
 
-    if (!listing) {
+    function showNotFound() {
       document.getElementById('detail-content').innerHTML = `
-        <div style="text-align:center; padding: 80px;">
-          <h2 style="color:var(--green-dark);">Property Not Found</h2>
-          <p style="color:var(--text-muted); margin: 12px 0 24px;">This listing may have been removed.</p>
-          <a href="listings.html" class="btn btn-green">Browse All Listings</a>
-        </div>
-      `;
-    } else {
-      const similar = listings
-        .filter(l => l.id !== listing.id && (l.type === listing.type || l.location.includes(listing.location.split(',')[0])))
-        .slice(0, 3);
+      <div style="text-align:center; padding: 80px;">
+        <h2 style="color:var(--green-dark);">Property Not Found</h2>
+        <p style="color:var(--text-muted); margin: 12px 0 24px;">This listing may have been removed.</p>
+        <a href="listings.html" class="btn btn-green">Browse All Listings</a>
+      </div>`;
+    }
 
-      document.title = listing.title + ' — Nyumba UG';
+    async function loadListing() {
+      if (!listingId) { showNotFound(); return; }
 
-      document.getElementById('detail-content').innerHTML = `
+      try {
+        const res = await fetch(`${API_BASE}/listings/${listingId}`);
+        const data = await res.json();
+        if (!data.success || !data.listing) { showNotFound(); return; }
+
+        const l = data.listing;
+        const image = l.images?.[0]?.url || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80';
+        const location = (l.neighbourhood || '') + (l.district ? ', ' + l.district : '');
+        const area = l.area_sqm || l.area || '—';
+        const amenities = l.amenities || [];
+        const similar = [];
+
+        document.title = l.title + ' — Nyumba UG';
+
+        document.getElementById('detail-content').innerHTML = `
         <div class="detail-wrapper">
           <div class="breadcrumb">
             <a href="../index.html">Home</a> ›
             <a href="listings.html">Listings</a> ›
-            <span>${listing.title}</span>
+            <span>${l.title}</span>
           </div>
 
-          <!-- GALLERY -->
           <div class="detail-gallery">
             <div class="gallery-main">
-              <img src="${listing.image}" alt="${listing.title}" />
+              <img src="${image}" alt="${l.title}" onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80'" />
             </div>
             <div class="gallery-side">
               <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80" alt="Kitchen" />
@@ -189,58 +197,101 @@
             </div>
           </div>
 
-          <!-- DETAIL LAYOUT -->
           <div class="detail-layout">
-            <!-- MAIN INFO -->
             <div>
-              <h1 class="detail-title">${listing.title}</h1>
+              <h1 class="detail-title">${l.title}</h1>
               <div class="detail-location">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                ${listing.location}
+                ${location}
               </div>
 
-              <div class="detail-price-big">${formatUGX(listing.price)} <span>/ month</span></div>
+              <div class="detail-price-big">${formatUGX(l.price)} <span>/ month</span></div>
 
-              <div style="display:flex; gap: 24px; margin: 24px 0; padding: 20px; background: var(--white); border-radius: var(--radius); border: 1px solid var(--border);">
+              <div style="display:flex;gap:24px;margin:24px 0;padding:20px;background:var(--white);border-radius:var(--radius);border:1px solid var(--border);flex-wrap:wrap;">
                 <div style="text-align:center;">
-                  <div style="font-size:1.4rem; font-weight:700; color:var(--green-dark);">${listing.bedrooms}</div>
-                  <div style="font-size:0.8rem; color:var(--text-muted);">Bedrooms</div>
+                  <div style="font-size:1.4rem;font-weight:700;color:var(--green-dark);">${l.bedrooms}</div>
+                  <div style="font-size:0.8rem;color:var(--text-muted);">Bedrooms</div>
                 </div>
                 <div style="text-align:center;">
-                  <div style="font-size:1.4rem; font-weight:700; color:var(--green-dark);">${listing.bathrooms}</div>
-                  <div style="font-size:0.8rem; color:var(--text-muted);">Bathrooms</div>
+                  <div style="font-size:1.4rem;font-weight:700;color:var(--green-dark);">${l.bathrooms}</div>
+                  <div style="font-size:0.8rem;color:var(--text-muted);">Bathrooms</div>
                 </div>
                 <div style="text-align:center;">
-                  <div style="font-size:1.4rem; font-weight:700; color:var(--green-dark);">${listing.area}</div>
-                  <div style="font-size:0.8rem; color:var(--text-muted);">m² Area</div>
+                  <div style="font-size:1.4rem;font-weight:700;color:var(--green-dark);">${area}</div>
+                  <div style="font-size:0.8rem;color:var(--text-muted);">m² Area</div>
                 </div>
                 <div style="text-align:center;">
-                  <div style="font-size:1.4rem; font-weight:700; color:var(--gold);">✓</div>
-                  <div style="font-size:0.8rem; color:var(--text-muted);">Verified</div>
+                  <div style="font-size:1.4rem;font-weight:700;color:var(--gold);">✓</div>
+                  <div style="font-size:0.8rem;color:var(--text-muted);">Verified</div>
                 </div>
               </div>
 
-              <h3 style="color:var(--green-dark); margin-bottom: 12px;">About this Property</h3>
-              <p style="color:var(--text-mid); line-height:1.8; font-size:0.97rem;">${listing.description}</p>
+              <h3 style="color:var(--green-dark);margin-bottom:12px;">About this Property</h3>
+              <p style="color:var(--text-mid);line-height:1.8;font-size:0.97rem;">${l.description}</p>
 
-              <h3 style="color:var(--green-dark); margin: 28px 0 16px;">Amenities & Features</h3>
+              ${amenities.length ? `
+              <h3 style="color:var(--green-dark);margin:28px 0 16px;">Amenities & Features</h3>
               <div class="amenity-grid">
-                ${listing.amenities.map(a => `
+                ${amenities.map(a => `
                   <div class="amenity-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                     ${a}
-                  </div>
-                `).join('')}
+                  </div>`).join('')}
+              </div>` : ''}
+
+              <div style="margin-top:28px;">
+                <h3 style="color:var(--green-dark);margin-bottom:12px;">Property Tags</h3>
+                <div class="tag-list">
+                  <span class="tag">${l.type === 'apartment' ? '🏢 Apartment' : l.type === 'house' ? '🏠 House' : '🏨 Studio'}</span>
+                  <span class="tag">📍 ${location}</span>
+                  <span class="tag">🛏 ${l.bedrooms} Bedroom${l.bedrooms > 1 ? 's' : ''}</span>
+                  <span class="tag">📐 ${area} m²</span>
+                  <span class="tag">✅ Available: ${l.available_from || 'Immediately'}</span>
+                </div>
               </div>
 
-              <div style="margin-top: 28px;">
-                <h3 style="color:var(--green-dark); margin-bottom: 12px;">Property Tags</h3>
-                <div class="tag-list">
-                  <span class="tag">${listing.type === 'apartment' ? '🏢 Apartment' : listing.type === 'house' ? '🏠 House' : '🏨 Studio'}</span>
-                  <span class="tag">📍 ${listing.location}</span>
-                  <span class="tag">🛏 ${listing.bedrooms} Bedroom${listing.bedrooms > 1 ? 's' : ''}</span>
-                  <span class="tag">📐 ${listing.area} m²</span>
-                  <span class="tag">✅ Available: ${listing.available}</span>
+              <!-- REVIEWS SECTION -->
+              <div style="margin-top:48px;" id="reviews-section">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+                  <div>
+                    <h2 style="font-family:'Fraunces',serif;font-size:1.6rem;color:var(--green-dark);margin-bottom:4px;">Tenant Reviews</h2>
+                    <div id="reviews-summary" style="color:var(--text-muted);font-size:0.9rem;"></div>
+                  </div>
+                  <button class="btn btn-green" id="write-review-btn" onclick="toggleReviewForm()" style="display:none;">
+                    ✍️ Write a Review
+                  </button>
+                </div>
+
+                <div id="review-form-wrapper" style="display:none;background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:28px;margin-bottom:28px;">
+                  <h3 style="color:var(--green-dark);margin-bottom:20px;">Your Review</h3>
+                  <div style="margin-bottom:20px;">
+                    <label style="display:block;font-size:0.87rem;font-weight:500;color:var(--text-mid);margin-bottom:10px;">Rating *</label>
+                    <div id="star-selector" style="display:flex;gap:8px;">
+                      <button type="button" onclick="setRating(1)" style="font-size:2rem;background:none;border:none;cursor:pointer;color:#888;" onmouseover="hoverRating(1)" onmouseout="resetHover()">☆</button>
+                      <button type="button" onclick="setRating(2)" style="font-size:2rem;background:none;border:none;cursor:pointer;color:#888;" onmouseover="hoverRating(2)" onmouseout="resetHover()">☆</button>
+                      <button type="button" onclick="setRating(3)" style="font-size:2rem;background:none;border:none;cursor:pointer;color:#888;" onmouseover="hoverRating(3)" onmouseout="resetHover()">☆</button>
+                      <button type="button" onclick="setRating(4)" style="font-size:2rem;background:none;border:none;cursor:pointer;color:#888;" onmouseover="hoverRating(4)" onmouseout="resetHover()">☆</button>
+                      <button type="button" onclick="setRating(5)" style="font-size:2rem;background:none;border:none;cursor:pointer;color:#888;" onmouseover="hoverRating(5)" onmouseout="resetHover()">☆</button>
+                    </div>
+                    <input type="hidden" id="review-rating" value="0" />
+                  </div>
+                  <div class="form-group">
+                    <label>Review Title (optional)</label>
+                    <input type="text" id="review-title" placeholder="Summarise your experience" maxlength="120" />
+                  </div>
+                  <div class="form-group">
+                    <label>Your Review *</label>
+                    <textarea id="review-body" rows="4" placeholder="Share your experience with this property..." style="resize:vertical;"></textarea>
+                  </div>
+                  <div style="display:flex;gap:12px;">
+                    <button class="btn btn-green" onclick="submitReview()">Submit Review</button>
+                    <button class="btn-sm" onclick="toggleReviewForm()" style="padding:10px 20px;">Cancel</button>
+                  </div>
+                  <div id="review-error" style="color:#dc2626;font-size:0.85rem;margin-top:12px;display:none;"></div>
+                </div>
+
+                <div id="reviews-list">
+                  <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading reviews...</div>
                 </div>
               </div>
             </div>
@@ -249,171 +300,122 @@
             <div>
               <div class="detail-price-card">
                 <p class="contact-card-label">Rent per Month</p>
-                <div class="detail-price-big" style="margin-bottom:20px;">${formatUGX(listing.price)} <span>/ mo</span></div>
+                <div class="detail-price-big" style="margin-bottom:20px;">${formatUGX(l.price)} <span>/ mo</span></div>
 
                 <div class="landlord-info">
-                  <div class="landlord-avatar">${getInitials(listing.landlord)}</div>
+                  <div class="landlord-avatar">${getInitials(l.landlord_name)}</div>
                   <div>
-                    <div style="font-weight:600; color:var(--text-dark);">${listing.landlord}</div>
-                    <div style="font-size:0.8rem; color:var(--text-muted);">Property Owner · Verified ✓</div>
+                    <div style="font-weight:600;color:var(--text-dark);">${l.landlord_name || 'Landlord'}</div>
+                    <div style="font-size:0.8rem;color:var(--text-muted);">Property Owner · Verified ✓</div>
                   </div>
                 </div>
 
-                <div style="margin-bottom: 14px;">
+                <div style="margin-bottom:14px;">
                   <div class="contact-card-label">Availability</div>
-                  <div style="font-weight: 500; color: var(--green-light);">✓ ${listing.available}</div>
+                  <div style="font-weight:500;color:var(--green-light);">✓ ${l.available_from || 'Immediately'}</div>
                 </div>
 
-                <a href="tel:${listing.phone.replace(/\s/g, '')}" class="btn btn-green" style="width:100%; justify-content:center; margin-bottom: 10px;">
+                <a href="tel:${(l.landlord_phone || '').replace(/\s/g, '')}" class="btn btn-green" style="width:100%;justify-content:center;margin-bottom:10px;">
                   📞 Call Landlord
                 </a>
 
-                <a href="https://wa.me/${listing.phone.replace(/[\s+]/g, '')}" target="_blank" class="btn btn-primary" style="width:100%; justify-content:center; background: #25D366; margin-bottom: 10px;">
+                <a href="https://wa.me/${(l.landlord_phone || '').replace(/[\s+]/g, '')}" target="_blank" class="btn btn-primary" style="width:100%;justify-content:center;background:#25D366;margin-bottom:10px;">
                   💬 WhatsApp
                 </a>
 
-                <button class="btn" style="width:100%; justify-content:center; border: 1.5px solid var(--border); color: var(--text-mid);"
-                  onclick="toggleFav(event, this, ${listing.id}); showToast('❤️ Saved to favourites')">
+                <button class="btn" style="width:100%;justify-content:center;border:1.5px solid var(--border);color:var(--text-mid);"
+                  onclick="toggleFav(event,this,'${l.id}');showToast('❤️ Saved to favourites')">
                   ♡ Save Property
                 </button>
 
-                <div style="margin-top: 20px; padding: 14px; background: var(--cream); border-radius: var(--radius); font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;">
-                  📌 <strong>Tip:</strong> Always view the property in person before making any payments. Nyumba UG never asks for money upfront.
+                <div style="margin-top:20px;padding:14px;background:var(--cream);border-radius:var(--radius);font-size:0.82rem;color:var(--text-muted);line-height:1.6;">
+                  📌 <strong>Tip:</strong> Always view the property in person before making any payments.
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- ── REVIEWS SECTION (always rendered, outside similar check) ── -->
-          <div style="margin-top:48px;" id="reviews-section">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-              <div>
-                <h2 class="section-title" style="margin-bottom:4px;">Tenant Reviews</h2>
-                <div id="reviews-summary" style="color:var(--text-muted);font-size:0.9rem;"></div>
-              </div>
-              <button class="btn btn-green" id="write-review-btn" onclick="toggleReviewForm()" style="display:none;">
-                ✍️ Write a Review
-              </button>
-            </div>
-
-            <!-- REVIEW FORM -->
-            <div id="review-form-wrapper" style="display:none;background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:28px;margin-bottom:28px;">
-              <h3 style="color:var(--green-dark);margin-bottom:20px;">Your Review</h3>
-              <div style="margin-bottom:20px;">
-                <label style="display:block;font-size:0.87rem;font-weight:500;color:var(--text-mid);margin-bottom:10px;">Rating *</label>
-                <div id="star-selector" style="display:flex;gap:8px;">
-                  <button type="button" onclick="setRating(1)" data-star="1" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(1)" onmouseout="resetHover()">☆</button>
-                  <button type="button" onclick="setRating(2)" data-star="2" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(2)" onmouseout="resetHover()">☆</button>
-                  <button type="button" onclick="setRating(3)" data-star="3" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(3)" onmouseout="resetHover()">☆</button>
-                  <button type="button" onclick="setRating(4)" data-star="4" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(4)" onmouseout="resetHover()">☆</button>
-                  <button type="button" onclick="setRating(5)" data-star="5" style="font-size:2rem;background:none;border:none;cursor:pointer;padding:4px;line-height:1;" onmouseover="hoverRating(5)" onmouseout="resetHover()">☆</button>
-                </div>
-                <input type="hidden" id="review-rating" value="0" />
-              </div>
-              <div class="form-group">
-                <label>Review Title</label>
-                <input type="text" id="review-title" placeholder="Summarise your experience (optional)" maxlength="120" />
-              </div>
-              <div class="form-group">
-                <label>Your Review *</label>
-                <textarea id="review-body" rows="4" placeholder="Share your experience with this property..." style="resize:vertical;"></textarea>
-              </div>
-              <div style="display:flex;gap:12px;">
-                <button class="btn btn-green" onclick="submitReview()">Submit Review</button>
-                <button class="btn-sm" onclick="toggleReviewForm()" style="padding:10px 20px;">Cancel</button>
-              </div>
-              <div id="review-error" style="color:#dc2626;font-size:0.85rem;margin-top:12px;display:none;"></div>
-            </div>
-
-            <!-- REVIEWS LIST -->
-            <div id="reviews-list">
-              <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading reviews...</div>
-            </div>
+          <div class="similar-section" id="similar-section" style="display:none;">
+            <h2 style="font-family:'Fraunces',serif;font-size:1.6rem;color:var(--green-dark);margin-bottom:24px;">Similar Properties</h2>
+            <div class="listings-grid" id="similar-container"></div>
           </div>
+        </div>`;
 
-          <!-- SIMILAR LISTINGS (only if they exist) -->
-          ${similar.length > 0 ? `
-            <div class="similar-section">
-              <h2 class="section-title" style="margin-bottom: 24px;">Similar Properties</h2>
-              <div class="listings-grid" id="similar-container"></div>
-            </div>
-          ` : ''}
+        // Load reviews and similar listings
+        loadReviews();
+        loadSimilar(l.type, l.neighbourhood, l.id);
 
-        </div>
-      `;
-
-      // Render similar listings now that the DOM is ready
-      if (similar.length > 0) {
-        renderListings(similar, 'similar-container');
+      } catch (e) {
+        console.error(e);
+        showNotFound();
       }
-
-      // ── Load reviews immediately (DOMContentLoaded already fired) ──
-      loadReviews();
     }
 
-    // ── REVIEWS LOGIC ──
+    async function loadSimilar(type, neighbourhood, excludeId) {
+      try {
+        const res = await fetch(`${API_BASE}/listings?type=${type}&limit=3`);
+        const data = await res.json();
+        const similar = (data.listings || []).filter(l => l.id !== excludeId).slice(0, 3);
+        if (similar.length) {
+          document.getElementById('similar-section').style.display = 'block';
+          renderListings(similar, 'similar-container');
+        }
+      } catch (e) { }
+    }
+
+    // ── REVIEWS ──
     let currentRating = 0;
 
     async function loadReviews() {
-      const summaryEl = document.getElementById('reviews-summary');
-      const listEl = document.getElementById('reviews-list');
-
-      // Guard: if elements don't exist, bail out
-      if (!summaryEl || !listEl) return;
-
       try {
         const res = await fetch(`${API_BASE}/reviews/listing/${listingId}`);
         const data = await res.json();
+        const summary = document.getElementById('reviews-summary');
+        if (!summary) return;
 
-        // Summary
         if (data.total > 0) {
-          summaryEl.innerHTML = `${renderStars(data.average)} <strong>${data.average}</strong> out of 5 &nbsp;·&nbsp; ${data.total} review${data.total !== 1 ? 's' : ''}`;
+          summary.innerHTML = renderStars(data.average) + ` <strong>${data.average}</strong> out of 5 &nbsp;·&nbsp; ${data.total} review${data.total !== 1 ? 's' : ''}`;
         } else {
-          summaryEl.textContent = 'No reviews yet — be the first!';
+          summary.textContent = 'No reviews yet — be the first!';
         }
 
-        // Show write-review button for logged-in tenants
-        const user = typeof api !== 'undefined' && api.auth ? api.auth.currentUser() : null;
+        const user = api.auth.currentUser();
         if (user && user.role === 'tenant') {
           const btn = document.getElementById('write-review-btn');
           if (btn) btn.style.display = 'flex';
         }
 
-        // Render reviews
+        const container = document.getElementById('reviews-list');
+        if (!container) return;
+
         if (!data.reviews || !data.reviews.length) {
-          listEl.innerHTML = `
-            <div style="text-align:center;padding:40px;color:var(--text-muted);">
-              <div style="font-size:2.5rem;margin-bottom:12px;">⭐</div>
-              <p>No reviews yet for this property.</p>
-            </div>`;
+          container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);">
+          <div style="font-size:2.5rem;margin-bottom:12px;">⭐</div>
+          <p>No reviews yet for this property.</p>
+        </div>`;
           return;
         }
 
-        listEl.innerHTML = data.reviews.map(r => `
-          <div style="background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:24px;margin-bottom:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
-              <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:40px;height:40px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;">
-                  ${r.tenant_name.split(' ').map(n => n[0]).slice(0, 2).join('')}
-                </div>
-                <div>
-                  <div style="font-weight:600;color:var(--text-dark);">${r.tenant_name}</div>
-                  <div style="font-size:0.8rem;color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                </div>
+        container.innerHTML = data.reviews.map(r => `
+        <div style="background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:24px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:40px;height:40px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;">
+                ${r.tenant_name.split(' ').map(n => n[0]).slice(0, 2).join('')}
               </div>
-              <div style="font-size:1.1rem;">${renderStars(r.rating)}</div>
+              <div>
+                <div style="font-weight:600;color:var(--text-dark);">${r.tenant_name}</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+              </div>
             </div>
-            ${r.title ? `<div style="font-weight:600;color:var(--text-dark);margin-bottom:6px;">${r.title}</div>` : ''}
-            <p style="color:var(--text-mid);line-height:1.7;font-size:0.95rem;">${r.body}</p>
+            <div style="font-size:1.1rem;">${renderStars(r.rating)}</div>
           </div>
-        `).join('');
-
+          ${r.title ? `<div style="font-weight:600;color:var(--text-dark);margin-bottom:6px;">${r.title}</div>` : ''}
+          <p style="color:var(--text-mid);line-height:1.7;font-size:0.95rem;">${r.body}</p>
+        </div>`).join('');
       } catch (e) {
-        console.error('Reviews failed to load:', e);
-        if (listEl) listEl.innerHTML = `
-          <div style="text-align:center;padding:32px;color:var(--text-muted);">
-            Could not load reviews at this time.
-          </div>`;
+        const container = document.getElementById('reviews-list');
+        if (container) container.innerHTML = '';
       }
     }
 
@@ -443,7 +445,7 @@
 
     function toggleReviewForm() {
       const form = document.getElementById('review-form-wrapper');
-      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
     }
 
     async function submitReview() {
@@ -451,7 +453,6 @@
       const title = document.getElementById('review-title').value.trim();
       const body = document.getElementById('review-body').value.trim();
       const errEl = document.getElementById('review-error');
-
       errEl.style.display = 'none';
 
       if (!rating) { errEl.textContent = 'Please select a star rating.'; errEl.style.display = 'block'; return; }
@@ -460,15 +461,11 @@
       try {
         const res = await fetch(`${API_BASE}/reviews`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token')
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
           body: JSON.stringify({ listing_id: listingId, rating, title, body })
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.message);
-
         showToast('✅ Review submitted!');
         document.getElementById('review-form-wrapper').style.display = 'none';
         document.getElementById('review-title').value = '';
@@ -480,6 +477,8 @@
         errEl.style.display = 'block';
       }
     }
+
+    loadListing();
   </script>
 </body>
 
