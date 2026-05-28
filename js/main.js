@@ -197,7 +197,7 @@ const listings = [
     bathrooms: 2,
     area: 230,
     badge: "available",
-    image: "images/fancy2.jpg",
+    image: "https://res.cloudinary.com/dxvium3me/image/upload/v1779952865/fancy2_dpn4bb.jpg",
     featured: true,
     description: "Prestigious house apartment in Kansanga with panoramic views of Kampala. High-end finishes throughout.",
     amenities: ["WiFi", "Parking", "Generator", "Security", "Gym", "Water Tank"],
