@@ -266,27 +266,33 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
-
-// ── MOBILE NAV ──
+// ── MOBILE NAV TOGGLE ──
 function toggleNav() {
   const nav = document.getElementById('nav-links');
-  if (nav) nav.classList.toggle('open');
+  if (!nav) return;
+  nav.classList.toggle('open');
+  // Animate hamburger
+  const btn = document.querySelector('.nav-toggle');
+  if (btn) btn.classList.toggle('open');
 }
 
+// Close nav when link clicked
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.nav-links a').forEach(link => {
     link.addEventListener('click', () => {
       const nav = document.getElementById('nav-links');
+      const btn = document.querySelector('.nav-toggle');
       if (nav) nav.classList.remove('open');
+      if (btn) btn.classList.remove('open');
     });
   });
 });
+
+window.toggleNav = toggleNav;
 // Restore avatar from server response
 if (data.user.avatar_url) {
   localStorage.setItem('nyumba_avatar', data.user.avatar_url);
 }
-
-window.toggleNav = toggleNav;
 
 document.addEventListener('DOMContentLoaded', updateNav);
 
