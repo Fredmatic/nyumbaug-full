@@ -25,48 +25,63 @@ const sendEmail = async ({ to, subject, html }) => {
 const createEnquiry = asyncHandler(async (req, res) => {
   const { listing_id, name, email, phone, message } = req.body;
 
-  if (!listing_id || !name || !phone || !message) {
-    throw new AppError('listing_id, name, phone, and message are required.', 400);
+  if (!name || !phone || !message) {
+    throw new AppError('name, phone, and message are required.', 400);
   }
 
-  // Get listing + landlord info
-  const listingResult = await pool.query(`
+  const result = await pool.query(`
+  INSERT INTO enquiries (listing_id, tenant_id, name, email, phone, message)
+  VALUES ($1, $2, $3, $4, $5, $6)
+  RETURNING *
+`, [listing_id || null, req.user?.id || null, name, email, phone, message]);
+
+  // Only email landlord if this is a listing enquiry
+  if (listing_id) {
+    const listingResult = await pool.query(`
     SELECT l.title, l.neighbourhood, u.email AS landlord_email, u.name AS landlord_name
     FROM listings l JOIN users u ON l.landlord_id = u.id
     WHERE l.id = $1 AND l.status = 'active'
   `, [listing_id]);
 
-  if (!listingResult.rows.length) throw new AppError('Listing not found or unavailable.', 404);
+    if (listingResult.rows.length) {
+      const listing = listingResult.rows[0];
+      await sendEmail({
+        to: listing.landlord_email,
+        subject: `New Enquiry: ${listing.title}`,
+        html: `
+        <h2>New Enquiry on NyumbaUG</h2>
+        <p>Hi ${listing.landlord_name},</p>
+        <p>Someone is interested in: <strong>${listing.title}</strong> (${listing.neighbourhood})</p>
+        <hr/>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        ${email ? `<p><strong>Email:</strong> ${email}</p>` : ''}
+        <p><strong>Message:</strong></p>
+        <blockquote style="border-left:4px solid #1a5c38;padding-left:12px;color:#444;">${message}</blockquote>
+      `,
+      });
+    }
+  }
 
-  const listing = listingResult.rows[0];
-
-  const result = await pool.query(`
-    INSERT INTO enquiries (listing_id, tenant_id, name, email, phone, message)
-    VALUES ($1, $2, $3, $4, $5, $6)
-    RETURNING *
-  `, [listing_id, req.user?.id || null, name, email, phone, message]);
-
-  // Email landlord
-  await sendEmail({
-    to: listing.landlord_email,
-    subject: `New Enquiry: ${listing.title}`,
-    html: `
-      <h2>New Enquiry on NyumbaUG</h2>
-      <p>Hi ${listing.landlord_name},</p>
-      <p>Someone is interested in your property: <strong>${listing.title}</strong> (${listing.neighbourhood})</p>
-      <hr/>
+  // Email admin for contact form messages
+  if (!listing_id && process.env.ADMIN_EMAIL) {
+    await sendEmail({
+      to: process.env.ADMIN_EMAIL,
+      subject: `📬 Contact Form: ${name}`,
+      html: `
+      <h2>New Contact Form Message — NyumbaUG</h2>
       <p><strong>Name:</strong> ${name}</p>
       <p><strong>Phone:</strong> ${phone}</p>
       ${email ? `<p><strong>Email:</strong> ${email}</p>` : ''}
       <p><strong>Message:</strong></p>
       <blockquote style="border-left:4px solid #1a5c38;padding-left:12px;color:#444;">${message}</blockquote>
-      <p>Log in to your NyumbaUG account to manage this enquiry.</p>
     `,
-  });
+    });
+  }
 
   res.status(201).json({
     success: true,
-    message: 'Enquiry sent! The landlord will contact you soon.',
+    message: listing_id ? 'Enquiry sent! The landlord will contact you soon.' : 'Message sent! We\'ll reply within 24 hours.',
     enquiry: result.rows[0],
   });
 });
@@ -74,23 +89,31 @@ const createEnquiry = asyncHandler(async (req, res) => {
 // GET /api/enquiries — landlord gets enquiries for their listings
 const getEnquiries = asyncHandler(async (req, res) => {
   const { status, listing_id } = req.query;
+  const isAdmin = req.user.role === 'admin';
 
   let query = `
-    SELECT e.*, l.title AS listing_title, l.neighbourhood
+    SELECT e.*, 
+      l.title AS listing_title, 
+      l.neighbourhood
     FROM enquiries e
-    JOIN listings l ON e.listing_id = l.id
-    WHERE l.landlord_id = $1
+    LEFT JOIN listings l ON e.listing_id = l.id
+    WHERE 1=1
   `;
-  const values = [req.user.id];
-  let idx = 2;
+  const values = [];
+  let idx = 1;
 
-  if (status)     { query += ` AND e.status = $${idx++}`; values.push(status); }
+  // Landlords only see their own listing enquiries
+  if (!isAdmin) {
+    query += ` AND l.landlord_id = $${idx++}`;
+    values.push(req.user.id);
+  }
+
+  if (status) { query += ` AND e.status = $${idx++}`; values.push(status); }
   if (listing_id) { query += ` AND e.listing_id = $${idx++}`; values.push(listing_id); }
 
   query += ' ORDER BY e.created_at DESC';
 
   const result = await pool.query(query, values);
-
   res.json({ success: true, enquiries: result.rows });
 });
 
@@ -241,9 +264,33 @@ const getSavedListings = asyncHandler(async (req, res) => {
 
   res.json({ success: true, listings: result.rows });
 });
+// GET /api/admin/enquiries — all enquiries including contact form (admin only)
+const getAllEnquiries = asyncHandler(async (req, res) => {
+  const { status } = req.query;
+
+  let query = `
+    SELECT e.*, 
+      l.title AS listing_title,
+      l.neighbourhood
+    FROM enquiries e
+    LEFT JOIN listings l ON e.listing_id = l.id
+    WHERE 1=1
+  `;
+  const values = [];
+
+  if (status) {
+    query += ` AND e.status = $1`;
+    values.push(status);
+  }
+
+  query += ' ORDER BY e.created_at DESC';
+
+  const result = await pool.query(query, values);
+  res.json({ success: true, enquiries: result.rows });
+});
 
 module.exports = {
-  createEnquiry, getEnquiries, updateEnquiry,
+  createEnquiry, getEnquiries, updateEnquiry, getAllEnquiries,
   sendMessage, getMessages, getUnreadCount,
   saveListing, unsaveListing, getSavedListings,
 };
