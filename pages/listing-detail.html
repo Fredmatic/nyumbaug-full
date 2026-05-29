@@ -201,15 +201,6 @@
         showNotFound();
       }
     }
-    const fallbacks = {
-      apartment: 'https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=600&q=80',
-      house: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80',
-      studio: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80',
-      townhouse: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80',
-    };
-    const mainImage = l.images?.[0]?.url || fallbacks[l.type] || fallbacks.apartment;
-    const sideImage1 = l.images?.[1]?.url || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80';
-    const sideImage2 = l.images?.[2]?.url || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80';
 
     function showNotFound() {
       document.getElementById('detail-content').innerHTML = `
@@ -238,11 +229,11 @@
 
         <div class="detail-gallery">
           <div class="gallery-main">
-            <img src="${mainImage}" alt="${l.title}" onerror="this.src='${fallbacks.apartment}'" />
+            <img src="${image}" alt="${l.title}" onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80'" />
           </div>
           <div class="gallery-side">
-            <img src="${sideImage1}" alt="Interior View" />
-            <img src="${sideImage2}" alt="Living area" />
+            <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80" alt="Kitchen" />
+            <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80" alt="Living room" />
           </div>
         </div>
 
