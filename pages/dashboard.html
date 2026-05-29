@@ -523,10 +523,11 @@
         <li><a href="list-property.html"><span class="icon">➕</span> List a Property</a></li>
 
         <div class="section-label">Enquiries</div>
-        <li><a href="#" onclick="showSection('enquiries', this)"><span class="icon">📩</span> Enquiries <span
-              id="enquiry-badge-admin"
-              style="background:var(--gold);color:var(--green-dark);padding:1px 7px;border-radius:50px;font-size:0.7rem;margin-left:4px;display:none;"></span></a>
-        </li>
+        <li><a href="#" onclick="showSection('enquiries', this)"><span class="icon">📩</span> My Enquiries</a></li>
+        <li><a href="#" onclick="showSection('contact-messages', this)"><span class="icon">✉️</span> Contact Messages
+            <span id="contact-badge"
+              style="background:#ef4444;color:white;padding:1px 7px;border-radius:50px;font-size:0.7rem;margin-left:4px;display:none;"></span>
+          </a></li>
 
         <div class="section-label">Account</div>
         <li><a href="#" onclick="showSection('settings', this)"><span class="icon">⚙️</span> Settings</a></li>
@@ -840,6 +841,43 @@
           </div>
         </div>
       </div>
+      <div id="section-contact-messages" style="display:none;">
+        <div class="dash-header">
+          <div>
+            <h1>✉️ Contact Form Messages</h1>
+            <p>Messages sent via the public contact page.</p>
+          </div>
+        </div>
+
+        <div class="stats-grid" style="margin-bottom:24px;">
+          <div class="stat-card">
+            <div class="stat-label">Total Messages</div>
+            <div class="stat-value" id="cm-total">—</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-label">Unread</div>
+            <div class="stat-value" id="cm-unread">—</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Today</div>
+            <div class="stat-value" id="cm-today">—</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>All Messages</h2>
+            <div class="dash-tabs">
+              <button class="dash-tab active" onclick="filterContactMsgs('all', this)">All</button>
+              <button class="dash-tab" onclick="filterContactMsgs('new', this)">Unread</button>
+              <button class="dash-tab" onclick="filterContactMsgs('read', this)">Read</button>
+            </div>
+          </div>
+          <div class="panel-body" id="contact-messages-list">
+            <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
+          </div>
+        </div>
+      </div>
 
     </main>
   </div>
@@ -885,6 +923,93 @@
     let myEnquiries = [];
     let currentFilter = 'all';
     let currentEnqFilter = 'all';
+
+    // ── CONTACT MESSAGES (admin) ──
+    let allContactMsgs = [];
+    let contactMsgFilter = 'all';
+
+    async function loadContactMessages() {
+      const container = document.getElementById('contact-messages-list');
+      try {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/enquiries', {
+          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
+        });
+        const data = await res.json();
+        allContactMsgs = data.enquiries || [];
+
+        const today = new Date().toDateString();
+        const unread = allContactMsgs.filter(e => e.status === 'new' || !e.status).length;
+        const todayCount = allContactMsgs.filter(e => new Date(e.created_at).toDateString() === today).length;
+
+        document.getElementById('cm-total').textContent = allContactMsgs.length;
+        document.getElementById('cm-unread').textContent = unread;
+        document.getElementById('cm-today').textContent = todayCount;
+
+        // Badge
+        const badge = document.getElementById('contact-badge');
+        if (unread > 0) { badge.textContent = unread; badge.style.display = 'inline'; }
+
+        renderContactMessages();
+      } catch (e) {
+        container.innerHTML = '<div class="empty-state"><p>❌ Could not load messages. Make sure the /api/admin/enquiries endpoint exists.</p></div>';
+      }
+    }
+
+    function filterContactMsgs(filter, btn) {
+      contactMsgFilter = filter;
+      document.querySelectorAll('#section-contact-messages .dash-tab').forEach(t => t.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderContactMessages();
+    }
+
+    function renderContactMessages() {
+      const container = document.getElementById('contact-messages-list');
+      const filtered = contactMsgFilter === 'all'
+        ? allContactMsgs
+        : allContactMsgs.filter(e => e.status === contactMsgFilter || (!e.status && contactMsgFilter === 'new'));
+
+      if (!filtered.length) {
+        container.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><p>No messages found.</p></div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map((e, i) => `
+    <div class="enquiry-item ${e.status === 'new' || !e.status ? 'unread' : ''}" id="cmsg-${e.id}">
+      <div>
+        <div class="enquiry-name">
+          ${e.name || 'Unknown'}
+          ${e.status === 'new' || !e.status ? '<span style="background:var(--gold);color:var(--green-dark);font-size:0.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">NEW</span>' : ''}
+        </div>
+        <div class="enquiry-msg" style="margin-top:6px;">${e.message || '—'}</div>
+        <div class="enquiry-contact" style="margin-top:8px;">
+          ${e.email ? `✉️ <a href="mailto:${e.email}">${e.email}</a>` : ''}
+          ${e.phone ? `&nbsp;·&nbsp; 📞 <a href="tel:${e.phone}">${e.phone}</a>` : ''}
+          ${e.phone ? `&nbsp;·&nbsp; <a href="https://wa.me/${e.phone.replace(/[\s+]/g, '')}" target="_blank" style="color:#25D366;">💬 WhatsApp</a>` : ''}
+        </div>
+      </div>
+      <div style="text-align:right;min-width:100px;">
+        <div class="enquiry-time">${timeAgo(e.created_at)}</div>
+        <button class="btn-sm" style="margin-top:8px;" onclick="markContactRead('${e.id}')">Mark Read</button>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    async function markContactRead(id) {
+      try {
+        await api.enquiries.updateStatus(id, 'read');
+        const msg = allContactMsgs.find(e => e.id === id);
+        if (msg) msg.status = 'read';
+        renderContactMessages();
+        // Update badge
+        const unread = allContactMsgs.filter(e => e.status === 'new' || !e.status).length;
+        const badge = document.getElementById('contact-badge');
+        badge.textContent = unread > 0 ? unread : '';
+        badge.style.display = unread > 0 ? 'inline' : 'none';
+        document.getElementById('cm-unread').textContent = unread;
+        showToast('✅ Marked as read');
+      } catch (e) { showToast('❌ Could not update'); }
+    }
 
     // ── INIT ──
     async function init() {
@@ -1535,6 +1660,7 @@
     showSection = function (name, link) {
       _origShowSection(name, link);
       if (name === 'admin') loadAdminData();
+      if (name === 'contact-messages') loadContactMessages();
     };
 
     init();

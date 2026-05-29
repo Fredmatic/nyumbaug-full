@@ -198,22 +198,23 @@
         <div class="form-grid">
           <div class="form-group">
             <label>Your Name *</label>
-            <input type="text" placeholder="Full name" required />
+            <input type="text" id="contact-name" placeholder="Full name" required />
+
           </div>
           <div class="form-group">
             <label>Phone Number</label>
-            <input type="tel" placeholder="+256 7XX XXX XXX" />
+            <input type="tel" id="contact-phone" placeholder="+256 7XX XXX XXX" />
           </div>
         </div>
 
         <div class="form-group">
           <label>Email Address *</label>
-          <input type="email" placeholder="your@email.com" required />
+          <input type="email" id="contact-email" placeholder="your@email.com" required />
         </div>
 
         <div class="form-group">
           <label>I am a...</label>
-          <select>
+          <select id="contact-role">
             <option>Tenant looking for a property</option>
             <option>Landlord wanting to list</option>
             <option>Property Agent</option>
@@ -223,12 +224,13 @@
 
         <div class="form-group">
           <label>Subject *</label>
-          <input type="text" placeholder="How can we help?" required />
+          <input type="text" id="contact-subject" placeholder="How can we help?" required />
         </div>
 
         <div class="form-group">
           <label>Message *</label>
-          <textarea rows="5" placeholder="Write your message here..." required style="resize:vertical;"></textarea>
+          <textarea id="contact-message" rows="5" placeholder="Write your message here..." required
+            style="resize:vertical;"></textarea>
         </div>
 
         <button type="submit" class="btn btn-green" style="width:100%; justify-content:center; padding:14px;">
@@ -244,30 +246,64 @@
     <h2 class="section-title">Frequently Asked Questions</h2>
 
     <div style="max-width: 720px; margin-top: 36px;">
-      ${[
-      ["Is it free to list a property?", "Yes! Listing your property on Nyumba UG is completely free. We believe in
-      connecting landlords and tenants without barriers. Premium features may be available in the future."],
-      ["How do I contact a landlord?", "On any listing page you'll find the landlord's phone number and a direct
-      WhatsApp link. Click to call or message them instantly."],
-      ["Are listings verified?", "We review all listings before they go live to ensure accuracy. We encourage you to
-      always visit a property in person before making payments."],
-      ["How long does it take for my listing to go live?", "We review new listings within 24 hours (usually faster on
-      working days). You'll receive a notification when your listing is approved."],
-      ["Can I edit or remove my listing?", "Yes. Contact our team or use your landlord account (coming soon) to update
-      or remove your listings at any time."],
-      ["What areas do you cover?", "We currently focus on Kampala and Greater Kampala including Wakiso and Mukono
-      districts. We're expanding across Uganda soon."]
-      ].map(([q, a]) => `
-      <details
-        style="margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;">
-        <summary
-          style="padding: 18px 20px; cursor:pointer; font-weight:600; color: var(--green-dark); font-family: 'Fraunces', serif; list-style:none; display:flex; justify-content:space-between; align-items:center;">
-          ${q}
-          <span style="font-size:1.2rem; transition: transform 0.2s;">▾</span>
-        </summary>
-        <div style="padding: 0 20px 18px; color: var(--text-mid); font-size: 0.95rem; line-height: 1.7;">${a}</div>
-      </details>
-      `).join('')}
+      <!-- FAQ SECTION -->
+      <section style="background: var(--white);">
+        <p class="section-label">Common Questions</p>
+        <h2 class="section-title">Frequently Asked Questions</h2>
+
+        <div style="max-width: 720px; margin-top: 36px;">
+          <details
+            style="margin-bottom:12px; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+            <summary
+              style="padding:18px 20px; cursor:pointer; font-weight:600; color:var(--green-dark); font-family:'Fraunces',serif; list-style:none; display:flex; justify-content:space-between;">
+              Is it free to list a property? <span>▾</span>
+            </summary>
+            <div style="padding:0 20px 18px; color:var(--text-mid); font-size:0.95rem; line-height:1.7;">Yes! Listing
+              your property on Nyumba UG is completely free. Premium features may be available in the future.</div>
+          </details>
+
+          <details
+            style="margin-bottom:12px; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+            <summary
+              style="padding:18px 20px; cursor:pointer; font-weight:600; color:var(--green-dark); font-family:'Fraunces',serif; list-style:none; display:flex; justify-content:space-between;">
+              How do I contact a landlord? <span>▾</span>
+            </summary>
+            <div style="padding:0 20px 18px; color:var(--text-mid); font-size:0.95rem; line-height:1.7;">On any listing
+              page you'll find the landlord's phone number and a direct WhatsApp link. Click to call or message them
+              instantly.</div>
+          </details>
+
+          <details
+            style="margin-bottom:12px; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+            <summary
+              style="padding:18px 20px; cursor:pointer; font-weight:600; color:var(--green-dark); font-family:'Fraunces',serif; list-style:none; display:flex; justify-content:space-between;">
+              Are listings verified? <span>▾</span>
+            </summary>
+            <div style="padding:0 20px 18px; color:var(--text-mid); font-size:0.95rem; line-height:1.7;">We review all
+              listings before they go live. Always visit a property in person before making any payments.</div>
+          </details>
+
+          <details
+            style="margin-bottom:12px; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+            <summary
+              style="padding:18px 20px; cursor:pointer; font-weight:600; color:var(--green-dark); font-family:'Fraunces',serif; list-style:none; display:flex; justify-content:space-between;">
+              How long does a listing take to go live? <span>▾</span>
+            </summary>
+            <div style="padding:0 20px 18px; color:var(--text-mid); font-size:0.95rem; line-height:1.7;">We review new
+              listings within 24 hours. You'll be notified when your listing is approved.</div>
+          </details>
+
+          <details
+            style="margin-bottom:12px; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+            <summary
+              style="padding:18px 20px; cursor:pointer; font-weight:600; color:var(--green-dark); font-family:'Fraunces',serif; list-style:none; display:flex; justify-content:space-between;">
+              What areas do you cover? <span>▾</span>
+            </summary>
+            <div style="padding:0 20px 18px; color:var(--text-mid); font-size:0.95rem; line-height:1.7;">We currently
+              cover Kampala and Greater Kampala including Wakiso and Mukono. Expanding across Uganda soon.</div>
+          </details>
+        </div>
+      </section>
     </div>
   </section>
 
@@ -307,10 +343,35 @@
   <script src="../js/api.js"></script>
   <script src="../js/main.js"></script>
   <script>
-    function handleContactSubmit(e) {
+    async function handleContactSubmit(e) {
       e.preventDefault();
-      showToast('✅ Message sent! We\'ll reply within 24 hours.');
-      e.target.reset();
+      const form = e.target;
+      const btn = form.querySelector('button[type="submit"]');
+
+      // Read fields by ID instead of by index
+      const name = document.getElementById('contact-name').value.trim();
+      const phone = document.getElementById('contact-phone').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const role = document.getElementById('contact-role').value;
+      const subject = document.getElementById('contact-subject').value.trim();
+      const msg = document.getElementById('contact-message').value.trim();
+
+      const fullMessage = `[${role}] ${subject}: ${msg}`;
+
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+
+      try {
+        await api.enquiries.send(null, name, email, phone, fullMessage);
+        showToast('✅ Message sent! We\'ll reply within 24 hours.');
+        form.reset();
+      } catch (err) {
+        showToast('❌ Failed to send. Please try WhatsApp or call us.');
+        console.error(err);
+      } finally {
+        btn.textContent = 'Send Message';
+        btn.disabled = false;
+      }
     }
   </script>
 </body>
