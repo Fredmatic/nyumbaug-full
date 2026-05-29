@@ -244,6 +244,26 @@
       setTimeout(restoreFavs, 100);
     }
 
+    // Override filterListings to use real API data
+    window.filterListings = function () {
+      const search = document.getElementById('search-input')?.value.toLowerCase() || '';
+      const type = document.getElementById('filter-type')?.value || '';
+      const maxPrice = document.getElementById('filter-price')?.value || '';
+      const tab = document.querySelector('.tab.active')?.dataset.filter || 'all';
+
+      let filtered = apiListings.filter(l => {
+        const loc = (l.neighbourhood || l.location || '').toLowerCase();
+        const matchSearch = !search || loc.includes(search) || l.title.toLowerCase().includes(search);
+        const matchType = !type || l.type === type;
+        const matchPrice = !maxPrice || l.price <= parseInt(maxPrice);
+        const matchTab = tab === 'all' || l.type === tab;
+        return matchSearch && matchType && matchPrice && matchTab;
+      });
+
+      renderListings(filtered.length ? filtered : apiListings, 'listings-container');
+      setTimeout(restoreFavs, 50);
+    };
+
     // Override filterListings to use apiListings
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
