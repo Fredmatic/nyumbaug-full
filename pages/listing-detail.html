@@ -384,129 +384,78 @@
 
     async function loadSimilar(listing) {
       try {
-        const res = await fetch(`${APIBASE}/listings?type=${listing.type}&limit=3`);
+        // Try API first
+        const res = await fetch(`${APIBASE}/listings?type=${listing.type}&limit=6`);
         const data = await res.json();
-        const similar = (data.listings || []).filter(l => l.id !== listing.id).slice(0, 3);
+        let similar = (data.listings || [])
+          .filter(l => String(l.id) !== String(listing.id))
+          .slice(0, 3);
+
         if (similar.length) {
           document.getElementById('similar-section').style.display = 'block';
-          renderListings(similar, 'similar-container');
-        }
-      } catch (e) { }
-    }
-
-    // ── REVIEWS ──
-    async function loadReviews() {
-      try {
-        const res = await fetch(`${APIBASE}/reviews/listing/${listingId}`);
-        const data = await res.json();
-
-        const summary = document.getElementById('reviews-summary');
-        if (!summary) return;
-
-        if (data.total > 0) {
-          summary.innerHTML = `${renderStars(data.average)} <strong>${data.average}</strong> out of 5 &nbsp;·&nbsp; ${data.total} review${data.total !== 1 ? 's' : ''}`;
-        } else {
-          summary.textContent = 'No reviews yet — be the first!';
-        }
-
-        const user = api.auth.currentUser();
-        if (user && user.role === 'tenant') {
-          const btn = document.getElementById('write-review-btn');
-          if (btn) btn.style.display = 'flex';
-        }
-
-        const container = document.getElementById('reviews-list');
-        if (!container) return;
-
-        if (!data.reviews || !data.reviews.length) {
-          container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);"><div style="font-size:2.5rem;margin-bottom:12px;">⭐</div><p>No reviews yet for this property.</p></div>`;
+          renderSimilar(similar);
           return;
         }
+      } catch (e) { }
 
-        container.innerHTML = data.reviews.map(r => `
-          <div style="background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:24px;margin-bottom:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
-              <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:40px;height:40px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;">
-                  ${getInitials(r.tenant_name)}
-                </div>
-                <div>
-                  <div style="font-weight:600;color:var(--text-dark);">${r.tenant_name}</div>
-                  <div style="font-size:0.8rem;color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                </div>
-              </div>
-              <div style="font-size:1.2rem;">${renderStars(r.rating)}</div>
+      // Fallback to hardcoded listings
+      const similar = listings
+        .filter(l => String(l.id) !== String(listing.id) &&
+          (l.type === listing.type || (l.location || '').includes((listing.neighbourhood || '').split(',')[0])))
+        .slice(0, 3);
+
+      if (similar.length) {
+        document.getElementById('similar-section').style.display = 'block';
+        renderSimilar(similar);
+      }
+    }
+
+    function renderSimilar(data) {
+      const container = document.getElementById('similar-container');
+      if (!container) return;
+
+      container.innerHTML = data.map(l => {
+        const image = l.cover_image || l.images?.[0]?.url || l.image ||
+          'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80';
+        const location = l.neighbourhood || l.location || 'Kampala';
+        const price = formatUGX(l.price);
+        const isNew = l.badge === 'new';
+
+        return `
+      <div class="listing-card" onclick="window.location.href='listing-detail.html?id=${l.id}'">
+        <div class="listing-img">
+          <img src="${image}" alt="${l.title}" loading="lazy"
+            onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80'" />
+          <span class="listing-badge ${isNew ? 'new' : ''}">${isNew ? '🆕 New' : '✅ Available'}</span>
+          <button class="listing-fav" onclick="toggleFav(event,this,'${l.id}')" aria-label="Save">
+            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          </button>
+        </div>
+        <div class="listing-body">
+          <div class="listing-price">${price} <span>/ month</span></div>
+          <div class="listing-title">${l.title}</div>
+          <div class="listing-location">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${location}
+          </div>
+          <div class="listing-amenities">
+            <div class="amenity">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              ${l.bedrooms} Bed${l.bedrooms > 1 ? 's' : ''}
             </div>
-            ${r.title ? `<div style="font-weight:600;color:var(--text-dark);margin-bottom:6px;">${r.title}</div>` : ''}
-            <p style="color:var(--text-mid);line-height:1.7;font-size:0.95rem;">${r.body}</p>
-          </div>`).join('');
-      } catch (e) {
-        const container = document.getElementById('reviews-list');
-        if (container) container.innerHTML = '';
-      }
+            <div class="amenity">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M4 6h16M4 18h16"/></svg>
+              ${l.bathrooms} Bath${l.bathrooms > 1 ? 's' : ''}
+            </div>
+            <div class="amenity">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              ${l.area_sqm || l.area || '—'} m²
+            </div>
+          </div>
+        </div>
+      </div>`;
+      }).join('');
     }
-
-    function renderStars(rating) {
-      return [1, 2, 3, 4, 5].map(n =>
-        `<span style="color:${n <= Math.round(rating) ? '#f59e0b' : '#d1d5db'};">★</span>`
-      ).join('');
-    }
-
-    function setRating(n) {
-      currentRating = n;
-      const inp = document.getElementById('review-rating');
-      if (inp) inp.value = n;
-      document.querySelectorAll('#star-selector button').forEach((btn, i) => {
-        btn.textContent = i < n ? '★' : '☆';
-        btn.style.color = i < n ? '#f59e0b' : '#888';
-      });
-    }
-
-    function hoverRating(n) {
-      document.querySelectorAll('#star-selector button').forEach((btn, i) => {
-        btn.textContent = i < n ? '★' : '☆';
-        btn.style.color = i < n ? '#f59e0b' : '#888';
-      });
-    }
-
-    function resetHover() { setRating(currentRating); }
-
-    function toggleReviewForm() {
-      const form = document.getElementById('review-form-wrapper');
-      if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    }
-
-    async function submitReview() {
-      const rating = parseInt(document.getElementById('review-rating').value);
-      const title = document.getElementById('review-title').value.trim();
-      const body = document.getElementById('review-body').value.trim();
-      const errEl = document.getElementById('review-error');
-
-      errEl.style.display = 'none';
-      if (!rating) { errEl.textContent = 'Please select a star rating.'; errEl.style.display = 'block'; return; }
-      if (!body || body.length < 10) { errEl.textContent = 'Please write at least 10 characters.'; errEl.style.display = 'block'; return; }
-
-      try {
-        const res = await fetch(`${APIBASE}/reviews`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
-          body: JSON.stringify({ listing_id: listingId, rating, title, body })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('✅ Review submitted!');
-        document.getElementById('review-form-wrapper').style.display = 'none';
-        document.getElementById('review-title').value = '';
-        document.getElementById('review-body').value = '';
-        setRating(0);
-        loadReviews();
-      } catch (e) {
-        errEl.textContent = e.message;
-        errEl.style.display = 'block';
-      }
-    }
-
-    loadListing();
   </script>
 </body>
 
