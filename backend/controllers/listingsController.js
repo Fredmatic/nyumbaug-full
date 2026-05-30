@@ -2,7 +2,9 @@ const pool = require('../config/db');
 const { asyncHandler, AppError } = require('../middleware/error');
 const { deleteImage } = require('../middleware/uploadConfig');
 
-// GET /api/listings — search & filter
+// =========================================================================
+// 1. GET /api/listings — search & filter
+// =========================================================================
 const getListings = asyncHandler(async (req, res) => {
   const {
     search, type, neighbourhood, district,
@@ -70,7 +72,9 @@ const getListings = asyncHandler(async (req, res) => {
   });
 });
 
-// GET /api/listings/:id — single listing with all images
+// =========================================================================
+// 2. GET /api/listings/:id — single listing with all images
+// =========================================================================
 const getListing = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -103,39 +107,46 @@ const getListing = asyncHandler(async (req, res) => {
   res.json({ success: true, listing });
 });
 
-// POST /api/listings — create listing (landlords only)
+// =========================================================================
+// 3. POST /api/listings — create listing (FIXED & CONSOLIDATED)
+// =========================================================================
 const createListing = asyncHandler(async (req, res) => {
-  // 1. Destructure incoming body values (matching area_sqm to frontend area input)
   const {
     title, description, type, price, bedrooms, bathrooms,
     area, address, neighbourhood, district, amenities, available_from,
   } = req.body;
 
-  // Safely grab the absolute area measurement value
+  // Handles both British/Ugandan (neighbourhood) and US (neighborhood) form parameters
+  const neighborhoodValue = neighbourhood || req.body.neighborhood;
   const areaValue = area || req.body.area_sqm;
 
-  // 2. Extract dynamic file arrays from the structured req.files object
+  // Extract dynamic file arrays from the structured req.files object cleanly
   const uploadedImages = req.files && req.files['images'] ? req.files['images'] : [];
   const uploadedVideo = req.files && req.files['video'] ? req.files['video'][0] : null;
 
   const videoUrl = uploadedVideo ? uploadedVideo.path : null;
   const videoPublicId = uploadedVideo ? uploadedVideo.filename : null;
 
-  // 3. Insert core data along with video values directly into your main listings table
-  // NOTE: If your listings table doesn't have video columns yet, run:
-  // ALTER TABLE listings ADD COLUMN IF NOT EXISTS video_url TEXT, ADD COLUMN IF NOT EXISTS video_public_id TEXT;
+  // Insert core data along with video values directly into your main listings table
   const result = await pool.query(`
     INSERT INTO listings
       (landlord_id, title, description, type, price, bedrooms, bathrooms,
        area_sqm, address, neighbourhood, district, amenities, available_from, 
        status, video_url, video_public_id)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'pending',$14,$15)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', $14, $15)
     RETURNING *
   `, [
-    req.user.id, title, description, type, parseInt(price),
-    parseInt(bedrooms), parseInt(bathrooms), areaValue ? parseInt(areaValue) : null,
-    address, neighbourhood, district || 'Kampala',
-    // Handle checking if amenities arrived as an array or a raw JSON string from frontend
+    req.user.id,
+    title,
+    description,
+    type,
+    parseInt(price),
+    parseInt(bedrooms),
+    parseInt(bathrooms),
+    areaValue ? parseInt(areaValue) : null,
+    address,
+    neighborhoodValue,
+    district || 'Kampala',
     typeof amenities === 'string' && amenities.startsWith('[') ? JSON.parse(amenities) :
       (amenities ? (Array.isArray(amenities) ? amenities : amenities.split(',').map(a => a.trim())) : []),
     available_from || null,
@@ -145,7 +156,7 @@ const createListing = asyncHandler(async (req, res) => {
 
   const listing = result.rows[0];
 
-  // 4. Safely unpack image items using the updated multi-field key grouping structure
+  // Unpack individual uploaded image items cleanly into your relational table mapping
   if (uploadedImages.length > 0) {
     const imageValues = uploadedImages.map((f, i) =>
       `('${listing.id}', '${f.path}', '${f.filename}', ${i === 0})`
@@ -163,7 +174,9 @@ const createListing = asyncHandler(async (req, res) => {
   });
 });
 
-// PATCH /api/listings/:id — update listing
+// =========================================================================
+// 4. PATCH /api/listings/:id — update listing
+// =========================================================================
 const updateListing = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -202,7 +215,9 @@ const updateListing = asyncHandler(async (req, res) => {
   res.json({ success: true, listing: result.rows[0] });
 });
 
-// DELETE /api/listings/:id
+// =========================================================================
+// 5. DELETE /api/listings/:id
+// =========================================================================
 const deleteListing = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -223,7 +238,9 @@ const deleteListing = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Listing deleted.' });
 });
 
-// POST /api/listings/:id/images — add images to existing listing
+// =========================================================================
+// 6. POST /api/listings/:id/images — add images to existing listing
+// =========================================================================
 const addImages = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -249,7 +266,9 @@ const addImages = asyncHandler(async (req, res) => {
   res.json({ success: true, message: `${req.files.length} image(s) added.` });
 });
 
-// GET /api/listings/my — landlord's own listings
+// =========================================================================
+// 7. GET /api/listings/my — landlord's own listings
+// =========================================================================
 const getMyListings = asyncHandler(async (req, res) => {
   const result = await pool.query(`
     SELECT l.*, 
