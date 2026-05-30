@@ -1,6 +1,6 @@
 const pool = require('../config/db');
 const { asyncHandler, AppError } = require('../middleware/error');
-const { deleteImage } = require('../middleware/upload');
+const { deleteImage } = require('../middleware/uploadConfig');
 
 // GET /api/listings — search & filter
 const getListings = asyncHandler(async (req, res) => {
@@ -20,12 +20,12 @@ const getListings = asyncHandler(async (req, res) => {
     conditions.push(`(l.title ILIKE $${idx} OR l.address ILIKE $${idx} OR l.neighbourhood ILIKE $${idx})`);
     values.push(`%${search}%`); idx++;
   }
-  if (type)         { conditions.push(`l.type = $${idx++}`);            values.push(type); }
-  if (neighbourhood){ conditions.push(`l.neighbourhood ILIKE $${idx++}`); values.push(`%${neighbourhood}%`); }
-  if (district)     { conditions.push(`l.district = $${idx++}`);        values.push(district); }
-  if (min_price)    { conditions.push(`l.price >= $${idx++}`);          values.push(parseInt(min_price)); }
-  if (max_price)    { conditions.push(`l.price <= $${idx++}`);          values.push(parseInt(max_price)); }
-  if (bedrooms)     { conditions.push(`l.bedrooms >= $${idx++}`);       values.push(parseInt(bedrooms)); }
+  if (type) { conditions.push(`l.type = $${idx++}`); values.push(type); }
+  if (neighbourhood) { conditions.push(`l.neighbourhood ILIKE $${idx++}`); values.push(`%${neighbourhood}%`); }
+  if (district) { conditions.push(`l.district = $${idx++}`); values.push(district); }
+  if (min_price) { conditions.push(`l.price >= $${idx++}`); values.push(parseInt(min_price)); }
+  if (max_price) { conditions.push(`l.price <= $${idx++}`); values.push(parseInt(max_price)); }
+  if (bedrooms) { conditions.push(`l.bedrooms >= $${idx++}`); values.push(parseInt(bedrooms)); }
   if (featured === 'true') { conditions.push(`l.is_featured = true`); }
   if (amenities) {
     const arr = amenities.split(',').map(a => a.trim());
@@ -105,30 +105,49 @@ const getListing = asyncHandler(async (req, res) => {
 
 // POST /api/listings — create listing (landlords only)
 const createListing = asyncHandler(async (req, res) => {
+  // 1. Destructure incoming body values (matching area_sqm to frontend area input)
   const {
     title, description, type, price, bedrooms, bathrooms,
-    area_sqm, address, neighbourhood, district, amenities, available_from,
+    area, address, neighbourhood, district, amenities, available_from,
   } = req.body;
 
+  // Safely grab the absolute area measurement value
+  const areaValue = area || req.body.area_sqm;
+
+  // 2. Extract dynamic file arrays from the structured req.files object
+  const uploadedImages = req.files && req.files['images'] ? req.files['images'] : [];
+  const uploadedVideo = req.files && req.files['video'] ? req.files['video'][0] : null;
+
+  const videoUrl = uploadedVideo ? uploadedVideo.path : null;
+  const videoPublicId = uploadedVideo ? uploadedVideo.filename : null;
+
+  // 3. Insert core data along with video values directly into your main listings table
+  // NOTE: If your listings table doesn't have video columns yet, run:
+  // ALTER TABLE listings ADD COLUMN IF NOT EXISTS video_url TEXT, ADD COLUMN IF NOT EXISTS video_public_id TEXT;
   const result = await pool.query(`
     INSERT INTO listings
       (landlord_id, title, description, type, price, bedrooms, bathrooms,
-       area_sqm, address, neighbourhood, district, amenities, available_from, status)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'pending')
+       area_sqm, address, neighbourhood, district, amenities, available_from, 
+       status, video_url, video_public_id)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'pending',$14,$15)
     RETURNING *
   `, [
     req.user.id, title, description, type, parseInt(price),
-    parseInt(bedrooms), parseInt(bathrooms), area_sqm ? parseInt(area_sqm) : null,
+    parseInt(bedrooms), parseInt(bathrooms), areaValue ? parseInt(areaValue) : null,
     address, neighbourhood, district || 'Kampala',
-    amenities ? (Array.isArray(amenities) ? amenities : amenities.split(',').map(a => a.trim())) : [],
+    // Handle checking if amenities arrived as an array or a raw JSON string from frontend
+    typeof amenities === 'string' && amenities.startsWith('[') ? JSON.parse(amenities) :
+      (amenities ? (Array.isArray(amenities) ? amenities : amenities.split(',').map(a => a.trim())) : []),
     available_from || null,
+    videoUrl,
+    videoPublicId
   ]);
 
   const listing = result.rows[0];
 
-  // Handle uploaded images
-  if (req.files && req.files.length > 0) {
-    const imageValues = req.files.map((f, i) =>
+  // 4. Safely unpack image items using the updated multi-field key grouping structure
+  if (uploadedImages.length > 0) {
+    const imageValues = uploadedImages.map((f, i) =>
       `('${listing.id}', '${f.path}', '${f.filename}', ${i === 0})`
     ).join(', ');
 
@@ -156,8 +175,8 @@ const updateListing = asyncHandler(async (req, res) => {
     throw new AppError('Not authorized to update this listing.', 403);
   }
 
-  const allowed = ['title','description','type','price','bedrooms','bathrooms',
-                   'area_sqm','address','neighbourhood','district','amenities','available_from','status'];
+  const allowed = ['title', 'description', 'type', 'price', 'bedrooms', 'bathrooms',
+    'area_sqm', 'address', 'neighbourhood', 'district', 'amenities', 'available_from', 'status'];
 
   const fields = [];
   const values = [];

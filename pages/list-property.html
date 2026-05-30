@@ -397,7 +397,7 @@
 
           <button type="submit" class="btn btn-primary"
             style="width:100%; justify-content:center; margin-top:16px; padding: 14px;">
-            Submit Listing — It's Free
+            Submit Listing
           </button>
         </form>
       </div>
@@ -543,30 +543,79 @@
       document.getElementById('video-upload-area').style.display = 'block';
     }
 
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
       e.preventDefault();
 
-      // Build FormData to support file uploads
-      const formData = new FormData(document.getElementById('list-form'));
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
 
-      // Attach photos
+      // 1. Change button UI state to show it's uploading to Render
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '⌛ Uploading Listing & Media... Please wait...';
+
+      // 2. Gather form input elements manually to guarantee key-value matching
+      const formData = new FormData();
+      formData.append('title', document.getElementById('prop-title').value);
+      formData.append('type', document.getElementById('prop-type').value);
+      formData.append('price', document.getElementById('prop-price').value);
+      formData.append('bedrooms', document.getElementById('prop-beds').value);
+      formData.append('bathrooms', document.getElementById('prop-baths').value);
+      formData.append('area', document.getElementById('prop-area').value);
+      formData.append('available_from', document.getElementById('prop-available').value);
+      formData.append('address', document.getElementById('prop-address').value);
+      formData.append('neighborhood', document.getElementById('prop-area-select').value);
+      formData.append('district', document.getElementById('prop-district').value);
+      formData.append('description', document.getElementById('prop-desc').value);
+
+      // Compile selected features array
+      const amenities = [];
+      document.querySelectorAll('.amenity-checkboxes input:checked').forEach(cb => {
+        amenities.push(cb.value);
+      });
+      formData.append('amenities', JSON.stringify(amenities));
+
+      // 3. Attach multiple image files
       const photos = document.getElementById('photo-upload').files;
       for (let i = 0; i < photos.length; i++) {
         formData.append('images', photos[i]);
       }
 
-      // Attach video if selected (optional)
+      // 4. Attach optional tour video file
       const video = document.getElementById('video-upload').files[0];
-      if (video) formData.append('video', video);
+      if (video) {
+        formData.append('video', video);
+      }
 
-      // In production: send to backend
-      // api.listings.create(formData).then(() => { ... })
+      try {
+        // 5. Fire off the live network transaction using your session token
+        const response = await fetch('https://nyumbaug-full.onrender.com/api/listings', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token')
+            // Note: Do NOT add 'Content-Type' header here. Browser sets boundary automatically for FormData.
+          },
+          body: formData
+        });
 
-      // Show success overlay
-      document.getElementById('success-overlay').classList.add('show');
-      document.getElementById('list-form').reset();
-      document.getElementById('photo-preview').innerHTML = '';
-      removeVideo();
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Server rejected the listing creation.');
+        }
+
+        // 6. Success! Display the overlay modal anchor link
+        document.getElementById('success-overlay').classList.add('show');
+        document.getElementById('list-form').reset();
+        document.getElementById('photo-preview').innerHTML = '';
+        removeVideo();
+
+      } catch (error) {
+        console.error('Submission breakdown:', error);
+        alert('❌ Failed to save property: ' + error.message);
+      } finally {
+        // Restore button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
     }
 
     // ── GUARD: only logged-in landlords can access this page ──

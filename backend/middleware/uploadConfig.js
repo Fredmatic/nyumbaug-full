@@ -4,7 +4,7 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
@@ -61,5 +61,37 @@ const deleteImage = async (publicId) => {
     console.error('Cloudinary delete error:', err.message);
   }
 };
+// ── ADD THIS NEW UNIFIED STORAGE ENGINE FOR MIXED UPLOADS ──
+// Since CloudinaryStorage needs distinct parameter profiles for media types,
+// we will use a dynamic configuration to handle both images and videos dynamically.
+
+const dynamicStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => {
+    if (file.mimetype.startsWith('video/')) {
+      return {
+        folder: 'nyumbaug/videos',
+        resource_type: 'video',
+        allowed_formats: ['mp4', 'mov', 'avi', 'mkv']
+      };
+    }
+
+    // Default to image handling configuration
+    return {
+      folder: 'nyumbaug/listings',
+      allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+      transformation: [{ width: 1200, height: 800, crop: 'limit', quality: 'auto' }]
+    };
+  }
+});
+
+// Create the combined middleware processor
+const uploadMixedMedia = multer({
+  storage: dynamicStorage,
+  limits: { fileSize: 100 * 1024 * 1024 } // Set upper limit to accommodate 100MB videos
+});
+
+// Update your module exports to include the new mixed media handler
+module.exports = { upload, uploadVideo, uploadMixedMedia, deleteImage, cloudinary };
 
 module.exports = { upload, uploadVideo, deleteImage, cloudinary };
