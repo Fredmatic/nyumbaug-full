@@ -93,5 +93,3 @@ const uploadMixedMedia = multer({
 
 // Update your module exports to include the new mixed media handler
 module.exports = { upload, uploadVideo, uploadMixedMedia, deleteImage, cloudinary };
-
-module.exports = { upload, uploadVideo, deleteImage, cloudinary };
