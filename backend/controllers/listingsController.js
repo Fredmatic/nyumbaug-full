@@ -115,14 +115,15 @@ const createListing = asyncHandler(async (req, res) => {
     title, description, type, price, bedrooms, bathrooms,
     area, address, neighbourhood, district, amenities, available_from,
   } = req.body;
-  // force it to lowercase to match your DB column name, and also handle US vs UK spelling
+
+  // force it to lowercase to match your DB check constraint
   if (type && typeof type === 'string') {
     type = type.trim().toLowerCase();
   }
 
-  // Handles both British/Ugandan (neighbourhood) and US (neighborhood) form parameters
+  // Handles both British/Ugandan and US form parameters safely
   const neighborhoodValue = neighbourhood || req.body.neighborhood;
-  const areaValue = area || req.body.area_sqm;
+  const computedArea = area || req.body.area_sqm; // 💡 Renamed variable to avoid any global or block scoping conflict!
 
   // Extract dynamic file arrays from the structured req.files object cleanly
   const uploadedImages = req.files && req.files['images'] ? req.files['images'] : [];
@@ -147,7 +148,7 @@ const createListing = asyncHandler(async (req, res) => {
     parseInt(price),
     parseInt(bedrooms),
     parseInt(bathrooms),
-    areaValue ? parseInt(areaValue) : null,
+    computedArea ? parseInt(computedArea) : null, // 💡 Using the renamed variable here
     address,
     neighborhoodValue,
     district || 'Kampala',
