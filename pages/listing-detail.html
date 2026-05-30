@@ -524,26 +524,42 @@
       const body = document.getElementById('review-body').value.trim();
       const errEl = document.getElementById('review-error');
 
+      if (!errEl) return;
       errEl.style.display = 'none';
-      if (!rating) { errEl.textContent = 'Please select a star rating.'; errEl.style.display = 'block'; return; }
-      if (!body || body.length < 10) { errEl.textContent = 'Please write at least 10 characters.'; errEl.style.display = 'block'; return; }
+
+      // Client-side instant validation validation 
+      if (!rating) {
+        errEl.textContent = 'Please select a star rating.';
+        errEl.style.display = 'block';
+        return;
+      }
+      if (!body || body.length < 10) {
+        errEl.textContent = 'Please write a descriptive review of at least 10 characters.';
+        errEl.style.display = 'block';
+        return;
+      }
 
       try {
-        const res = await fetch(`${APIBASE}/reviews`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
-          body: JSON.stringify({ listing_id: listingId, rating, title, body })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('✅ Review submitted!');
-        document.getElementById('review-form-wrapper').style.display = 'none';
-        document.getElementById('review-title').value = '';
-        document.getElementById('review-body').value = '';
-        setRating(0);
-        loadReviews();
+        // Route execution safely through your global api.js service architecture
+        const data = await api.reviews.submit(listingId, rating, title, body);
+
+        if (data.success) {
+          showToast('✅ Review submitted successfully!');
+
+          const formWrapper = document.getElementById('review-form-wrapper');
+          if (formWrapper) formWrapper.style.display = 'none';
+
+          // Reset input fields for the next interaction
+          document.getElementById('review-title').value = '';
+          document.getElementById('review-body').value = '';
+          setRating(0);
+
+          // Auto-reload the active visual review stack feed instantly
+          loadReviews();
+        }
       } catch (e) {
-        errEl.textContent = e.message;
+        // Captures custom error validation strings returned directly from your Node/Express server
+        errEl.textContent = e.message || 'Failed to send your review. Please try again.';
         errEl.style.display = 'block';
       }
     }

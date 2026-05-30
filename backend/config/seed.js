@@ -16,6 +16,9 @@ async function seed() {
         ('Ssaazi Fred',  'fssaazi46@gmail.com',  '+256740193837', $1, 'landlord', true),
         ('Jane Momo',    'janemomo@.com',  '+256766513833', $1, 'landlord', true),
         ('Dr. Claude Martins','martins@gmail.com', '+256744541025', $1, 'landlord', true)
+        ('Mrs Aggie','aggie@gmail.com', '+256744541025', $1, 'landlord', true)
+        ('Joshua Nduhura','joshvfx@gmail.com', '+256759514123', $1, 'landlord', true)
+        ('Travor','travor@gmail.com', '+256740193837', $1, 'landlord', true)
       ON CONFLICT (email) DO NOTHING
       RETURNING id, name
     `, [passwordHash]);
@@ -26,26 +29,27 @@ async function seed() {
     await client.query(`
       INSERT INTO users (name, email, phone, password, role, is_verified)
       VALUES ('Joshua nduhura', 'joshvfx@gmail.com', '+256759514123', $1, 'tenant', true)
+      VALUES ('Fred Him', 'fssaazi4@gmail.com', '+256783649173', $1, 'tenant', true)
       ON CONFLICT (email) DO NOTHING
     `, [passwordHash]);
 
     if (landlords.rows.length > 0) {
-      const [fred, momo, claude, fred2, joshua] = landlords.rows;
+      const [fred, momo, claude, travor, joshua, aggie] = landlords.rows;
 
       const listingsData = [
         {
           landlord_id: fred.id,
           title: 'Modern 3-Bedroom Apartment',
           description: 'Spacious modern apartment in the heart of Kololo with stunning city views, fully fitted kitchen, and 24/7 security.',
-          type: 'apartment', price: 1800000, bedrooms: 3, bathrooms: 2, area_sqm: 140,
+          type: 'apartment', price: 1800000, bedrooms: 3, bathrooms: 1, area_sqm: 140,
           address: 'Plot 14, Kololo Hill Drive', neighbourhood: 'Kololo', district: 'Kampala',
           amenities: ['WiFi', 'Parking', 'Generator', 'Security', 'Water Tank', 'Balcony'],
           status: 'active', is_featured: true,
         },
         {
-          landlord_id: fred2.id,
+          landlord_id: travor.id,
           title: 'Modern 4-Bedroom Apartment',
-          description: 'Spacious modern apartment in the heart of Kololo with stunning city views, fully fitted kitchen, and 24/7 security.',
+          description: 'Spacious modern apartment in the heart of Kololo with stunning city views, and security.',
           type: 'Self-Contained', price: 2000000, bedrooms: 4, bathrooms: 2, area_sqm: 220,
           address: 'Plot 15, Kawempe Hillside', neighbourhood: 'Kawanda', district: 'Kampala',
           amenities: ['WiFi', 'Parking', 'Generator', 'Security', 'Balcony'],
@@ -79,7 +83,7 @@ async function seed() {
           status: 'active', is_featured: true,
         },
         {
-          landlord_id: momo.id,
+          landlord_id: aggie.id,
           title: 'Luxury 4-Bedroom Duplex',
           description: 'Prestigious duplex apartment in Naguru with panoramic views of Kampala. High-end finishes throughout.',
           type: 'apartment', price: 4200000, bedrooms: 4, bathrooms: 3, area_sqm: 220,
@@ -106,7 +110,7 @@ async function seed() {
     }
 
     await client.query('COMMIT');
-    console.log('✅ Database seeded! Login: fssaazi46@gmail.com / password123');
+    console.log('✅ Database seeded! Login: your@gmail.com / password123');
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('❌ Seed failed:', err.message);

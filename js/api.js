@@ -213,6 +213,36 @@ const api = {
       return handleResponse(res);
     },
   },
+  // ── REVIEWS MODULE ──
+  reviews: {
+    // Tenants submit a review for a specific property listing
+    async submit(listing_id, rating, title, body) {
+      const res = await fetch(`${API_BASE}/reviews`, {
+        method: 'POST',
+        headers: authHeaders(), // Plugs in Bearer token automatically
+        body: JSON.stringify({ listing_id, rating, title, body }),
+      });
+      return handleResponse(res);
+    },
+
+    // Admin fetches all aggregate system reviews for moderation
+    async getAdminDashboardReviews() {
+      const res = await fetch(`${API_BASE}/admin/all-reviews`, {
+        headers: authHeaders()
+      });
+      return handleResponse(res);
+    },
+
+    // Admin toggles review visibility status (active, hidden, flagged)
+    async updateStatus(reviewId, status) {
+      const res = await fetch(`${API_BASE}/reviews/${reviewId}/status`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({ status })
+      });
+      return handleResponse(res);
+    }
+  },
 };
 
 // ── SMART NAV — updates navbar based on login state ──

@@ -498,7 +498,7 @@
 
         <div class="section-label">My Properties</div>
         <li><a href="#" onclick="showSection('listings', this)"><span class="icon">🏠</span> My Listings</a></li>
-        <li><a href="list-property.html"><span class="icon">➕</span> List a Property</a></li>
+        <li><a href="/pages/list-property.html"><span class="icon">➕</span> List a property</a></li>
 
         <div class="section-label">Enquiries</div>
         <li><a href="#" onclick="showSection('enquiries', this)"><span class="icon">📩</span> Enquiries <span
@@ -520,7 +520,7 @@
 
         <div class="section-label">My Properties</div>
         <li><a href="#" onclick="showSection('listings', this)"><span class="icon">🏠</span> My Listings</a></li>
-        <li><a href="list-property.html"><span class="icon">➕</span> List a Property</a></li>
+        <li><a href="/pages/list-property.html"><span class="icon">➕</span> List a property</a></li>
 
         <div class="section-label">Enquiries</div>
         <li><a href="#" onclick="showSection('enquiries', this)"><span class="icon">📩</span> My Enquiries</a></li>
@@ -782,102 +782,132 @@
             <div class="stat-value" id="admin-stat-pending" style="color:#f59e0b;">—</div>
             <div class="stat-sub">Awaiting approval</div>
           </div>
-          <div class="stat-card green">
-            <div class="stat-label">Active Listings</div>
-            <div class="stat-value" id="admin-stat-active">—</div>
-            <div class="stat-sub">Live on platform</div>
-          </div>
-          <div class="stat-card blue">
-            <div class="stat-label">Total Landlords</div>
-            <div class="stat-value" id="admin-stat-landlords">—</div>
-            <div class="stat-sub">Registered accounts</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Total Tenants</div>
-            <div class="stat-value" id="admin-stat-tenants">—</div>
-            <div class="stat-sub">Registered accounts</div>
-          </div>
         </div>
 
         <div class="panel" style="margin-bottom:24px;">
           <div class="panel-header">
-            <h2>⏳ Pending Listings — Needs Your Approval</h2>
-            <div class="dash-tabs">
-              <button class="dash-tab active" onclick="loadAdminListings('pending', this)">Pending</button>
-              <button class="dash-tab" onclick="loadAdminListings('active', this)">Active</button>
-              <button class="dash-tab" onclick="loadAdminListings('inactive', this)">Inactive</button>
-              <button class="dash-tab" onclick="loadAdminListings('rented', this)">Rented</button>
+            <h2>📢 Platform Review Moderation</h2>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive" style="overflow-x: auto;">
+              <table class="listings-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: var(--cream);">
+                    <th style="padding: 12px 20px;">Tenant Info</th>
+                    <th style="padding: 12px 20px;">Property Details</th>
+                    <th style="padding: 12px 20px;">Review Content</th>
+                    <th style="padding: 12px 20px;">Visibility Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-reviews-table-body">
+                  <tr>
+                    <td colspan="4" style="text-align: center; padding: 32px; color: var(--text-muted);">Loading system
+                      reviews...</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-          <div class="panel-body" id="admin-listings-body">
-            <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
-          </div>
         </div>
-
         <div class="panel">
           <div class="panel-header">
             <h2>👥 All Users</h2>
-            <input type="text" id="user-search" placeholder="Search by name or email..." oninput="filterUsers()"
-              style="padding:7px 14px;border:1.5px solid var(--border);border-radius:50px;font-size:0.85rem;outline:none;width:220px;" />
-          </div>
-          <div class="panel-body">
-            <table class="listings-table" id="users-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Role</th>
-                  <th>Joined</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="admin-users-body">
-                <tr>
-                  <td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">Loading...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div id="section-contact-messages" style="display:none;">
-        <div class="dash-header">
-          <div>
-            <h1>✉️ Contact Form Messages</h1>
-            <p>Messages sent via the public contact page.</p>
-          </div>
-        </div>
-
-        <div class="stats-grid" style="margin-bottom:24px;">
-          <div class="stat-card">
-            <div class="stat-label">Total Messages</div>
-            <div class="stat-value" id="cm-total">—</div>
-          </div>
-          <div class="stat-card red">
-            <div class="stat-label">Unread</div>
-            <div class="stat-value" id="cm-unread">—</div>
-          </div>
-          <div class="stat-card green">
-            <div class="stat-label">Today</div>
-            <div class="stat-value" id="cm-today">—</div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <h2>All Messages</h2>
-            <div class="dash-tabs">
-              <button class="dash-tab active" onclick="filterContactMsgs('all', this)">All</button>
-              <button class="dash-tab" onclick="filterContactMsgs('new', this)">Unread</button>
-              <button class="dash-tab" onclick="filterContactMsgs('read', this)">Read</button>
+            <div class="stat-card green">
+              <div class="stat-label">Active Listings</div>
+              <div class="stat-value" id="admin-stat-active">—</div>
+              <div class="stat-sub">Live on platform</div>
+            </div>
+            <div class="stat-card blue">
+              <div class="stat-label">Total Landlords</div>
+              <div class="stat-value" id="admin-stat-landlords">—</div>
+              <div class="stat-sub">Registered accounts</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Tenants</div>
+              <div class="stat-value" id="admin-stat-tenants">—</div>
+              <div class="stat-sub">Registered accounts</div>
             </div>
           </div>
-          <div class="panel-body" id="contact-messages-list">
-            <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
+
+          <div class="panel" style="margin-bottom:24px;">
+            <div class="panel-header">
+              <h2>⏳ Pending Listings — Needs Your Approval</h2>
+              <div class="dash-tabs">
+                <button class="dash-tab active" onclick="loadAdminListings('pending', this)">Pending</button>
+                <button class="dash-tab" onclick="loadAdminListings('active', this)">Active</button>
+                <button class="dash-tab" onclick="loadAdminListings('inactive', this)">Inactive</button>
+                <button class="dash-tab" onclick="loadAdminListings('rented', this)">Rented</button>
+              </div>
+            </div>
+            <div class="panel-body" id="admin-listings-body">
+              <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2>👥 All Users</h2>
+              <input type="text" id="user-search" placeholder="Search by name or email..." oninput="filterUsers()"
+                style="padding:7px 14px;border:1.5px solid var(--border);border-radius:50px;font-size:0.85rem;outline:none;width:220px;" />
+            </div>
+            <div class="panel-body">
+              <table class="listings-table" id="users-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Role</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-users-body">
+                  <tr>
+                    <td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
+        <div id="section-contact-messages" style="display:none;">
+          <div class="dash-header">
+            <div>
+              <h1>✉️ Contact Form Messages</h1>
+              <p>Messages sent via the public contact page.</p>
+            </div>
+          </div>
+
+          <div class="stats-grid" style="margin-bottom:24px;">
+            <div class="stat-card">
+              <div class="stat-label">Total Messages</div>
+              <div class="stat-value" id="cm-total">—</div>
+            </div>
+            <div class="stat-card red">
+              <div class="stat-label">Unread</div>
+              <div class="stat-value" id="cm-unread">—</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-label">Today</div>
+              <div class="stat-value" id="cm-today">—</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2>All Messages</h2>
+              <div class="dash-tabs">
+                <button class="dash-tab active" onclick="filterContactMsgs('all', this)">All</button>
+                <button class="dash-tab" onclick="filterContactMsgs('new', this)">Unread</button>
+                <button class="dash-tab" onclick="filterContactMsgs('read', this)">Read</button>
+              </div>
+            </div>
+            <div class="panel-body" id="contact-messages-list">
+              <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
+            </div>
+          </div>
+        </div>
 
     </main>
   </div>
@@ -1429,7 +1459,72 @@
     let currentAdminFilter = 'pending';
 
     async function loadAdminData() {
-      await Promise.all([loadAdminListings('pending'), loadAdminUsers(), loadAdminStats()]);
+      await Promise.all([loadAdminListings('pending'), loadAdminUsers(), loadAdminStats(), loadAdminReviewsPanel()]);
+    }
+
+    // ── 📢 REVIEWS MODERATION PANEL SYSTEM LOGIC ──
+    async function loadAdminReviewsPanel() {
+      const tbody = document.getElementById('admin-reviews-table-body');
+      if (!tbody) return;
+
+      try {
+        // Safe execution using your newly extended global api object branch
+        const data = await api.reviews.getAdminDashboardReviews();
+        tbody.innerHTML = '';
+
+        if (!data.reviews || data.reviews.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 32px; color: var(--text-muted);">No reviews written on NyumbaUG yet.</td></tr>`;
+          return;
+        }
+
+        data.reviews.forEach(review => {
+          const starDisplay = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+          const formattedDate = new Date(review.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short' });
+
+          tbody.innerHTML += `
+            <tr style="border-bottom: 1px solid var(--border); vertical-align: top;">
+              <td style="padding: 16px 20px;">
+                <div style="font-weight: 600; color: var(--text-dark);">${review.tenant_name}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">${review.tenant_email}</div>
+              </td>
+              <td style="padding: 16px 20px;">
+                <div style="font-weight: 600; color: var(--green-light);">${review.listing_title}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">📍 ${review.neighbourhood || 'Kampala'}</div>
+              </td>
+              <td style="padding: 16px 20px; max-width: 320px; white-space: normal; word-break: break-word;">
+                <div style="color: #f59e0b; font-size: 0.9rem; margin-bottom: 4px;">${starDisplay}</div>
+                <strong style="font-size: 0.88rem; color: var(--text-dark); d-block; margin-bottom:2px;">${review.title || 'Untitled'}</strong>
+                <p style="margin: 4px 0; font-size: 0.85rem; color: var(--text-mid); line-height: 1.4;">"${review.body}"</p>
+                <small style="color: var(--text-muted); font-size: 0.75rem; display:block; margin-top:4px;">Date: ${formattedDate}</small>
+              </td>
+              <td style="padding: 16px 20px;">
+                <select class="btn-sm" onchange="updateReviewStatus('${review.id}', this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--white); outline: none; cursor: pointer; font-size:0.83rem;">
+                  <option value="active" ${review.status === 'active' ? 'selected' : ''}>🟢 Active</option>
+                  <option value="hidden" ${review.status === 'hidden' ? 'selected' : ''}>🛑 Hidden</option>
+                  <option value="flagged" ${review.status === 'flagged' ? 'selected' : ''}>⚠️ Flagged</option>
+                </select>
+              </td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        console.error('Dashboard table construction error:', err);
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 24px; color: #ef4444; font-size:0.88rem;">❌ Failed to load system reviews from Render.</td></tr>`;
+      }
+    }
+
+    async function updateReviewStatus(reviewId, newStatus) {
+      try {
+        const data = await api.reviews.updateStatus(reviewId, newStatus);
+        if (data.success) {
+          showToast(`✅ Review visibility marked ${newStatus}`);
+        } else {
+          showToast(data.message || '❌ Error updating visibility status.');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('❌ Failed to update review state.');
+      }
     }
 
     async function loadAdminStats() {

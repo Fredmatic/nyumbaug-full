@@ -206,5 +206,30 @@ router.patch('/reviews/:id/status', async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to update review.' });
     }
 });
+// GET /api/admin/all-reviews — Securely loads all platform comments with metadata
+router.get('/admin/all-reviews', async (req, res) => {
+    try {
+        const user = await getUser(req); // Resolves and inspects user tokens
+        if (!user || user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Admin access denied.' });
+        }
+
+        const result = await pool.query(`
+            SELECT r.*, 
+                   l.title AS listing_title, 
+                   l.neighbourhood,
+                   u.name AS tenant_name, 
+                   u.email AS tenant_email
+            FROM reviews r
+            JOIN listings l ON r.listing_id = l.id
+            JOIN users u ON r.tenant_id = u.id
+            ORDER BY r.created_at DESC
+        `);
+        res.json({ success: true, reviews: result.rows });
+    } catch (err) {
+        console.error('Master admin review pull execution error:', err);
+        res.status(500).json({ success: false, message: 'Internal server lookup failure.' });
+    }
+});
 
 module.exports = router;
