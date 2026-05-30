@@ -187,7 +187,7 @@ const uploadMiddleware = multer({
     limits: { fileSize: 5 * 1024 * 1024 }
 }).single('avatar');
 
-router.patch('/auth/update-profile', (req, res) => {
+router.patch('/update-profile', (req, res) => {
     uploadMiddleware(req, res, async (err) => {
         if (err) return res.status(400).json({ success: false, message: err.message });
 
