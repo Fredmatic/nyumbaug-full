@@ -111,10 +111,14 @@ const getListing = asyncHandler(async (req, res) => {
 // 3. POST /api/listings — create listing (FIXED & CONSOLIDATED)
 // =========================================================================
 const createListing = asyncHandler(async (req, res) => {
-  const {
+  let {
     title, description, type, price, bedrooms, bathrooms,
     area, address, neighbourhood, district, amenities, available_from,
   } = req.body;
+  // force it to lowercase to match your DB column name, and also handle US vs UK spelling
+  if (type && typeof type === 'string') {
+    type = type.trim().toLowerCase();
+  }
 
   // Handles both British/Ugandan (neighbourhood) and US (neighborhood) form parameters
   const neighborhoodValue = neighbourhood || req.body.neighborhood;
