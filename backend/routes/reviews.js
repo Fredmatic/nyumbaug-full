@@ -19,7 +19,7 @@ async function getUser(req) {
 
 // ── GET REVIEWS FOR A LISTING ──
 // GET /api/reviews/listing/:listing_id
-router.get('/reviews/listing/:listing_id', async (req, res) => {
+router.get('/listing/:listing_id', async (req, res) => {
     try {
         const result = await pool.query(`
       SELECT
@@ -52,7 +52,7 @@ router.get('/reviews/listing/:listing_id', async (req, res) => {
 
 // ── GET REVIEWS FOR A LANDLORD ──
 // GET /api/reviews/landlord/:landlord_id
-router.get('/reviews/landlord/:landlord_id', async (req, res) => {
+router.get('/landlord/:landlord_id', async (req, res) => {
     try {
         const result = await pool.query(`
       SELECT

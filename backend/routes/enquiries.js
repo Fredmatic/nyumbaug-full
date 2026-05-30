@@ -3,9 +3,9 @@ const router = express.Router();
 const { protect, authorize, optionalAuth } = require('../middleware/auth');
 const enquiry = require('../controllers/enquiryController');
 
-router.post('/enquiries', optionalAuth, enquiry.createEnquiry);
-router.get('/enquiries', protect, authorize('landlord', 'admin'), enquiry.getEnquiries);
-router.patch('/enquiries/:id', protect, authorize('landlord', 'admin'), enquiry.updateEnquiry);
+router.post('/', optionalAuth, enquiry.createEnquiry);
+router.get('/', protect, authorize('landlord', 'admin'), enquiry.getEnquiries);
+router.patch('/:id', protect, authorize('landlord', 'admin'), enquiry.updateEnquiry);
 
 router.post('/messages', protect, enquiry.sendMessage);
 router.get('/messages', protect, enquiry.getMessages);

@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 
 // ---------------- REGISTER ----------------
-router.post('/auth/register', async (req, res) => {
+router.post('/register', async (req, res) => {
     const { name, email, phone, password, role } = req.body;
 
     if (!name || !email || !password) {
@@ -59,7 +59,7 @@ router.post('/auth/register', async (req, res) => {
 });
 
 // ---------------- LOGIN ----------------
-router.post('/auth/login', async (req, res) => {
+router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -109,7 +109,7 @@ router.post('/auth/login', async (req, res) => {
 });
 
 // ---------------- GET ME ----------------
-router.get('/auth/me', async (req, res) => {
+router.get('/me', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -136,7 +136,7 @@ router.get('/auth/me', async (req, res) => {
 });
 
 // ---------------- CHANGE PASSWORD ----------------
-router.patch('/auth/change-password', async (req, res) => {
+router.patch('/change-password', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {

@@ -57,7 +57,7 @@ async function sendResetEmail(to, name, resetURL) {
 }
 
 // ── FORGOT PASSWORD ──
-router.post('/auth/forgot-password', async (req, res) => {
+router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
@@ -113,7 +113,7 @@ router.post('/auth/forgot-password', async (req, res) => {
 });
 
 // ── RESET PASSWORD ──
-router.post('/auth/reset-password', async (req, res) => {
+router.post('/reset-password', async (req, res) => {
   const { token, password: newPassword } = req.body;
 
   if (!token || !newPassword) {
