@@ -1,33 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/auth');
-const { uploadMixedMedia } = require('../middleware/uploadConfig');
-const { upload } = require('../middleware/uploadConfig'); // Needed for the standalone addimages route
-const listings = require('../controllers/listingsController');
+const {
+    getListings,
+    getListing,
+    createListing,
+    updateListing,
+    deleteListing,
+    addImages,
+    getMyListings
+} = require('../controllers/listingsController');
+const { protect } = require('../middleware/auth'); // assuming your auth middleware name
 
-// ── PUBLIC ROUTES ──
-router.get('/listings', listings.getListings);
-router.get('/listings/:id', listings.getListing);
+// 1. Public search filter route
+router.get('/', getListings);
 
-// ── PROTECTED LANDLORD/ADMIN ROUTES ──
-router.get('/listings/my', protect, authorize('landlord', 'admin'), listings.getMyListings);
+// 2. MOVE THIS ABOVE THE :id ROUTE 💡
+// This ensures Express captures '/my' before treating it as a dynamic ID parameter!
+router.get('/my', protect, getMyListings);
 
-// Create a brand new listing with mixed photos and video walkthroughs
-router.post(
-    '/listings',
-    protect,
-    authorize('landlord', 'admin'),
-    uploadMixedMedia.fields([
-        { name: 'images', maxCount: 10 },
-        { name: 'video', maxCount: 1 }
-    ]),
-    listings.createListing
-);
-
-router.patch('/listings/:id', protect, authorize('landlord', 'admin'), listings.updateListing);
-router.delete('/listings/:id', protect, authorize('landlord', 'admin'), listings.deleteListing);
-
-// Upload extra images to a listing that already exists
-router.post('/listings/:id/images', protect, authorize('landlord', 'admin'), upload.array('images', 8), listings.addImages);
+// 3. Dynamic item lookup routes (Keep these at the bottom)
+router.get('/:id', getListing);
+router.patch('/:id', protect, updateListing);
+router.delete('/:id', protect, deleteListing);
+router.post('/:id/images', protect, addImages);
 
 module.exports = router;
