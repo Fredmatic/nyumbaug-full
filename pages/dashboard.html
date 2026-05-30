@@ -1047,43 +1047,79 @@
         window.location.href = 'login.html';
         return;
       }
-      // Block unpaid landlords
-      const token1 = localStorage.getItem('nyumba_token'); const sub = localStorage.getItem('nyumba_sub_expiry_' + token1?.slice(-10));
+
+      // block unpaid landlords
+      const token1 = localStorage.getItem('nyumba_token');
+      const sub = localStorage.getItem('nyumba_sub_expiry_' + token1?.slice(-10));
       const paid = sub && new Date(sub) > new Date();
       const u0 = api.auth.currentUser();
-      if (u0?.role === 'landlord' && !paid) {
+      if (u0.role === 'landlord' && !paid) {
         window.location.href = 'payment.html';
         return;
       }
-
+      // 1. load profile/authentication details safely
+      let userRole = u0?.role || 'landlord'; // fallback data
       try {
         const { user } = await api.auth.getMe();
-        const initials = user.name.split(' ').map(n => n[0]).slice(0, 2).join('');
+        userRole = user.role; // update with live backend data
+
+        const initials = user.name.split('').map(n => n[0]).slice(0, 2).join('');
         document.getElementById('sidebar-avatar').textContent = initials;
         document.getElementById('sidebar-name').textContent = user.name;
         document.getElementById('sidebar-role').textContent = user.role;
         document.getElementById('header-name').textContent = user.name.split(' ')[0];
-        if (user.role === 'admin') document.getElementById('header-sub').textContent = 'Welcome to your admin panel. Manage listings and users.';
 
-        // Show correct nav based on role
         if (user.role === 'admin') {
+          document.getElementById('header-sub').textContent = 'Welcome to your admin panel. Manage listings and its users.';
+        }
+        document.getElementById('settings-name').value = user.name;
+        document.getElementById('settings-phone').value = user.phone || '';
+        document.getElementById('settings-email').value = user.email || '';
+        loadAvatar(user);
+      } catch (profileError) {
+        console.error("Failed to load user profile details:", profileError);
+      }
+      //2. set up Nav and Layout structure safely using  our fallback if needed
+      try {
+        if (userRole === 'admin') {
           document.getElementById('admin-nav').style.display = 'block';
           document.getElementById('landlord-nav').style.display = 'none';
-          // Admin lands on admin panel by default
           showSection('admin', document.querySelector('#admin-nav a'));
         } else {
           document.getElementById('landlord-nav').style.display = 'block';
           document.getElementById('admin-nav').style.display = 'none';
-          // Landlord lands on overview
           showSection('overview', document.querySelector('#landlord-nav a'));
         }
-        document.getElementById('settings-name').value = user.name;
-        document.getElementById('settings-phone').value = user.phone || '';
-        document.getElementById('settings-email').value = user.email;
-        loadAvatar(user);
-      } catch (e) { }
+      } catch (layoutError) {
+        console.error("UI layout setting failed:", layoutError);
+      }
 
-      await Promise.all([loadMyListings(), loadEnquiries()]);
+      // 3. load dynamic listings data individually so failures dont block the entire screen
+      try {
+        await loadMyListings();
+
+      } catch (listingsError) {
+        console.error("Property data failed to load:", listingsError);
+      }
+      //4. load dynamic enquiries safely
+      try {
+        await loadEnquiries();
+      } catch (enquiriesError) {
+        console.error("Enquiries data failed to load:", enquiriesError);
+      }
+
+      // 5. Explicity strip away any global CSS loading blocks
+      try {
+        const globalLoader = document.getElementById('global-loader');
+        if (globalLoader) globalLoader.style.display = 'none';
+
+        const loadingText = document.querySelector('.loading');
+        if (loadingText && loadingText.textContent.includes('Loading...')) {
+          loadingText.style.display = 'none';
+        }
+      } catch (loaderError) {
+        console.error("Loader removal error:", loaderError);
+      }
     }
 
     // ── LOAD DATA ──
