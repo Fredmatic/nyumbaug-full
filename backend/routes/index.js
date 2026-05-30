@@ -8,11 +8,11 @@ const listingsRoutes = require('./listings');
 const enquiriesRoutes = require('./enquiries');
 const adminRoutes = require('./admin');
 
-router.use('/', authRoutes);
-router.use('/', passwordRoutes);
-router.use('/', listingsRoutes);
-router.use('/', enquiriesRoutes);
-router.use('/', adminRoutes);
-router.use('/', reviewRoutes);
+router.use('/auth', authRoutes);
+router.use('/password', passwordRoutes);
+router.use('/listings', listingsRoutes);
+router.use('/enquiries', enquiriesRoutes);
+router.use('/admin', adminRoutes);
+router.use('/reviews', reviewRoutes);
 
 module.exports = router;
