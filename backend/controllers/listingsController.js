@@ -6,70 +6,64 @@ const { deleteImage } = require('../middleware/uploadConfig');
 // 1. GET /api/listings — search & filter
 // =========================================================================
 const getListings = asyncHandler(async (req, res) => {
-  const {
-    search, type, neighbourhood, district,
-    min_price, max_price, bedrooms, amenities,
-    sort = 'created_at', order = 'DESC',
-    page = 1, limit = 12,
-    featured,
-  } = req.query;
+  try {
+    // 1. Extract query params from frontend search bars
+    const { district, neighbourhood, type, minPrice, maxPrice } = req.query;
 
-  const conditions = [`l.status = 'active'`];
-  const values = [];
-  let idx = 1;
+    let queryText = 'SELECT * FROM listings WHERE 1=1';
+    const queryParams = [];
+    let paramIndex = 1;
 
-  if (search) {
-    conditions.push(`(l.title ILIKE $${idx} OR l.address ILIKE $${idx} OR l.neighbourhood ILIKE $${idx})`);
-    values.push(`%${search}%`); idx++;
+    // 2. Case-Insensitive District Filter
+    if (district && district.trim() !== '') {
+      queryText += ` AND district ILIKE $${paramIndex}`;
+      queryParams.push(`%${district.trim()}%`);
+      paramIndex++;
+    }
+
+    // 3. Case-Insensitive Neighbourhood Filter
+    if (neighbourhood && neighbourhood.trim() !== '') {
+      queryText += ` AND neighbourhood ILIKE $${paramIndex}`;
+      queryParams.push(`%${neighbourhood.trim()}%`);
+      paramIndex++;
+    }
+
+    // 4. Property Type Filter (e.g., Apartment, House)
+    if (type && type.trim() !== '' && type !== 'all') {
+      queryText += ` AND type = $${paramIndex}`;
+      queryParams.push(type.trim());
+      paramIndex++;
+    }
+
+    // 5. Minimum Price Filter
+    if (minPrice && !isNaN(minPrice) && minPrice !== '') {
+      queryText += ` AND price >= $${paramIndex}`;
+      queryParams.push(parseInt(minPrice));
+      paramIndex++;
+    }
+
+    // 6. Maximum Price Filter
+    if (maxPrice && !isNaN(maxPrice) && maxPrice !== '') {
+      queryText += ` AND price <= $${paramIndex}`;
+      queryParams.push(parseInt(maxPrice));
+      paramIndex++;
+    }
+
+    // Always sort by newest first
+    queryText += ' ORDER BY created_at DESC';
+
+    const result = await pool.query(queryText, queryParams);
+
+    res.status(200).json({
+      success: true,
+      count: result.rows.length,
+      data: result.rows
+    });
+
+  } catch (error) {
+    console.error("Search Filter Error:", error.message);
+    res.status(500).json({ success: false, error: error.message });
   }
-  if (type) { conditions.push(`l.type = $${idx++}`); values.push(type); }
-  if (neighbourhood) { conditions.push(`l.neighbourhood ILIKE $${idx++}`); values.push(`%${neighbourhood}%`); }
-  if (district) { conditions.push(`l.district = $${idx++}`); values.push(district); }
-  if (min_price) { conditions.push(`l.price >= $${idx++}`); values.push(parseInt(min_price)); }
-  if (max_price) { conditions.push(`l.price <= $${idx++}`); values.push(parseInt(max_price)); }
-  if (bedrooms) { conditions.push(`l.bedrooms >= $${idx++}`); values.push(parseInt(bedrooms)); }
-  if (featured === 'true') { conditions.push(`l.is_featured = true`); }
-  if (amenities) {
-    const arr = amenities.split(',').map(a => a.trim());
-    conditions.push(`l.amenities @> $${idx++}::text[]`);
-    values.push(arr);
-  }
-
-  const allowedSorts = { price: 'l.price', created_at: 'l.created_at', views: 'l.views', bedrooms: 'l.bedrooms' };
-  const sortCol = allowedSorts[sort] || 'l.created_at';
-  const sortDir = order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-
-  const offset = (parseInt(page) - 1) * parseInt(limit);
-  values.push(parseInt(limit), offset);
-
-  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-
-  const [listingsResult, countResult] = await Promise.all([
-    pool.query(`
-      SELECT
-        l.id, l.title, l.type, l.price, l.bedrooms, l.bathrooms,
-        l.area_sqm, l.neighbourhood, l.district, l.address,
-        l.amenities, l.status, l.is_featured, l.views, l.available_from, l.created_at,
-        u.name AS landlord_name, u.phone AS landlord_phone,
-        (SELECT url FROM listing_images WHERE listing_id = l.id AND is_cover = true LIMIT 1) AS cover_image
-      FROM listings l
-      JOIN users u ON l.landlord_id = u.id
-      ${whereClause}
-      ORDER BY l.is_featured DESC, ${sortCol} ${sortDir}
-      LIMIT $${idx++} OFFSET $${idx++}
-    `, values),
-    pool.query(`
-      SELECT COUNT(*) FROM listings l ${whereClause}
-    `, values.slice(0, -2)),
-  ]);
-
-  res.json({
-    success: true,
-    count: parseInt(countResult.rows[0].count),
-    pages: Math.ceil(parseInt(countResult.rows[0].count) / parseInt(limit)),
-    page: parseInt(page),
-    listings: listingsResult.rows,
-  });
 });
 
 // =========================================================================
