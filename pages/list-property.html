@@ -560,7 +560,9 @@
       formData.append('price', document.getElementById('prop-price').value);
       formData.append('bedrooms', document.getElementById('prop-beds').value);
       formData.append('bathrooms', document.getElementById('prop-baths').value);
-      formData.append('area', document.getElementById('prop-area').value);
+      const areaValue = document.getElementById('prop-area').value;
+      // If the field is empty, send 0 (or null depending on backend requirements) instead of an empty string
+      formData.append('area', areaValue === "" ? "0" : areaValue);
       formData.append('available_from', document.getElementById('prop-available').value);
       formData.append('address', document.getElementById('prop-address').value);
       formData.append('neighborhood', document.getElementById('prop-area-select').value);
