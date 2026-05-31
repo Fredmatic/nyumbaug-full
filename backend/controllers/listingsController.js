@@ -77,11 +77,24 @@ const getListing = asyncHandler(async (req, res) => {
   }
 
   // Fetch listing data along with landlord profile details
+  // 🚀 FETCH THE LISTING WITH ITS IMAGES AGGREGATED FROM THE DATABASE
   const result = await pool.query(`
-    SELECT l.*, u.name AS landlord_name, u.email AS landlord_email, u.phone AS landlord_phone
+    SELECT 
+      l.*, 
+      u.name AS landlord_name, 
+      u.email AS landlord_email, 
+      u.phone AS landlord_phone,
+      COALESCE(
+        json_agg(
+          json_build_object('url', li.image_url)
+        ) FILTER (WHERE li.image_url IS NOT NULL), 
+        '[]'
+      ) AS images
     FROM listings l
     LEFT JOIN users u ON l.landlord_id = u.id
+    LEFT JOIN listing_images li ON l.id = li.listing_id
     WHERE l.id = $1
+    GROUP BY l.id, u.id
   `, [parsedId]);
 
   if (!result.rows.length) {
