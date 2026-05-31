@@ -60,35 +60,38 @@ const getListings = asyncHandler(async (req, res) => {
 });
 
 // =========================================================================
-// 2. GET /api/listings/:id — single listing with all images
+// 2. GET /api/listings/:id — get a single listing profile
 // =========================================================================
 const getListing = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const parsedId = id.includes('-') ? id : `00000000-0000-0000-0000-${id.padStart(12, '0')}`;
 
+  // 🚀 FIX: Convert integer string IDs (like "11") into standard mock UUID blocks smoothly
+  const parsedId = id.includes('-')
+    ? id
+    : `00000000-0000-0000-0000-${id.padStart(12, '0')}`;
+
+  // Validate the resulting string matches standard UUID criteria before hitting PostgreSQL
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(parsedId)) {
+    throw new AppError('The requested property format identification is invalid.', 400);
+  }
+
+  // Fetch listing data along with landlord profile details
   const result = await pool.query(`
-    SELECT
-      l.*,
-      u.id AS landlord_id, u.name AS landlord_name,
-      u.phone AS landlord_phone, u.avatar_url AS landlord_avatar,
-      u.is_verified AS landlord_verified
+    SELECT l.*, u.name AS landlord_name, u.email AS landlord_email, u.phone AS landlord_phone
     FROM listings l
     JOIN users u ON l.landlord_id = u.id
     WHERE l.id = $1
   `, [parsedId]);
 
-  if (!result.rows.length) throw new AppError('Listing not found.', 404);
+  if (!result.rows.length) {
+    throw new AppError('The property listing you are trying to view could not be found.', 404);
+  }
 
-  const listing = result.rows[0];
-  await pool.query('UPDATE listings SET views = views + 1 WHERE id = $1', [parsedId]);
-
-  const imagesResult = await pool.query(
-    'SELECT id, url, is_cover FROM listing_images WHERE listing_id = $1 ORDER BY is_cover DESC',
-    [parsedId]
-  );
-
-  listing.images = imagesResult.rows;
-  res.json({ success: true, listing });
+  res.status(200).json({
+    success: true,
+    data: result.rows[0]
+  });
 });
 
 // =========================================================================
