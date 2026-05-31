@@ -102,10 +102,7 @@ const getListing = asyncHandler(async (req, res) => {
 });
 
 // =========================================================================
-// 3. POST /api/listings — create listing (FIXED & CONSOLIDATED)
-// =========================================================================
-// =========================================================================
-// 3. POST /api/listings — create listing (FIXED & CONSOLIDATED)
+// POST /api/listings — Create property listing (BULLETPROOF CODES)
 // =========================================================================
 const createListing = asyncHandler(async (req, res) => {
   let {
@@ -113,35 +110,41 @@ const createListing = asyncHandler(async (req, res) => {
     area, address, neighbourhood, district, amenities, available_from,
   } = req.body;
 
+  // Clean and sanitize string fields
   if (type && typeof type === 'string') {
     type = type.trim().toLowerCase();
   }
+  const neighborhoodValue = neighbourhood || req.body.neighborhood || 'Kampala Central';
+  const districtValue = district || 'Kampala';
 
-  const neighborhoodValue = neighbourhood || req.body.neighborhood;
+  // ── DYNAMIC NOT-NULL TITLE FALLBACK ──
+  // If frontend title is completely empty or null, auto-generate one to satisfy DB constraint
+  let computedTitle = title && title.trim() !== "" ? title.trim() : "";
+  if (!computedTitle) {
+    const formattedType = type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Property';
+    const bedsText = bedrooms ? `${bedrooms} Bed` : '';
+    computedTitle = `${bedsText} ${formattedType} for Rent in ${neighborhoodValue}`.trim();
+  }
+
   const computedArea = area || req.body.area_sqm;
 
+  // Media file management
   const uploadedImages = req.files && req.files['images'] ? req.files['images'] : [];
   const uploadedVideo = req.files && req.files['video'] ? req.files['video'][0] : null;
 
   const videoUrl = uploadedVideo ? uploadedVideo.path : null;
   const videoPublicId = uploadedVideo ? uploadedVideo.filename : null;
 
-  // ── SAFE PARSING CONVERSION ──
-  // ── REWRITE THIS SECTION IN CREATE LISTING ──
+  // ── SAFE PARSING CONVERSION & DATA-TYPE FALLBACKS ──
   const rawId = String(req.user.id || '0');
-
-  // If the ID is already a real UUID string, use it. 
-  // If it's a regular integer like 17, pad it out structurally to satisfy the UUID database type check!
-  const parsedLandlordId = rawId.includes('-')
-    ? rawId
-    : `00000000-0000-0000-0000-${rawId.padStart(12, '0')}`;
+  const parsedLandlordId = rawId.includes('-') ? rawId : `00000000-0000-0000-0000-${rawId.padStart(12, '0')}`;
 
   const parsedPrice = parseInt(price, 10) || 0;
   const parsedBedrooms = parseInt(bedrooms, 10) || 0;
   const parsedBathrooms = parseInt(bathrooms, 10) || 0;
   const parsedArea = computedArea ? (parseInt(computedArea, 10) || 0) : null;
-  // ───────────────────────────────────────────
 
+  // Execute database injection query safely
   const result = await pool.query(`
     INSERT INTO listings
       (landlord_id, title, description, type, price, bedrooms, bathrooms,
@@ -150,17 +153,17 @@ const createListing = asyncHandler(async (req, res) => {
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', $14, $15)
     RETURNING *
   `, [
-    parsedLandlordId,     // $1 (Ensured integer format)
-    title,                // $2
-    description,          // $3
-    type,                 // $4
-    parsedPrice,          // $5 (Safeguarded)
-    parsedBedrooms,       // $6 (Safeguarded)
-    parsedBathrooms,      // $7 (Safeguarded)
-    parsedArea,           // $8 (Safeguarded)
-    address,              // $9
+    parsedLandlordId,     // $1
+    computedTitle,        // $2 (Guaranteed to be a valid string, never null!)
+    description || 'No description provided.', // $3
+    type || 'apartment',  // $4
+    parsedPrice,          // $5
+    parsedBedrooms,       // $6
+    parsedBathrooms,      // $7
+    parsedArea,           // $8
+    address || 'Kampala', // $9
     neighborhoodValue,    // $10
-    district || 'Kampala',// $11
+    districtValue,        // $11
     typeof amenities === 'string' && amenities.startsWith('[') ? JSON.parse(amenities) :
       (amenities ? (Array.isArray(amenities) ? amenities : amenities.split(',').map(a => a.trim())) : []),
     available_from || null,// $13
