@@ -11,14 +11,18 @@ const {
 } = require('../controllers/listingsController');
 const { protect } = require('../middleware/auth'); // assuming your auth middleware name
 
-// 1. Public search filter route
+/// // 1. Public search filter route
 router.get('/', getListings);
 
-// 2. MOVE THIS ABOVE THE :id ROUTE 💡
-// This ensures Express captures '/my' before treating it as a dynamic ID parameter!
+// // 2. MOVE THIS ABOVE THE :id ROUTE 💡
 router.get('/my', protect, getMyListings);
 
-// 3. Dynamic item lookup routes (Keep these at the bottom)
+// ── ADD THIS NEW ROUTE HERE ──
+// This maps to POST /api/listings
+router.post('/', protect, createListing);
+
+
+// // 3. Dynamic item lookup routes (Keep these at the bottom)
 router.get('/:id', getListing);
 router.patch('/:id', protect, updateListing);
 router.delete('/:id', protect, deleteListing);
