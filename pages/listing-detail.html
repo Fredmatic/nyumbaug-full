@@ -213,7 +213,8 @@
     }
 
     function renderDetail(l) {
-      const image = l.images_url || l.images?.[0]?.url || l.cover_image || l.image ||
+      const image = (l.image_url ? (l.image_url.startsWith('http') ? l.image_url : `${APIBASE.replace('/api', '')}${l.image_url}`) : null) ||
+        l.images?.[0]?.url || l.cover_image || l.image ||
         'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80';
       const location = `${l.neighbourhood || ''}, ${l.district || 'Kampala'}`;
       const amenities = Array.isArray(l.amenities) ? l.amenities : [];
