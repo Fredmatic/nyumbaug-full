@@ -77,7 +77,7 @@ const getListing = asyncHandler(async (req, res) => {
   }
 
   // Fetch listing data along with landlord profile details
-  // 🚀 FIXED: Using li.url and li.image inside COALESCE to match your exact schema columns
+  // 🚀 FIXED: Targeting 'li.url' explicitly based on your database schema layout
   const result = await pool.query(`
     SELECT 
       l.*, 
@@ -86,8 +86,8 @@ const getListing = asyncHandler(async (req, res) => {
       u.phone AS landlord_phone,
       COALESCE(
         json_agg(
-          json_build_object('url', COALESCE(li.url, li.image))
-        ) FILTER (WHERE li.url IS NOT NULL OR li.image IS NOT NULL), 
+          json_build_object('url', li.url)
+        ) FILTER (WHERE li.url IS NOT NULL), 
         '[]'
       ) AS images
     FROM listings l
