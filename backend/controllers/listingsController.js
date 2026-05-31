@@ -144,6 +144,23 @@ const createListing = asyncHandler(async (req, res) => {
 
   // 4. Secure DB injection using finalized clean parameters
   const result = await pool.query(`
+    // ── INJECT THIS CLEANUP BLOCK ABOVE YOUR DATABASE QUERY ──
+let finalType = 'apartment'; // default fallback
+if (typeRaw) {
+  const checkType = typeRaw.trim().toLowerCase();
+  
+  if (checkType.includes('apartment')) {
+    finalType = 'apartment';
+  } else if (checkType.includes('house') || checkType.includes('bungalow') || checkType.includes('mansion')) {
+    finalType = 'house';
+  } else if (checkType.includes('studio') || checkType.includes('room')) {
+    finalType = 'studio';
+  } else if (checkType.includes('townhouse')) {
+    finalType = 'townhouse';
+  } else {
+    finalType = 'apartment'; 
+  }
+}
     INSERT INTO listings
       (landlord_id, title, description, type, price, bedrooms, bathrooms,
        area_sqm, address, neighbourhood, district, amenities, available_from, 
@@ -154,7 +171,7 @@ const createListing = asyncHandler(async (req, res) => {
     parsedLandlordId,                        // $1
     computedTitle,                           // $2
     descriptionRaw || 'No description.',     // $3
-    typeRaw || 'Apartment',                  // $4
+    finalType,                  // $4
     parsedPrice,                             // $5
     parsedBedrooms,                          // $6
     parsedBathrooms,                         // $7
