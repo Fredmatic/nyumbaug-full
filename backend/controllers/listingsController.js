@@ -270,14 +270,17 @@ const addImages = asyncHandler(async (req, res) => {
 // 7. GET /api/listings/my — landlord's own listings
 // =========================================================================
 const getMyListings = asyncHandler(async (req, res) => {
+  // 🚀 UPDATED: Join listing_images to pull the cover image into the list view
   const result = await pool.query(`
-    SELECT l.*, 
-      (SELECT url FROM listing_images WHERE listing_id = l.id AND is_cover = true LIMIT 1) AS cover_image,
-      (SELECT COUNT(*) FROM enquiries WHERE listing_id = l.id) AS enquiry_count
-    FROM listings l
-    WHERE l.landlord_id = $1
-    ORDER BY l.created_at DESC
-  `, [req.user.id]);
+  SELECT l.*, 
+    (SELECT url FROM listing_images WHERE listing_id = l.id AND is_cover = true LIMIT 1) AS cover_image
+  FROM listings l
+  WHERE 1=1 
+  ${district ? `AND district ILIKE $${paramIndex++}` : ''}
+  ${neighbourhood ? `AND neighbourhood ILIKE $${paramIndex++}` : ''}
+  ${type && type !== 'all' ? `AND type = $${paramIndex++}` : ''}
+  ORDER BY l.created_at DESC
+`, queryParams);
 
   res.json({ success: true, listings: result.rows });
 });
