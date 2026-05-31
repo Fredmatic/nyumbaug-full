@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-// Import controller functions
 const {
     createListing,
     getListings,
@@ -12,24 +11,22 @@ const {
     addImages
 } = require('../controllers/listingsController');
 
-// ── FIXED IMPORT STRATEGY ──
 const { protect } = require('../middleware/auth');
-const { upload, uploadMixedMedia } = require('../middleware/uploadConfig'); // ✨ Added curly braces to destructure safely!
+const { upload } = require('../middleware/uploadConfig');
 
-// Public routes
+// ── 1. FIXED/STATIC ROUTES FIRST ──
 router.get('/', getListings);
-router.get('/:id', getListing);
-
-// Protected routes
+// Placing this BEFORE /:id ensures Express handles the dashboard load request correctly
 router.get('/user/me', protect, getMyListings);
+router.get('/my', protect, getMyListings); // Adding /my as a fallback just in case your frontend calls /api/listings/my
 
-// Use upload.fields safely now that it is properly destructured
+// ── 2. PROTECTED ACTIONS ──
 router.post('/', protect, upload.fields([{ name: 'images', maxCount: 10 }]), createListing);
 
+// ── 3. DYNAMIC PARAMETER ROUTES LAST ──
+router.get('/:id', getListing); // Express will now only check this if the request isn't 'user/me' or 'my'
 router.patch('/:id', protect, updateListing);
-router.delete('/:id', deleteListing);
-
-// If you want landowners to add mixed media profiles later:
-router.post('/:id/images', protect, uploadMixedMedia.array('images', 10), addImages);
+router.delete('/:id', protect, deleteListing);
+router.post('/:id/images', protect, upload.array('images', 10), addImages);
 
 module.exports = router;
