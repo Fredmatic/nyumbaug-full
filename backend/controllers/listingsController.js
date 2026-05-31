@@ -127,12 +127,20 @@ const createListing = asyncHandler(async (req, res) => {
   const videoPublicId = uploadedVideo ? uploadedVideo.filename : null;
 
   // ── SAFE PARSING CONVERSION ──
-  // Fallback to 0 if parsing fails, preventing literal "NaN" strings from hitting pg
+  // ── REWRITE THIS SECTION IN CREATE LISTING ──
+  const rawId = String(req.user.id || '0');
+
+  // If the ID is already a real UUID string, use it. 
+  // If it's a regular integer like 17, pad it out structurally to satisfy the UUID database type check!
+  const parsedLandlordId = rawId.includes('-')
+    ? rawId
+    : `00000000-0000-0000-0000-${rawId.padStart(12, '0')}`;
+
   const parsedPrice = parseInt(price, 10) || 0;
   const parsedBedrooms = parseInt(bedrooms, 10) || 0;
   const parsedBathrooms = parseInt(bathrooms, 10) || 0;
   const parsedArea = computedArea ? (parseInt(computedArea, 10) || 0) : null;
-  const parsedLandlordId = parseInt(req.user.id, 10) || 0;
+  // ───────────────────────────────────────────
 
   const result = await pool.query(`
     INSERT INTO listings
