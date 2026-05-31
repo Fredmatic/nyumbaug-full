@@ -306,7 +306,7 @@
       container.innerHTML = data.map(l => `
         <div class="listing-card" onclick="window.location.href='listing-detail.html?id=${l.id}'">
           <div class="listing-img">
-            <img src="${l.image}" alt="${l.title}" loading="lazy" />
+            <img src="${l.cover_image}" alt="${l.title}" loading="lazy" />
             <span class="listing-badge ${l.badge === 'new' ? 'new' : ''}">${l.badge === 'new' ? '🆕 New' : 'Available'}</span>
             <button class="listing-fav" onclick="toggleFav(event, this, ${l.id})" aria-label="Save listing">
               <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
@@ -390,8 +390,22 @@
       document.getElementById('filter-area').value = locParam;
     }
 
-    initTabs();
-    renderListings(listings, 'listings-container');
+    // 🚀 FETCH DATA FROM API INSTEAD OF USING HARDCODED VARIABLE
+    async function loadListings() {
+      try {
+        const res = await fetch('https://nyumba-backend.onrender.com/api/listings'); // Use your actual backend URL
+        const result = await res.json();
+        if (result.success) {
+          window.listings = result.data; // Store globally for filtering
+          renderListings(window.listings, 'listings-container');
+        }
+      } catch (err) {
+        console.error("Failed to fetch listings:", err);
+      }
+    }
+
+    // Initialize
+    loadListings();
 
     // Re-wire tabs to use applyFilters
     document.querySelectorAll('.tab').forEach(tab => {
