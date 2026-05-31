@@ -80,7 +80,7 @@ const getListing = asyncHandler(async (req, res) => {
   const result = await pool.query(`
     SELECT l.*, u.name AS landlord_name, u.email AS landlord_email, u.phone AS landlord_phone
     FROM listings l
-    JOIN users u ON l.landlord_id = u.id
+    LEFT JOIN users u ON l.landlord_id = u.id
     WHERE l.id = $1
   `, [parsedId]);
 

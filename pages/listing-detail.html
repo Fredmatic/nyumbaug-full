@@ -176,8 +176,9 @@
         const res = await fetch(`${APIBASE}/listings/${listingId}`);
         if (res.ok) {
           const data = await res.json();
-          if (data.success && data.listing) {
-            renderDetail(data.listing);
+          // 🚀 FIXED: Changed data.listing to data.data to match your backend JSON layout
+          if (data.success && data.data) {
+            renderDetail(data.data);
             return;
           }
         }
@@ -383,7 +384,7 @@
         const res = await fetch(`${APIBASE}/listings?type=${listing.type}&limit=6`);
         if (res.ok) {
           const data = await res.json();
-          const similar = (data.listings || []).filter(l => String(l.id) !== String(listing.id)).slice(0, 3);
+          const similar = (data.data || []).filter(l => String(l.id) !== String(listing.id)).slice(0, 3);
           if (similar.length) {
             document.getElementById('similar-section').style.display = 'block';
             renderSimilar(similar);
