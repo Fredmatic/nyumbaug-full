@@ -104,29 +104,36 @@ const getListing = asyncHandler(async (req, res) => {
 // =========================================================================
 // 3. POST /api/listings — create listing (FIXED & CONSOLIDATED)
 // =========================================================================
+// =========================================================================
+// 3. POST /api/listings — create listing (FIXED & CONSOLIDATED)
+// =========================================================================
 const createListing = asyncHandler(async (req, res) => {
   let {
     title, description, type, price, bedrooms, bathrooms,
     area, address, neighbourhood, district, amenities, available_from,
   } = req.body;
 
-  // force it to lowercase to match your DB check constraint
   if (type && typeof type === 'string') {
     type = type.trim().toLowerCase();
   }
 
-  // Handles both British/Ugandan and US form parameters safely
   const neighborhoodValue = neighbourhood || req.body.neighborhood;
-  const computedArea = area || req.body.area_sqm; // 💡 Renamed variable to avoid any global or block scoping conflict!
+  const computedArea = area || req.body.area_sqm;
 
-  // Extract dynamic file arrays from the structured req.files object cleanly
   const uploadedImages = req.files && req.files['images'] ? req.files['images'] : [];
   const uploadedVideo = req.files && req.files['video'] ? req.files['video'][0] : null;
 
   const videoUrl = uploadedVideo ? uploadedVideo.path : null;
   const videoPublicId = uploadedVideo ? uploadedVideo.filename : null;
 
-  // Insert core data along with video values directly into your main listings table
+  // ── SAFE PARSING CONVERSION ──
+  // Fallback to 0 if parsing fails, preventing literal "NaN" strings from hitting pg
+  const parsedPrice = parseInt(price, 10) || 0;
+  const parsedBedrooms = parseInt(bedrooms, 10) || 0;
+  const parsedBathrooms = parseInt(bathrooms, 10) || 0;
+  const parsedArea = computedArea ? (parseInt(computedArea, 10) || 0) : null;
+  const parsedLandlordId = parseInt(req.user.id, 10) || 0;
+
   const result = await pool.query(`
     INSERT INTO listings
       (landlord_id, title, description, type, price, bedrooms, bathrooms,
@@ -135,27 +142,26 @@ const createListing = asyncHandler(async (req, res) => {
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', $14, $15)
     RETURNING *
   `, [
-    req.user.id,
-    title,
-    description,
-    type,
-    parseInt(price),
-    parseInt(bedrooms),
-    parseInt(bathrooms),
-    computedArea ? parseInt(computedArea) : null, // 💡 Using the renamed variable here
-    address,
-    neighborhoodValue,
-    district || 'Kampala',
+    parsedLandlordId,     // $1 (Ensured integer format)
+    title,                // $2
+    description,          // $3
+    type,                 // $4
+    parsedPrice,          // $5 (Safeguarded)
+    parsedBedrooms,       // $6 (Safeguarded)
+    parsedBathrooms,      // $7 (Safeguarded)
+    parsedArea,           // $8 (Safeguarded)
+    address,              // $9
+    neighborhoodValue,    // $10
+    district || 'Kampala',// $11
     typeof amenities === 'string' && amenities.startsWith('[') ? JSON.parse(amenities) :
       (amenities ? (Array.isArray(amenities) ? amenities : amenities.split(',').map(a => a.trim())) : []),
-    available_from || null,
-    videoUrl,
-    videoPublicId
+    available_from || null,// $13
+    videoUrl,             // $14
+    videoPublicId         // $15
   ]);
 
   const listing = result.rows[0];
 
-  // Unpack individual uploaded image items cleanly into your relational table mapping
   if (uploadedImages.length > 0) {
     const imageValues = uploadedImages.map((f, i) =>
       `('${listing.id}', '${f.path}', '${f.filename}', ${i === 0})`
