@@ -478,7 +478,7 @@
             <div style="font-size:1.2rem;">${renderStars(r.rating)}</div>
           </div>
           ${r.title ? `<div style="font-weight:600;color:var(--text-dark);margin-bottom:6px;">${r.title}</div>` : ''}
-          <p style="color:var(--text-mid);line-height:1.7;font-size:0.95rem;">${r.body}</p>
+          <p style="color:var(--text-mid);line-height:1.7;font-size:0.95rem;">${r.comment}</p>
         </div>`).join('');
       } catch (e) {
         const container = document.getElementById('reviews-list');
@@ -521,27 +521,27 @@
     async function submitReview() {
       const rating = parseInt(document.getElementById('review-rating').value);
       const title = document.getElementById('review-title').value.trim();
-      const body = document.getElementById('review-body').value.trim();
+      const comment = document.getElementById('review-body').value.trim(); // ⚡ CHANGED from body to comment
       const errEl = document.getElementById('review-error');
 
       if (!errEl) return;
       errEl.style.display = 'none';
 
-      // Client-side instant validation validation 
+      // Client-side instant validation 
       if (!rating) {
         errEl.textContent = 'Please select a star rating.';
         errEl.style.display = 'block';
         return;
       }
-      if (!body || body.length < 10) {
+      if (!comment || comment.length < 10) {
         errEl.textContent = 'Please write a descriptive review of at least 10 characters.';
         errEl.style.display = 'block';
         return;
       }
 
       try {
-        // Route execution safely through your global api.js service architecture
-        const data = await api.reviews.submit(listingId, rating, title, body);
+        // 🚀 Update the parameters passed into your api service method
+        const data = await api.reviews.submit(listingId, rating, title, comment);
 
         if (data.success) {
           showToast('✅ Review submitted successfully!');
