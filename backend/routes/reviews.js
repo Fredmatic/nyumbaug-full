@@ -1,12 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { createReview, getListingReviews } = require('../controllers/reviewController');
 const { protect } = require('../middleware/auth');
 
-// Public endpoint to see reviews
-router.get('/listing/:listing_id', getListingReviews);
+// Destructure from controller file safely
+const {
+    createReview,
+    getListingReviews,
+    deleteReview
+} = require('../controllers/reviewController');
 
-// Protected endpoint to post a review
+// Define specific application endpoint paths
 router.post('/', protect, createReview);
+router.get('/listing/:listingId', getListingReviews);
+router.delete('/:id', protect, deleteReview);
 
 module.exports = router;
