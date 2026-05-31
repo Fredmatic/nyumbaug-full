@@ -2,17 +2,24 @@ const pool = require('../config/db');
 const { asyncHandler, AppError } = require('../middleware/error');
 const { deleteImage } = require('../middleware/uploadConfig');
 
-// =========================================================================
-// 1. GET /api/listings — search & filter
-// =========================================================================
 const getListings = asyncHandler(async (req, res) => {
   try {
     const { district, neighbourhood, type, minPrice, maxPrice } = req.query;
 
-    let queryText = 'SELECT * FROM listings WHERE 1=1';
+    // 🚀 FIXED: Added subquery to fetch the cover image for every listing
+    let queryText = `
+      SELECT l.*, 
+        (SELECT url FROM listing_images 
+         WHERE listing_id = l.id AND is_cover = true 
+         LIMIT 1) AS cover_image
+      FROM listings l 
+      WHERE 1=1
+    `;
+
     const queryParams = [];
     let paramIndex = 1;
 
+    // Keep your existing filters exactly as they are below
     if (district && district.trim() !== '') {
       queryText += ` AND district ILIKE $${paramIndex}`;
       queryParams.push(`%${district.trim()}%`);
@@ -43,7 +50,7 @@ const getListings = asyncHandler(async (req, res) => {
       paramIndex++;
     }
 
-    queryText += ' ORDER BY created_at DESC';
+    queryText += ' ORDER BY l.created_at DESC';
 
     const result = await pool.query(queryText, queryParams);
 
