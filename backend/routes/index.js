@@ -1,18 +1,18 @@
-const reviewRoutes = require('./reviews');
 const express = require('express');
 const router = express.Router();
 
 const authRoutes = require('./auth');
-const passwordRoutes = require('./password');
-const listingsRoutes = require('./listings');
-const enquiriesRoutes = require('./enquiries');
+const listingRoutes = require('./listings');
+const enquiryRoutes = require('./enquiries');
 const adminRoutes = require('./admin');
+const reviewRoutes = require('./reviews'); // Imported clean on line 10!
 
 router.use('/auth', authRoutes);
-router.use('/password', passwordRoutes);
-router.use('/listings', listingsRoutes);
-router.use('/enquiries', enquiriesRoutes);
+router.use('/listings', listingRoutes);
+router.use('/enquiries', enquiryRoutes);
 router.use('/admin', adminRoutes);
+
+// 🚀 MOUNT IT HERE:
 router.use('/reviews', reviewRoutes);
 
 module.exports = router;

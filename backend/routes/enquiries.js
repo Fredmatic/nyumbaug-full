@@ -1,18 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize, optionalAuth } = require('../middleware/auth');
-const enquiry = require('../controllers/enquiryController');
 
-router.post('/', optionalAuth, enquiry.createEnquiry);
-router.get('/', protect, authorize('landlord', 'admin'), enquiry.getEnquiries);
-router.patch('/:id', protect, authorize('landlord', 'admin'), enquiry.updateEnquiry);
+// Import the specific handler functions from the controller
+const {
+    createEnquiry,
+    getEnquiries,
+    updateEnquiry
+} = require('../controllers/enquiryController');
 
-router.post('/messages', protect, enquiry.sendMessage);
-router.get('/messages', protect, enquiry.getMessages);
-router.get('/messages/unread-count', protect, enquiry.getUnreadCount);
+// Import authentication middleware
+const { protect } = require('../middleware/auth');
 
-router.post('/saved/:listing_id', protect, enquiry.saveListing);
-router.delete('/saved/:listing_id', protect, enquiry.unsaveListing);
-router.get('/saved', protect, enquiry.getSavedListings);
-// ADD after the existing enquiries routes:
+// Line 11: Public contact/enquiry creation endpoint
+router.post('/', createEnquiry);
+
+// Protected routes for viewing and updating enquiries
+router.get('/', protect, getEnquiries);
+router.patch('/:id', protect, updateEnquiry);
+
 module.exports = router;

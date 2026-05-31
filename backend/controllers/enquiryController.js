@@ -4,7 +4,6 @@ const nodemailer = require('nodemailer');
 
 // ── EMAIL HELPER ──
 const sendEmail = async ({ to, subject, html }) => {
-  // Skip if email not configured
   if (!process.env.EMAIL_USER) {
     console.log(`[Email skipped — not configured] To: ${to} | Subject: ${subject}`);
     return;
@@ -29,19 +28,25 @@ const createEnquiry = asyncHandler(async (req, res) => {
     throw new AppError('name, phone, and message are required.', 400);
   }
 
+  // Handle safe database formatting for the tenant_id field if a guest submits a form
+  const fallbackTenantId = req.user?.id ? String(req.user.id) : null;
+  const parsedTenantId = fallbackTenantId && fallbackTenantId.includes('-')
+    ? fallbackTenantId
+    : (fallbackTenantId ? `00000000-0000-0000-0000-${fallbackTenantId.padStart(12, '0')}` : '00000000-0000-0000-0000-000000000000');
+
   const result = await pool.query(`
-  INSERT INTO enquiries (listing_id, tenant_id, name, email, phone, message)
-  VALUES ($1, $2, $3, $4, $5, $6)
-  RETURNING *
-`, [listing_id || null, req.user?.id || null, name, email, phone, message]);
+    INSERT INTO enquiries (listing_id, tenant_id, name, email, phone, message)
+    VALUES ($1, $2, $3, $4, $5, $6)
+    RETURNING *
+  `, [listing_id || null, parsedTenantId, name, email, phone, message]);
 
   // Only email landlord if this is a listing enquiry
   if (listing_id) {
     const listingResult = await pool.query(`
-    SELECT l.title, l.neighbourhood, u.email AS landlord_email, u.name AS landlord_name
-    FROM listings l JOIN users u ON l.landlord_id = u.id
-    WHERE l.id = $1 AND l.status = 'active'
-  `, [listing_id]);
+      SELECT l.title, l.neighbourhood, u.email AS landlord_email, u.name AS landlord_name
+      FROM listings l JOIN users u ON l.landlord_id = u.id
+      WHERE l.id = $1 AND l.status = 'active'
+    `, [listing_id]);
 
     if (listingResult.rows.length) {
       const listing = listingResult.rows[0];
@@ -49,16 +54,16 @@ const createEnquiry = asyncHandler(async (req, res) => {
         to: listing.landlord_email,
         subject: `New Enquiry: ${listing.title}`,
         html: `
-        <h2>New Enquiry on NyumbaUG</h2>
-        <p>Hi ${listing.landlord_name},</p>
-        <p>Someone is interested in: <strong>${listing.title}</strong> (${listing.neighbourhood})</p>
-        <hr/>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Phone:</strong> ${phone}</p>
-        ${email ? `<p><strong>Email:</strong> ${email}</p>` : ''}
-        <p><strong>Message:</strong></p>
-        <blockquote style="border-left:4px solid #1a5c38;padding-left:12px;color:#444;">${message}</blockquote>
-      `,
+          <h2>New Enquiry on NyumbaUG</h2>
+          <p>Hi ${listing.landlord_name},</p>
+          <p>Someone is interested in: <strong>${listing.title}</strong> (${listing.neighbourhood})</p>
+          <hr/>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Phone:</strong> ${phone}</p>
+          ${email ? `<p><strong>Email:</strong> ${email}</p>` : ''}
+          <p><strong>Message:</strong></p>
+          <blockquote style="border-left:4px solid #1a5c38;padding-left:12px;color:#444;">${message}</blockquote>
+        `,
       });
     }
   }
@@ -69,13 +74,13 @@ const createEnquiry = asyncHandler(async (req, res) => {
       to: process.env.ADMIN_EMAIL,
       subject: `📬 Contact Form: ${name}`,
       html: `
-      <h2>New Contact Form Message — NyumbaUG</h2>
-      <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Phone:</strong> ${phone}</p>
-      ${email ? `<p><strong>Email:</strong> ${email}</p>` : ''}
-      <p><strong>Message:</strong></p>
-      <blockquote style="border-left:4px solid #1a5c38;padding-left:12px;color:#444;">${message}</blockquote>
-    `,
+        <h2>New Contact Form Message — NyumbaUG</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        ${email ? `<p><strong>Email:</strong> ${email}</p>` : ''}
+        <p><strong>Message:</strong></p>
+        <blockquote style="border-left:4px solid #1a5c38;padding-left:12px;color:#444;">${message}</blockquote>
+      `,
     });
   }
 
@@ -102,7 +107,6 @@ const getEnquiries = asyncHandler(async (req, res) => {
   const values = [];
   let idx = 1;
 
-  // Landlords only see their own listing enquiries
   if (!isAdmin) {
     query += ` AND l.landlord_id = $${idx++}`;
     values.push(req.user.id);
@@ -125,7 +129,6 @@ const updateEnquiry = asyncHandler(async (req, res) => {
   const allowed = ['new', 'read', 'replied', 'closed'];
   if (!allowed.includes(status)) throw new AppError('Invalid status.', 400);
 
-  // Verify ownership via listing
   const result = await pool.query(`
     UPDATE enquiries e SET status = $1
     FROM listings l
@@ -139,8 +142,6 @@ const updateEnquiry = asyncHandler(async (req, res) => {
 });
 
 // ── DIRECT MESSAGES ──
-
-// POST /api/messages — send a message
 const sendMessage = asyncHandler(async (req, res) => {
   const { receiver_id, listing_id, body } = req.body;
 
@@ -159,12 +160,10 @@ const sendMessage = asyncHandler(async (req, res) => {
   res.status(201).json({ success: true, message: result.rows[0] });
 });
 
-// GET /api/messages — get conversation threads
 const getMessages = asyncHandler(async (req, res) => {
   const { with: otherUserId } = req.query;
 
   if (otherUserId) {
-    // Full conversation with a specific user
     const result = await pool.query(`
       SELECT m.*, 
         s.name AS sender_name, s.avatar_url AS sender_avatar,
@@ -177,7 +176,6 @@ const getMessages = asyncHandler(async (req, res) => {
       ORDER BY m.created_at ASC
     `, [req.user.id, otherUserId]);
 
-    // Mark received messages as read
     await pool.query(`
       UPDATE messages SET is_read = true
       WHERE receiver_id = $1 AND sender_id = $2 AND is_read = false
@@ -186,15 +184,9 @@ const getMessages = asyncHandler(async (req, res) => {
     return res.json({ success: true, messages: result.rows });
   }
 
-  // All threads (latest message per conversation partner)
   const result = await pool.query(`
     SELECT DISTINCT ON (partner_id)
-      partner_id,
-      partner_name,
-      partner_avatar,
-      last_message,
-      last_at,
-      unread_count
+      partner_id, partner_name, partner_avatar, last_message, last_at, unread_count
     FROM (
       SELECT
         CASE WHEN m.sender_id = $1 THEN m.receiver_id ELSE m.sender_id END AS partner_id,
@@ -218,7 +210,6 @@ const getMessages = asyncHandler(async (req, res) => {
   res.json({ success: true, threads: result.rows });
 });
 
-// GET /api/messages/unread-count
 const getUnreadCount = asyncHandler(async (req, res) => {
   const result = await pool.query(
     'SELECT COUNT(*) FROM messages WHERE receiver_id = $1 AND is_read = false',
@@ -228,20 +219,15 @@ const getUnreadCount = asyncHandler(async (req, res) => {
 });
 
 // ── SAVED LISTINGS ──
-
-// POST /api/saved/:listing_id
 const saveListing = asyncHandler(async (req, res) => {
   const { listing_id } = req.params;
-
   await pool.query(
     'INSERT INTO saved_listings (user_id, listing_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
     [req.user.id, listing_id]
   );
-
   res.json({ success: true, message: 'Listing saved to favourites.' });
 });
 
-// DELETE /api/saved/:listing_id
 const unsaveListing = asyncHandler(async (req, res) => {
   await pool.query(
     'DELETE FROM saved_listings WHERE user_id = $1 AND listing_id = $2',
@@ -250,7 +236,6 @@ const unsaveListing = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Removed from favourites.' });
 });
 
-// GET /api/saved
 const getSavedListings = asyncHandler(async (req, res) => {
   const result = await pool.query(`
     SELECT l.id, l.title, l.type, l.price, l.bedrooms, l.neighbourhood, l.status,
@@ -264,33 +249,34 @@ const getSavedListings = asyncHandler(async (req, res) => {
 
   res.json({ success: true, listings: result.rows });
 });
-// GET /api/admin/enquiries — all enquiries including contact form (admin only)
+
 const getAllEnquiries = asyncHandler(async (req, res) => {
   const { status } = req.query;
-
   let query = `
-    SELECT e.*, 
-      l.title AS listing_title,
-      l.neighbourhood
+    SELECT e.*, l.title AS listing_title, l.neighbourhood
     FROM enquiries e
     LEFT JOIN listings l ON e.listing_id = l.id
     WHERE 1=1
   `;
   const values = [];
-
   if (status) {
     query += ` AND e.status = $1`;
     values.push(status);
   }
-
   query += ' ORDER BY e.created_at DESC';
-
   const result = await pool.query(query, values);
   res.json({ success: true, enquiries: result.rows });
 });
 
 module.exports = {
-  createEnquiry, getEnquiries, updateEnquiry, getAllEnquiries,
-  sendMessage, getMessages, getUnreadCount,
-  saveListing, unsaveListing, getSavedListings,
+  createEnquiry,
+  getEnquiries,
+  updateEnquiry,
+  getAllEnquiries,
+  sendMessage,
+  getMessages,
+  getUnreadCount,
+  saveListing,
+  unsaveListing,
+  getSavedListings,
 };
