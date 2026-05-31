@@ -210,7 +210,15 @@ const createListing = asyncHandler(async (req, res) => {
 // =========================================================================
 // 4. PATCH /api/listings/:id — update listing
 // =========================================================================
-const updateListing = asyncHandler(async (req, res) => {
+const createListing = asyncHandler(async (req, res) => {
+  // ── ADD THIS TEMPORARY DEBUG LOG RIGHT HERE ──
+  console.log("--- INCOMING FRONTEND PAYLOAD CHECK ---");
+  console.log("Body contents parsed by Multer:", req.body);
+  console.log("Files parsed by Multer:", req.files);
+  console.log("---------------------------------------");
+
+  const titleRaw = req.body.title;
+  const descriptionRaw = req.body.description;
   const { id } = req.params;
 
   const existing = await pool.query('SELECT * FROM listings WHERE id = $1', [id]);
