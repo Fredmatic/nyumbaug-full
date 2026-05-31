@@ -101,8 +101,11 @@ const getListing = asyncHandler(async (req, res) => {
   res.json({ success: true, listing });
 });
 
+// =========================================================================
+// POST /api/listings — Create property listing
+// =========================================================================
 const createListing = asyncHandler(async (req, res) => {
-  // 1. Extract safely, accommodating frontend naming mismatches
+  // 1. Extract raw items from request body first
   const titleRaw = req.body.title;
   const descriptionRaw = req.body.description;
   const typeRaw = req.body.type;
@@ -115,52 +118,52 @@ const createListing = asyncHandler(async (req, res) => {
   const availableRaw = req.body.available_from;
   const amenitiesRaw = req.body.amenities;
 
-  // Handle both UK and US spelling variations smoothly!
   const neighborhoodValue = req.body.neighbourhood || req.body.neighborhood || 'Kampala';
 
-  // 2. Sanitize and fall back properly if text is missing or blank
+  // 2. ── PASTE THE FINALTYPE CLEANUP BLOCK HERE (Scope Protected) ──
+  let finalType = 'apartment'; // default fallback
+  if (typeRaw) {
+    const checkType = typeRaw.trim().toLowerCase();
+
+    if (checkType.includes('apartment')) {
+      finalType = 'apartment';
+    } else if (checkType.includes('house') || checkType.includes('bungalow') || checkType.includes('mansion')) {
+      finalType = 'house';
+    } else if (checkType.includes('studio') || checkType.includes('room')) {
+      finalType = 'studio';
+    } else if (checkType.includes('townhouse')) {
+      finalType = 'townhouse';
+    } else {
+      finalType = 'apartment';
+    }
+  }
+
+  // 3. Fallbacks and string manipulation variables
   let computedTitle = titleRaw && titleRaw.trim() !== "" ? titleRaw.trim() : "";
   if (!computedTitle) {
-    const formattedType = typeRaw ? typeRaw.trim() : 'Property';
+    const formattedType = finalType.charAt(0).toUpperCase() + finalType.slice(1);
     const bedsText = bedroomsRaw ? `${bedroomsRaw} Bed` : '';
     computedTitle = `${bedsText} ${formattedType} for Rent in ${neighborhoodValue}`.trim();
   }
 
-  // 3. Robust Number Parsing to eliminate "UGX 0" errors
+  // 4. Number conversions
   const parsedPrice = parseInt(priceRaw, 10) ? parseInt(priceRaw, 10) : 0;
   const parsedBedrooms = parseInt(bedroomsRaw, 10) ? parseInt(bedroomsRaw, 10) : 0;
   const parsedBathrooms = parseInt(bathroomsRaw, 10) ? parseInt(bathroomsRaw, 10) : 0;
   const parsedArea = areaRaw && areaRaw !== "" ? parseInt(areaRaw, 10) : null;
 
-  // Media files extraction checks
+  // Media references
   const uploadedImages = req.files && req.files['images'] ? req.files['images'] : [];
   const uploadedVideo = req.files && req.files['video'] ? req.files['video'][0] : null;
   const videoUrl = uploadedVideo ? uploadedVideo.path : null;
   const videoPublicId = uploadedVideo ? uploadedVideo.filename : null;
 
-  // DB integer to standard format tracking string
+  // Account reference handling
   const rawId = String(req.user.id || '0');
   const parsedLandlordId = rawId.includes('-') ? rawId : `00000000-0000-0000-0000-${rawId.padStart(12, '0')}`;
 
-  // 4. Secure DB injection using finalized clean parameters
+  // 5. ── NOW EXECUTE THE POOL QUERY (All parameters are defined above it!) ──
   const result = await pool.query(`
-    // ── INJECT THIS CLEANUP BLOCK ABOVE YOUR DATABASE QUERY ──
-let finalType = 'apartment'; // default fallback
-if (typeRaw) {
-  const checkType = typeRaw.trim().toLowerCase();
-  
-  if (checkType.includes('apartment')) {
-    finalType = 'apartment';
-  } else if (checkType.includes('house') || checkType.includes('bungalow') || checkType.includes('mansion')) {
-    finalType = 'house';
-  } else if (checkType.includes('studio') || checkType.includes('room')) {
-    finalType = 'studio';
-  } else if (checkType.includes('townhouse')) {
-    finalType = 'townhouse';
-  } else {
-    finalType = 'apartment'; 
-  }
-}
     INSERT INTO listings
       (landlord_id, title, description, type, price, bedrooms, bathrooms,
        area_sqm, address, neighbourhood, district, amenities, available_from, 
@@ -171,7 +174,7 @@ if (typeRaw) {
     parsedLandlordId,                        // $1
     computedTitle,                           // $2
     descriptionRaw || 'No description.',     // $3
-    finalType,                  // $4
+    finalType,                               // $4 💡 (Matches up here perfectly)
     parsedPrice,                             // $5
     parsedBedrooms,                          // $6
     parsedBathrooms,                         // $7
@@ -200,7 +203,7 @@ if (typeRaw) {
 
   res.status(201).json({
     success: true,
-    message: 'Listing completed successfully!',
+    message: 'Listing successfully mapped and saved!',
     listing,
   });
 });
