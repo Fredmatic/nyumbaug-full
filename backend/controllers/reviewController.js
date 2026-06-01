@@ -22,6 +22,28 @@ const createReview = asyncHandler(async (req, res) => {
         throw new AppError('The target property listing no longer exists.', 404);
     }
 
+    try {
+        const result = await pool.query(`
+            INSERT INTO reviews (listing_id, tenant_id, rating, title, body)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *
+        `, [listing_id, req.user.id, rating, title, comment]);
+
+        res.status(201).json({
+            success: true,
+            message: 'Review posted successfully!',
+            review: result.rows[0]
+        });
+    } catch (err) {
+        // '23505' is the PostgreSQL error code for a Unique Violation
+        if (err.code === '23505') {
+            throw new AppError('You have already submitted a review for this property.', 400);
+        }
+        // If it's any other error, pass it to your asyncHandler/error middleware
+        throw err;
+    }
+    // ----------------------------------
+
     // Insert review into database
     const result = await pool.query(`
     INSERT INTO reviews (listing_id, tenant_id, rating, title, body)
