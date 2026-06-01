@@ -102,6 +102,7 @@ const getListing = asyncHandler(async (req, res) => {
     throw new AppError('Invalid property ID format.', 400);
   }
 
+  // Locate this section in your getListing function
   const result = await pool.query(`
     SELECT 
       l.*, 
@@ -117,9 +118,9 @@ const getListing = asyncHandler(async (req, res) => {
     FROM listings l
     LEFT JOIN users u ON l.landlord_id = u.id
     LEFT JOIN listing_images li ON l.id = li.listing_id
-    WHERE l.id = $1
+    WHERE l.id::text = $1  -- <--- Ensure this cast is here
     GROUP BY l.id, u.id
-  `, [parsedId]);
+  `, [parsedId]); // Ensure parsedId is the correct string value
 
   if (!result.rows.length) {
     throw new AppError('Property listing not found.', 404);
@@ -258,7 +259,7 @@ const updateListing = asyncHandler(async (req, res) => {
     await pool.query(`
       INSERT INTO notifications (user_id, type, message, listing_id)
       SELECT id, 'rented', $1, $2 FROM users WHERE role = 'admin'
-    `, [`Property "${listing.title}" has been rented.`, id]).catch(() => {});
+    `, [`Property "${listing.title}" has been rented.`, id]).catch(() => { });
   }
 
   res.status(200).json({
@@ -352,7 +353,7 @@ const likeListing = asyncHandler(async (req, res) => {
     INSERT INTO notifications (user_id, type, message, listing_id, created_at)
     VALUES ($1, 'like', $2, $3, NOW())
     ON CONFLICT DO NOTHING
-  `, [landlord_id, `${tenantName} saved your property: "${title}"`, id]).catch(() => {});
+  `, [landlord_id, `${tenantName} saved your property: "${title}"`, id]).catch(() => { });
 
   res.json({ success: true });
 });

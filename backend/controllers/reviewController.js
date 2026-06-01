@@ -24,7 +24,7 @@ const createReview = asyncHandler(async (req, res) => {
 
     // Insert review into database
     const result = await pool.query(`
-    INSERT INTO reviews (listing_id, tenant_id, rating, title, comment)
+    INSERT INTO reviews (listing_id, tenant_id, rating, title, body)
     VALUES ($1, $2, $3, $4, $5)
     RETURNING *
   `, [listing_id, req.user.id, rating, title, comment]);
