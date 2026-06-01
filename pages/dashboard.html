@@ -1079,8 +1079,18 @@
 
     // ── INIT ──
     async function init() {
+      // 1. Check if logged in
       if (!api.auth.isLoggedIn()) {
         window.location.href = 'login.html';
+        return;
+      }
+
+      // --- ADD THIS BLOCK ---
+      const currentUser = api.auth.currentUser();
+      if (currentUser && currentUser.role === 'tenant') {
+        // Tenants should not be on the landlord/admin dashboard
+        alert("Access Denied: You are not authorized to view the dashboard.");
+        window.location.href = '../index.html'; // Redirect to home
         return;
       }
 
