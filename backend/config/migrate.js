@@ -171,6 +171,35 @@ async function migrate() {
     await client.query(`CREATE INDEX IF NOT EXISTS idx_messages_sender       ON messages(sender_id);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_messages_receiver     ON messages(receiver_id);`);
 
+    // ── SUBSCRIPTIONS ──
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS subscriptions (
+        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id     UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        plan        VARCHAR(20) NOT NULL DEFAULT 'monthly',
+        amount      INTEGER NOT NULL DEFAULT 100000,
+        expires_at  TIMESTAMPTZ NOT NULL,
+        payment_id  UUID,
+        created_at  TIMESTAMPTZ DEFAULT NOW(),
+        updated_at  TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+
+    // ── NOTIFICATIONS ──
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        type        VARCHAR(40) NOT NULL DEFAULT 'info',
+        message     TEXT NOT NULL,
+        listing_id  UUID,
+        is_read     BOOLEAN DEFAULT FALSE,
+        created_at  TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);`);
+
     await client.query('COMMIT');
     console.log('✅ All tables created successfully');
 

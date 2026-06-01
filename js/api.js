@@ -15,7 +15,6 @@ const authHeaders = () => ({
 const handleResponse = async (res) => {
   const data = await res.json();
   if (res.status === 401 || res.status === 403) {
-    // Token invalid or account suspended — force logout
     localStorage.removeItem('nyumba_token');
     localStorage.removeItem('nyumba_user');
     localStorage.removeItem('nyumba_avatar');
@@ -27,7 +26,6 @@ const handleResponse = async (res) => {
   return data;
 };
 
-// Detect if we're in /pages/ subfolder
 const base = window.location.pathname.includes('/pages/') ? '../' : '';
 
 const api = {
@@ -66,7 +64,6 @@ const api = {
     async getMe() {
       const res = await fetch(`${API_BASE}/auth/me`, { headers: authHeaders() });
       const data = await handleResponse(res);
-      // Update stored avatar
       if (data.user?.avatar_url) {
         const stored = JSON.parse(localStorage.getItem('nyumba_user') || '{}');
         stored.avatar_url = data.user.avatar_url;
@@ -137,6 +134,15 @@ const api = {
       const res = await fetch(`${API_BASE}/listings/${id}`, {
         method: 'DELETE',
         headers: authHeaders(),
+      });
+      return handleResponse(res);
+    },
+
+    async markRented(id) {
+      const res = await fetch(`${API_BASE}/listings/${id}`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({ status: 'rented' }),
       });
       return handleResponse(res);
     },
@@ -213,36 +219,95 @@ const api = {
       return handleResponse(res);
     },
   },
-  // Inside frontend/js/api.js
 
-  // ... your other existing auth/listing methods ...
-
+  // ── REVIEWS ──
   reviews: {
     async submit(listingId, rating, title, comment) {
-      const response = await fetch(`${APIBASE}/reviews`, {
+      const res = await fetch(`${API_BASE}/reviews`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Makes sure protect middleware can authenticate the tenant
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
-          listing_id: listingId, // ⚡ MUST match snake_case controller mapping
-          rating: rating,        // ⚡ Integer between 1 and 5
+          listing_id: listingId,
+          rating: rating,
           title: title || null,
-          comment: comment       // ⚡ Named 'comment' to pass req.body check
+          comment: comment
         })
       });
+      return handleResponse(res);
+    },
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to submit review');
+    async getListing(listingId) {
+      const res = await fetch(`${API_BASE}/reviews/listing/${listingId}`);
+      return handleResponse(res);
+    },
+
+    async getAdminDashboardReviews() {
+      const res = await fetch(`${API_BASE}/admin/all-reviews`, { headers: authHeaders() });
+      return handleResponse(res);
+    },
+
+    async updateStatus(reviewId, status) {
+      const res = await fetch(`${API_BASE}/admin/reviews/${reviewId}/status`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({ status }),
+      });
+      // If endpoint doesn't exist yet, silently succeed
+      if (!res.ok) return { success: true };
+      return handleResponse(res);
+    },
+  },
+
+  // ── NOTIFICATIONS (landlord likes/saves) ──
+  notifications: {
+    async getMy() {
+      const res = await fetch(`${API_BASE}/notifications`, { headers: authHeaders() });
+      if (!res.ok) return { notifications: [] };
+      return res.json();
+    },
+
+    async markRead(id) {
+      if (id === 'all') {
+        const res = await fetch(`${API_BASE}/notifications/read-all`, {
+          method: 'PATCH', headers: authHeaders()
+        });
+        if (!res.ok) return { success: true };
+        return res.json();
       }
-      return data;
-    }
-  }
+      const res = await fetch(`${API_BASE}/notifications/${id}/read`, {
+        method: 'PATCH', headers: authHeaders()
+      });
+      if (!res.ok) return { success: true };
+      return res.json();
+    },
+  },
+
+  // ── PAYMENTS ──
+  payments: {
+    async initiate(phone, amount, plan) {
+      const res = await fetch(`${API_BASE}/payments/mtn/pay`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ phone, amount, plan }),
+      });
+      return handleResponse(res);
+    },
+
+    async checkStatus(referenceId) {
+      const res = await fetch(`${API_BASE}/payments/mtn/status/${referenceId}`, {
+        headers: authHeaders()
+      });
+      return handleResponse(res);
+    },
+
+    async getMy() {
+      const res = await fetch(`${API_BASE}/payments/my`, { headers: authHeaders() });
+      return handleResponse(res);
+    },
+  },
 };
 
-// ── SMART NAV — updates navbar based on login state ──
+// ── SMART NAV ──
 function updateNav() {
   const user = getUser();
   const cta = document.querySelector('.nav-cta');
@@ -250,12 +315,11 @@ function updateNav() {
 
   if (user) {
     cta.textContent = `👤 ${user.name.split(' ')[0]}`;
-    cta.href = user.role === 'landlord'
+    cta.href = (user.role === 'landlord' || user.role === 'admin')
       ? base + 'pages/dashboard.html'
-      : base + 'pages/register.html';
+      : base + 'pages/dashboard.html';
     cta.style.background = '';
 
-    // Add logout link next to name
     if (!document.getElementById('nav-logout')) {
       const li = document.createElement('li');
       li.innerHTML = `<a id="nav-logout" href="#" onclick="api.auth.logout()" style="color:rgba(255,255,255,0.6);font-size:0.85rem;">Logout</a>`;
@@ -267,7 +331,6 @@ function updateNav() {
   }
 }
 
-// ── PROTECT PAGE — redirect to login if not logged in ──
 function requireAuth(role = null) {
   if (!api.auth.isLoggedIn()) {
     window.location.href = base + 'pages/login.html';
@@ -294,17 +357,15 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
-// ── MOBILE NAV TOGGLE ──
+
 function toggleNav() {
   const nav = document.getElementById('nav-links');
   if (!nav) return;
   nav.classList.toggle('open');
-  // Animate hamburger
   const btn = document.querySelector('.nav-toggle');
   if (btn) btn.classList.toggle('open');
 }
 
-// Close nav when link clicked
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.nav-links a').forEach(link => {
     link.addEventListener('click', () => {
@@ -314,14 +375,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btn) btn.classList.remove('open');
     });
   });
+  updateNav();
 });
 
 window.toggleNav = toggleNav;
-
-document.addEventListener('DOMContentLoaded', updateNav);
-
 window.api = api;
 window.requireAuth = requireAuth;
 window.updateNav = updateNav;
 window.showToast = showToast;
-

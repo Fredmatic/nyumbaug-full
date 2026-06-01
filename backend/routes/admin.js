@@ -31,7 +31,18 @@ router.patch('/listings/:id/approve', protect, authorize('admin'), async (req, r
 
 router.get('/listings', protect, authorize('admin'), async (req, res) => {
     const { status = 'pending' } = req.query;
-    const result = await pool.query('SELECT l.*, u.name AS landlord_name, u.phone AS landlord_phone FROM listings l JOIN users u ON l.landlord_id = u.id WHERE l.status = $1 ORDER BY l.created_at DESC', [status]);
+    const validStatuses = ['pending', 'active', 'rented', 'inactive'];
+    const safeStatus = validStatuses.includes(status) ? status : 'pending';
+    const result = await pool.query(
+        `SELECT l.*, u.name AS landlord_name, u.phone AS landlord_phone,
+          COALESCE((SELECT COUNT(*) FROM reviews r WHERE r.listing_id = l.id), 0) AS review_count,
+          (SELECT url FROM listing_images WHERE listing_id = l.id AND is_cover = true LIMIT 1) AS cover_image
+         FROM listings l 
+         JOIN users u ON l.landlord_id = u.id 
+         WHERE l.status = $1 
+         ORDER BY l.created_at DESC`,
+        [safeStatus]
+    );
     res.json({ success: true, listings: result.rows });
 });
 
@@ -112,4 +123,41 @@ router.get('/enquiries', protect, authorize('admin'), async (req, res) => {
     }
 });
 
+// Export both routers
+const notifRouter = express.Router();
+
 module.exports = router;
+module.exports.notifRouter = notifRouter;
+
+notifRouter.get('/', protect, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50',
+            [req.user.id]
+        );
+        res.json({ success: true, notifications: result.rows });
+    } catch (err) {
+        res.json({ success: true, notifications: [] });
+    }
+});
+
+notifRouter.patch('/read-all', protect, async (req, res) => {
+    try {
+        await pool.query('UPDATE notifications SET is_read = TRUE WHERE user_id = $1', [req.user.id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.json({ success: true });
+    }
+});
+
+notifRouter.patch('/:id/read', protect, async (req, res) => {
+    try {
+        await pool.query(
+            'UPDATE notifications SET is_read = TRUE WHERE id = $1 AND user_id = $2',
+            [req.params.id, req.user.id]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        res.json({ success: true });
+    }
+});

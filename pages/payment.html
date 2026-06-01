@@ -570,9 +570,9 @@
     <!-- PLAN SELECTION -->
     <div class="plan-layout">
       <!-- Monthly -->
-      <div class="plan-card selected" id="plan-monthly" onclick="selectPlan('monthly', 50000)">
+      <div class="plan-card selected" id="plan-monthly" onclick="selectPlan('monthly', 100000)">
         <div class="plan-name">Monthly Plan</div>
-        <div class="plan-price">UGX 50,000 <span>/ month</span></div>
+        <div class="plan-price">UGX 100,000 <span>/  month</span></div>
         <div class="plan-desc">Perfect for getting started. Cancel anytime.</div>
         <ul class="plan-features">
           <li>List unlimited properties</li>
@@ -646,7 +646,7 @@
             </div>
             <div class="pay-step">
               <div class="pay-step-num">4</div>
-              <p>Enter amount: <strong id="mtn-amount">UGX 50,000</strong></p>
+              <p>Enter amount: <strong id="mtn-amount">UGX 100,000</strong></p>
             </div>
             <div class="pay-step">
               <div class="pay-step-num">5</div>
@@ -671,7 +671,7 @@
             </div>
             <div class="pay-step">
               <div class="pay-step-num">4</div>
-              <p>Enter amount: <strong id="airtel-amount">UGX 50,000</strong></p>
+              <p>Enter amount: <strong id="airtel-amount">UGX 100,000</strong></p>
             </div>
             <div class="pay-step">
               <div class="pay-step-num">5</div>
@@ -744,7 +744,7 @@
             <div class="label">Total Due</div>
             <div style="color:rgba(255,255,255,0.6);font-size:0.78rem;" id="plan-label-summary">Monthly Plan</div>
           </div>
-          <div class="amount" id="amount-display">UGX 50,000</div>
+          <div class="amount" id="amount-display">UGX 100,000</div>
         </div>
 
         <button class="submit-btn" id="submit-pay-btn" onclick="submitPayment()">
@@ -784,7 +784,7 @@
   <script src="../js/api.js"></script>
   <script>
     let selectedPlan = 'monthly';
-    let selectedAmount = 50000;
+    let selectedAmount = 100000;
     let selectedProvider = 'mtn';
     let selectedMethod = 'momo';
 

@@ -411,6 +411,69 @@ section {
   color: var(--green-dark);
 }
 
+.listing-badge.rented {
+  background: #dc2626;
+  color: #fff;
+}
+
+/* Rented overlay on listing cards */
+.rented-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius) var(--radius) 0 0;
+  z-index: 2;
+}
+
+.rented-label {
+  font-family: 'Fraunces', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+  border: 3px solid #fff;
+  padding: 8px 20px;
+  border-radius: 6px;
+}
+
+.listing-card.listing-rented {
+  opacity: 0.85;
+  pointer-events: auto;
+}
+
+/* Status badges (used in dashboard/admin) */
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.status-active  { background: #dcfce7; color: #166534; }
+.status-pending { background: #fef9c3; color: #854d0e; }
+.status-rented  { background: #fee2e2; color: #991b1b; }
+.status-inactive{ background: #f3f4f6; color: #6b7280; }
+
+/* Notification bell badge */
+.notif-badge {
+  display: inline-block;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 50px;
+  padding: 1px 6px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 .listing-fav {
   position: absolute;
   top: 12px;
@@ -733,6 +796,7 @@ footer {
   border-radius: var(--radius-lg);
   overflow: hidden;
   height: 400px;
+  position: relative;
 }
 
 .gallery-main {

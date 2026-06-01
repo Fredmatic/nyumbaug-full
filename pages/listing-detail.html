@@ -156,9 +156,11 @@
   <script src="../js/api.js"></script>
   <script src="../js/main.js"></script>
   <script>
-    const APIBASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:5000/api'
-      : 'https://nyumbaug-full.onrender.com/api';
+    // Use global API_BASE from api.js if available, else define locally
+    const APIBASE = (typeof API_BASE !== 'undefined' ? API_BASE : null)
+      || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:5000/api'
+        : 'https://nyumbaug-full.onrender.com/api');
 
     const listingId = new URLSearchParams(location.search).get('id');
     let currentRating = 0;
@@ -186,21 +188,8 @@
         console.warn('API unavailable, using local data');
       }
 
-      // Fallback to hardcoded listings immediately
-      const fallback = (window.listings || []).find(l => String(l.id) === String(listingId));
-      if (fallback) {
-        const l = { ...fallback };
-        l.neighbourhood = l.neighbourhood || l.location?.split(',')[0]?.trim() || 'Kampala';
-        l.district = l.district || l.location?.split(',')[1]?.trim() || 'Kampala';
-        l.landlord_name = l.landlord_name || l.landlord;
-        l.landlord_phone = l.landlord_phone || l.phone;
-        l.available_from = l.available_from || l.available;
-        l.area_sqm = l.area_sqm || l.area;
-        l.images = l.images?.length ? l.images : [{ url: l.image }];
-        renderDetail(l);
-      } else {
-        showNotFound();
-      }
+      // Fallback to not-found
+      showNotFound();
     }
 
     function showNotFound() {
@@ -229,10 +218,11 @@
           <span>${l.title}</span>
         </div>
 
-        <div class="detail-gallery">
+        <div class="detail-gallery" style="position:relative;">
           <div class="gallery-main">
             <img src="${image}" alt="${l.title}" onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80'" />
           </div>
+          ${l.status === 'rented' ? '<div class="rented-overlay" style="border-radius:var(--radius-lg);"><span class="rented-label">RENTED</span></div>' : ''}
           <div class="gallery-side">
             <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80" alt="Kitchen" />
             <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80" alt="Living room" />
@@ -392,16 +382,7 @@
             return;
           }
         }
-      } catch (e) { }
-
-      // Fallback
-      const similar = (window.listings || [])
-        .filter(l => String(l.id) !== String(listing.id) && l.type === listing.type)
-        .slice(0, 3);
-      if (similar.length) {
-        document.getElementById('similar-section').style.display = 'block';
-        renderSimilar(similar);
-      }
+      } catch (e) { /* no similar listings */ }
     }
 
     function renderSimilar(data) {
@@ -440,13 +421,12 @@
     // ── REVIEWS ──
     async function loadReviews() {
       try {
-        const res = await fetch(`${APIBASE}/reviews/listing/${listingId}`);
-        const data = await res.json();
+        const data = await api.reviews.getListing(listingId);
         const summary = document.getElementById('reviews-summary');
         if (!summary) return;
 
         if (data.total > 0) {
-          summary.innerHTML = `${renderStars(data.average)} <strong>${data.average}</strong> out of 5 &nbsp;·&nbsp; ${data.total} review${data.total !== 1 ? 's' : ''}`;
+          summary.innerHTML = `${renderStars(data.average)} <strong>${parseFloat(data.average).toFixed(1)}</strong> out of 5 &nbsp;·&nbsp; ${data.total} review${data.total !== 1 ? 's' : ''}`;
         } else {
           summary.textContent = 'No reviews yet — be the first!';
         }
@@ -470,17 +450,17 @@
           <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px;">
             <div style="display:flex;align-items:center;gap:12px;">
               <div style="width:40px;height:40px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">
-                ${getInitials(r.tenant_name)}
+                ${getInitials(r.tenant_name || 'Tenant')}
               </div>
               <div>
-                <div style="font-weight:600;color:var(--text-dark);">${r.tenant_name}</div>
+                <div style="font-weight:600;color:var(--text-dark);">${r.tenant_name || 'Verified Tenant'}</div>
                 <div style="font-size:0.8rem;color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
               </div>
             </div>
             <div style="font-size:1.2rem;">${renderStars(r.rating)}</div>
           </div>
           ${r.title ? `<div style="font-weight:600;color:var(--text-dark);margin-bottom:6px;">${r.title}</div>` : ''}
-          <p style="color:var(--text-mid);line-height:1.7;font-size:0.95rem;">${r.comment}</p>
+          <p style="color:var(--text-mid);line-height:1.7;font-size:0.95rem;">${r.comment || ''}</p>
         </div>`).join('');
       } catch (e) {
         const container = document.getElementById('reviews-list');

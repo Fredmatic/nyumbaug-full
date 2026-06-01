@@ -2,24 +2,38 @@ const pool = require('../config/db');
 const { asyncHandler, AppError } = require('../middleware/error');
 const { deleteImage } = require('../middleware/uploadConfig');
 
+// =========================================================================
+// 1. GET /api/listings — get all listings, ordered by payment + reviews
+// =========================================================================
 const getListings = asyncHandler(async (req, res) => {
   try {
     const { district, neighbourhood, type, minPrice, maxPrice } = req.query;
 
-    // 🚀 FIXED: Added subquery to fetch the cover image for every listing
     let queryText = `
       SELECT l.*, 
         (SELECT url FROM listing_images 
          WHERE listing_id = l.id AND is_cover = true 
-         LIMIT 1) AS cover_image
+         LIMIT 1) AS cover_image,
+        COALESCE((
+          SELECT COUNT(*) FROM reviews r WHERE r.listing_id = l.id
+        ), 0) AS review_count,
+        COALESCE((
+          SELECT AVG(r.rating) FROM reviews r WHERE r.listing_id = l.id
+        ), 0) AS avg_rating,
+        -- Check if landlord has an active subscription paid on time
+        COALESCE((
+          SELECT CASE WHEN s.expires_at > NOW() THEN 1 ELSE 0 END
+          FROM subscriptions s
+          WHERE s.user_id = l.landlord_id
+          LIMIT 1
+        ), 0) AS has_active_subscription
       FROM listings l 
-      WHERE 1=1
+      WHERE l.status != 'inactive'
     `;
 
     const queryParams = [];
     let paramIndex = 1;
 
-    // Keep your existing filters exactly as they are below
     if (district && district.trim() !== '') {
       queryText += ` AND district ILIKE $${paramIndex}`;
       queryParams.push(`%${district.trim()}%`);
@@ -50,7 +64,14 @@ const getListings = asyncHandler(async (req, res) => {
       paramIndex++;
     }
 
-    queryText += ' ORDER BY l.created_at DESC';
+    // Order: paid/active subscription first, then by review count, then by date
+    queryText += `
+      ORDER BY 
+        has_active_subscription DESC,
+        review_count DESC,
+        avg_rating DESC,
+        l.created_at DESC
+    `;
 
     const result = await pool.query(queryText, queryParams);
 
@@ -67,24 +88,20 @@ const getListings = asyncHandler(async (req, res) => {
 });
 
 // =========================================================================
-// 2. GET /api/listings/:id — get a single listing profile
+// 2. GET /api/listings/:id
 // =========================================================================
 const getListing = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  // 🚀 FIX: Convert integer string IDs (like "11") into standard mock UUID blocks smoothly
   const parsedId = id.includes('-')
     ? id
     : `00000000-0000-0000-0000-${id.padStart(12, '0')}`;
 
-  // Validate the resulting string matches standard UUID criteria before hitting PostgreSQL
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(parsedId)) {
-    throw new AppError('The requested property format identification is invalid.', 400);
+    throw new AppError('Invalid property ID format.', 400);
   }
 
-  // Fetch listing data along with landlord profile details
-  // 🚀 FIXED: Targeting 'li.url' explicitly based on your database schema layout
   const result = await pool.query(`
     SELECT 
       l.*, 
@@ -105,7 +122,7 @@ const getListing = asyncHandler(async (req, res) => {
   `, [parsedId]);
 
   if (!result.rows.length) {
-    throw new AppError('The property listing you are trying to view could not be found.', 404);
+    throw new AppError('Property listing not found.', 404);
   }
 
   res.status(200).json({
@@ -115,13 +132,13 @@ const getListing = asyncHandler(async (req, res) => {
 });
 
 // =========================================================================
-// 3. POST /api/listings — Create property listing (SINGLE DEFINITION)
+// 3. POST /api/listings — landlord creates listing
 // =========================================================================
 const createListing = asyncHandler(async (req, res) => {
-  console.log("--- INCOMING FRONTEND PAYLOAD CHECK ---");
-  console.log("Body contents parsed by Multer:", req.body);
-  console.log("Files parsed by Multer:", req.files);
-  console.log("---------------------------------------");
+  // Only landlords can create listings
+  if (req.user.role !== 'landlord' && req.user.role !== 'admin') {
+    throw new AppError('Only landlords can create listings.', 403);
+  }
 
   const titleRaw = req.body.title;
   const descriptionRaw = req.body.description;
@@ -140,15 +157,10 @@ const createListing = asyncHandler(async (req, res) => {
   let finalType = 'apartment';
   if (typeRaw) {
     const checkType = typeRaw.trim().toLowerCase();
-    if (checkType.includes('apartment')) {
-      finalType = 'apartment';
-    } else if (checkType.includes('house') || checkType.includes('bungalow') || checkType.includes('mansion')) {
-      finalType = 'house';
-    } else if (checkType.includes('studio') || checkType.includes('room')) {
-      finalType = 'studio';
-    } else if (checkType.includes('townhouse')) {
-      finalType = 'townhouse';
-    }
+    if (checkType.includes('apartment')) finalType = 'apartment';
+    else if (checkType.includes('house') || checkType.includes('bungalow') || checkType.includes('mansion')) finalType = 'house';
+    else if (checkType.includes('studio') || checkType.includes('room')) finalType = 'studio';
+    else if (checkType.includes('townhouse')) finalType = 'townhouse';
   }
 
   let computedTitle = titleRaw && titleRaw.trim() !== "" ? titleRaw.trim() : "";
@@ -158,9 +170,9 @@ const createListing = asyncHandler(async (req, res) => {
     computedTitle = `${bedsText} ${formattedType} for Rent in ${neighborhoodValue}`.trim();
   }
 
-  const parsedPrice = parseInt(priceRaw, 10) ? parseInt(priceRaw, 10) : 0;
-  const parsedBedrooms = parseInt(bedroomsRaw, 10) ? parseInt(bedroomsRaw, 10) : 0;
-  const parsedBathrooms = parseInt(bathroomsRaw, 10) ? parseInt(bathroomsRaw, 10) : 0;
+  const parsedPrice = parseInt(priceRaw, 10) || 0;
+  const parsedBedrooms = parseInt(bedroomsRaw, 10) || 0;
+  const parsedBathrooms = parseInt(bathroomsRaw, 10) || 0;
   const parsedArea = areaRaw && areaRaw !== "" ? parseInt(areaRaw, 10) : null;
 
   const uploadedImages = req.files && req.files['images'] ? req.files['images'] : [];
@@ -179,22 +191,22 @@ const createListing = asyncHandler(async (req, res) => {
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', $14, $15)
     RETURNING *
   `, [
-    parsedLandlordId,                        // $1
-    computedTitle,                           // $2
-    descriptionRaw || 'No description.',     // $3
-    finalType,                               // $4
-    parsedPrice,                             // $5
-    parsedBedrooms,                          // $6
-    parsedBathrooms,                         // $7
-    parsedArea,                              // $8
-    addressRaw || 'Kampala',                 // $9
-    neighborhoodValue,                       // $10
-    districtRaw || 'Kampala',                // $11
+    parsedLandlordId,
+    computedTitle,
+    descriptionRaw || 'No description.',
+    finalType,
+    parsedPrice,
+    parsedBedrooms,
+    parsedBathrooms,
+    parsedArea,
+    addressRaw || 'Kampala',
+    neighborhoodValue,
+    districtRaw || 'Kampala',
     typeof amenitiesRaw === 'string' && amenitiesRaw.startsWith('[') ? JSON.parse(amenitiesRaw) :
-      (amenitiesRaw ? (Array.isArray(amenitiesRaw) ? amenitiesRaw : amenitiesRaw.split(',').map(a => a.trim())) : []), // $12
-    availableRaw || null,                    // $13
-    videoUrl,                                // $14
-    videoPublicId                            // $15
+      (amenitiesRaw ? (Array.isArray(amenitiesRaw) ? amenitiesRaw : amenitiesRaw.split(',').map(a => a.trim())) : []),
+    availableRaw || null,
+    videoUrl,
+    videoPublicId
   ]);
 
   const listing = result.rows[0];
@@ -211,19 +223,48 @@ const createListing = asyncHandler(async (req, res) => {
 
   res.status(201).json({
     success: true,
-    message: 'Listing successfully mapped and saved!',
+    message: 'Listing submitted for review!',
     listing,
   });
 });
 
 // =========================================================================
-// 4. PATCH /api/listings/:id — Update listing placeholder
+// 4. PATCH /api/listings/:id — update listing
 // =========================================================================
 const updateListing = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  const { status } = req.body;
+
+  const existing = await pool.query('SELECT * FROM listings WHERE id = $1', [id]);
+  if (!existing.rows.length) throw new AppError('Listing not found.', 404);
+
+  const listing = existing.rows[0];
+  if (listing.landlord_id !== req.user.id && req.user.role !== 'admin') {
+    throw new AppError('Not authorized.', 403);
+  }
+
+  const allowedStatuses = ['active', 'rented', 'inactive', 'pending'];
+  if (status && !allowedStatuses.includes(status)) {
+    throw new AppError('Invalid status.', 400);
+  }
+
+  const result = await pool.query(
+    'UPDATE listings SET status = COALESCE($1, status), updated_at = NOW() WHERE id = $2 RETURNING *',
+    [status || null, id]
+  );
+
+  // If marked as rented, notify admin
+  if (status === 'rented') {
+    await pool.query(`
+      INSERT INTO notifications (user_id, type, message, listing_id)
+      SELECT id, 'rented', $1, $2 FROM users WHERE role = 'admin'
+    `, [`Property "${listing.title}" has been rented.`, id]).catch(() => {});
+  }
+
   res.status(200).json({
     success: true,
-    message: `Update routine for ID: ${id}`
+    message: `Listing updated.`,
+    listing: result.rows[0]
   });
 });
 
@@ -249,7 +290,7 @@ const deleteListing = asyncHandler(async (req, res) => {
 });
 
 // =========================================================================
-// 6. POST /api/listings/:id/images — add images to existing listing
+// 6. POST /api/listings/:id/images
 // =========================================================================
 const addImages = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -277,19 +318,43 @@ const addImages = asyncHandler(async (req, res) => {
 // 7. GET /api/listings/my — landlord's own listings
 // =========================================================================
 const getMyListings = asyncHandler(async (req, res) => {
-  // 🚀 UPDATED: Join listing_images to pull the cover image into the list view
+  const landlordId = req.user.id;
+
   const result = await pool.query(`
-  SELECT l.*, 
-    (SELECT url FROM listing_images WHERE listing_id = l.id AND is_cover = true LIMIT 1) AS cover_image
-  FROM listings l
-  WHERE 1=1 
-  ${district ? `AND district ILIKE $${paramIndex++}` : ''}
-  ${neighbourhood ? `AND neighbourhood ILIKE $${paramIndex++}` : ''}
-  ${type && type !== 'all' ? `AND type = $${paramIndex++}` : ''}
-  ORDER BY l.created_at DESC
-`, queryParams);
+    SELECT l.*, 
+      (SELECT url FROM listing_images WHERE listing_id = l.id AND is_cover = true LIMIT 1) AS cover_image,
+      COALESCE((SELECT COUNT(*) FROM reviews r WHERE r.listing_id = l.id), 0) AS review_count
+    FROM listings l
+    WHERE l.landlord_id = $1
+    ORDER BY l.created_at DESC
+  `, [landlordId]);
 
   res.json({ success: true, listings: result.rows });
+});
+
+// =========================================================================
+// 8. POST /api/listings/:id/like — tenant likes/saves a listing
+// =========================================================================
+const likeListing = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Get the listing to find the landlord
+  const listingResult = await pool.query('SELECT landlord_id, title FROM listings WHERE id = $1', [id]);
+  if (!listingResult.rows.length) {
+    return res.json({ success: true }); // silent fail
+  }
+
+  const { landlord_id, title } = listingResult.rows[0];
+  const tenantName = req.user?.name || 'A tenant';
+
+  // Create notification for the landlord
+  await pool.query(`
+    INSERT INTO notifications (user_id, type, message, listing_id, created_at)
+    VALUES ($1, 'like', $2, $3, NOW())
+    ON CONFLICT DO NOTHING
+  `, [landlord_id, `${tenantName} saved your property: "${title}"`, id]).catch(() => {});
+
+  res.json({ success: true });
 });
 
 module.exports = {
@@ -299,5 +364,6 @@ module.exports = {
   updateListing,
   deleteListing,
   addImages,
-  getMyListings
+  getMyListings,
+  likeListing,
 };
