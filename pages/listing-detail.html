@@ -367,6 +367,10 @@
               <a href="https://wa.me/${(l.landlord_phone || l.phone || '').replace(/[\s+]/g, '')}" target="_blank" class="btn btn-primary" style="width:100%;justify-content:center;background:#25D366;margin-bottom:10px;">
                 💬 WhatsApp
               </a>
+              ${l.landlord_id ? `<a href="chat.html?with=${l.landlord_id}&listing=${l.id}&title=${encodeURIComponent(l.title)}"
+                class="btn" style="width:100%;justify-content:center;border:1.5px solid var(--green-light);color:var(--green-light);margin-bottom:10px;text-decoration:none;display:flex;align-items:center;gap:8px;">
+                ✉️ Message Landlord
+              </a>` : ''}
               <button class="btn" style="width:100%;justify-content:center;border:1.5px solid var(--border);color:var(--text-mid);"
                 onclick="toggleFav(event,this,'${l.id}');showToast('❤️ Saved to favourites')">
                 ♡ Save Property

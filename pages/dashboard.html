@@ -520,6 +520,9 @@
         <li><a href="#" onclick="showSection('notifications', this)"><span class="icon">🔔</span> Notifications
             <span id="notif-badge" class="notif-badge" style="display:none;"></span></a>
         </li>
+        <li><a href="chat.html"><span class="icon">💬</span> Messages
+            <span id="msg-badge" class="notif-badge" style="display:none;"></span></a>
+        </li>
 
         <div class="section-label">Account</div>
         <li><a href="#" onclick="showSection('settings', this)"><span class="icon">⚙️</span> Settings</a></li>
@@ -703,13 +706,28 @@
       <div id="section-messages" style="display:none;">
         <div class="dash-header">
           <div>
-            <h1>Messages</h1>
-            <p>Direct messages from tenants.</p>
+            <h1>💬 Messages</h1>
+            <p>Chat directly with landlords or tenants about properties.</p>
+          </div>
+          <a href="chat.html" class="btn btn-green">Open Full Chat →</a>
+        </div>
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-body" style="text-align:center;padding:36px;">
+            <div style="font-size:2.8rem;margin-bottom:12px;">💬</div>
+            <p style="font-weight:600;color:var(--text-dark);margin-bottom:6px;">Full-featured messaging</p>
+            <p style="font-size:0.87rem;color:var(--text-muted);margin-bottom:20px;">Real-time chat with landlords and tenants, linked to property listings.</p>
+            <a href="chat.html" class="btn btn-green" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:11px 28px;">
+              ✉️ Open Messages
+            </a>
           </div>
         </div>
         <div class="panel">
+          <div class="panel-header">
+            <h2>Recent Conversations</h2>
+            <a href="chat.html" class="btn-sm">View All →</a>
+          </div>
           <div class="panel-body" id="messages-list">
-            <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
+            <div style="text-align:center;padding:24px;color:var(--text-muted);">Loading…</div>
           </div>
         </div>
       </div>
@@ -1344,23 +1362,42 @@
     async function loadMessages() {
       try {
         const data = await api.messages.getAll();
+        const threads = data.threads || [];
         const container = document.getElementById('messages-list');
+        if (!container) return;
 
-        if (!data.threads || !data.threads.length) {
-          container.innerHTML = `<div class="empty-state"><div class="emoji">💬</div><p>No messages yet.</p></div>`;
-          return;
+        if (!threads.length) {
+          container.innerHTML = `<div class="empty-state"><div class="emoji">💬</div>
+            <p>No conversations yet.<br><a href="listings.html" style="color:var(--green-light);">Browse listings</a> to message a landlord.</p></div>`;
+        } else {
+          const inits = name => { const p = (name||'?').trim().split(' '); return (p[0][0]+(p[1]?.[0]||'')).toUpperCase(); };
+          container.innerHTML = threads.slice(0, 6).map(t => `
+            <a href="chat.html?with=${t.partner_id}" style="text-decoration:none;display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);transition:background 0.15s;color:inherit;"
+               onmouseover="this.style.background='#f0f7f4'" onmouseout="this.style.background=''">
+              <div style="width:38px;height:38px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">
+                ${inits(t.partner_name)}
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:${t.unread_count>0?'700':'500'};color:var(--text-dark);font-size:0.88rem;">${t.partner_name}
+                  <span style="font-size:0.7rem;color:var(--text-muted);font-weight:400;margin-left:4px;text-transform:capitalize;">${t.partner_role||''}</span>
+                </div>
+                <div style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.last_message||'—'}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+                <span style="font-size:0.69rem;color:var(--text-muted);">${timeAgo(t.last_at)}</span>
+                ${t.unread_count>0?`<span style="background:var(--green-light);color:#fff;border-radius:50px;font-size:0.62rem;font-weight:700;padding:1px 7px;">${t.unread_count}</span>`:''}
+              </div>
+            </a>`).join('') +
+            (threads.length > 6 ? `<div style="text-align:center;padding:12px;">
+              <a href="chat.html" style="color:var(--green-light);font-size:0.83rem;text-decoration:none;">See all ${threads.length} conversations →</a>
+            </div>` : '');
         }
 
-        container.innerHTML = data.threads.map(t => `
-          <div class="enquiry-item ${t.unread_count > 0 ? 'unread' : ''}">
-            <div>
-              <div class="enquiry-name">${t.partner_name} ${t.unread_count > 0 ? `<span style="background:var(--gold);color:var(--green-dark);font-size:0.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">${t.unread_count} new</span>` : ''}</div>
-              <div class="enquiry-msg">${t.last_message}</div>
-            </div>
-            <div class="enquiry-time">${timeAgo(t.last_at)}</div>
-          </div>
-        `).join('');
-      } catch (e) { }
+        // Update nav badge
+        const unread = threads.reduce((s, t) => s + (t.unread_count||0), 0);
+        const badge = document.getElementById('msg-badge');
+        if (badge) { badge.textContent = unread||''; badge.style.display = unread>0?'inline':'none'; }
+      } catch(e) {}
     }
 
     // ── EDIT MODAL ──
@@ -1933,6 +1970,8 @@
 
     // Load notifications badge count silently on dashboard open
     setTimeout(loadNotifications, 800);
+    // Load message unread badge silently
+    setTimeout(loadMessages, 1400);
   </script>
 </body>
 

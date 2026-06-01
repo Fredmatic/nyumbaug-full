@@ -186,9 +186,9 @@ const api = {
       return handleResponse(res);
     },
 
-    async getAll(withUserId = null) {
-      const qs = withUserId ? `?with=${withUserId}` : '';
-      const res = await fetch(`${API_BASE}/messages${qs}`, { headers: authHeaders() });
+    async getAll(partnerId = null) {
+      const url = partnerId ? `${API_BASE}/messages/${partnerId}` : `${API_BASE}/messages`;
+      const res = await fetch(url, { headers: authHeaders() });
       return handleResponse(res);
     },
 
@@ -197,7 +197,6 @@ const api = {
       return handleResponse(res);
     },
   },
-
   // ── SAVED ──
   saved: {
     async save(listing_id) {
