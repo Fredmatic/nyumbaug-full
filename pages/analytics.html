@@ -14,17 +14,48 @@
 
 <script>
     async function loadAnalytics() {
-        const res = await fetch('/api/analytics/landlord/1'); // Replace '1' with dynamic ID
-        const { data } = await res.json();
-        const body = document.getElementById('analytics-body');
+        // 1. Get the token from wherever you stored it during login
+        const token = localStorage.getItem('token');
+        // 2. Get the user ID (make sure this is the ID of the logged-in user)
+        const userId = localStorage.getItem('userId');
 
-        data.forEach(item => {
-            body.innerHTML += `<tr>
-        <td>${item.title}</td>
-        <td>${item.views_count}</td>
-        <td>${item.total_enquiries}</td>
-      </tr>`;
-        });
+        if (!token) {
+            window.location.href = '/pages/login.html'; // Redirect if not logged in
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/analytics/landlord/${userId}`, {
+                method: 'GET',
+                headers: {
+                    // THIS IS THE CRITICAL SECURITY PART
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (res.status === 403) {
+                alert("Access Denied: Only landlords can view this.");
+                return;
+            }
+
+            const { data, success } = await res.json();
+
+            if (success) {
+                const body = document.getElementById('analytics-body');
+                body.innerHTML = ''; // Clear existing rows
+                data.forEach(item => {
+                    body.innerHTML += `<tr>
+                    <td>${item.title}</td>
+                    <td>${item.views_count}</td>
+                    <td>${item.total_enquiries}</td>
+                </tr>`;
+                });
+            }
+        } catch (err) {
+            console.error("Error loading analytics:", err);
+        }
     }
+
     loadAnalytics();
 </script>
