@@ -89,7 +89,7 @@ function toggleFav(e, btn, id) {
       fetch(`${API_BASE}/listings/${id}/like`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}`, 'Content-Type': 'application/json' }
-      }).catch(() => {});
+      }).catch(() => { });
     }
   } else {
     saved.splice(idx, 1);
@@ -180,7 +180,9 @@ function toggleNav() {
   const btn = document.querySelector('.nav-toggle');
   if (btn) btn.classList.toggle('open');
 }
-
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
 window.formatUGX = formatUGX;
 window.renderListings = renderListings;
 window.toggleFav = toggleFav;

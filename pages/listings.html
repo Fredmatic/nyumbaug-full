@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Browse Listings — Nyumba UG</title>
   <link rel="stylesheet" href="../css/style.css" />
+  <link rel="manifest" href="/manifest.json" />
   <style>
     .listings-layout {
       display: grid;
@@ -332,7 +333,7 @@
     }
 
     function clearFilters() {
-      ['search-input','filter-type','filter-beds','filter-area','min-price','max-price'].forEach(id => {
+      ['search-input', 'filter-type', 'filter-beds', 'filter-area', 'min-price', 'max-price'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
       });

@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Nyumba UG</title>
   <link rel="stylesheet" href="../css/style.css" />
+  <link rel="manifest" href="/manifest.json" />
   <style>
     body {
       background: #f4f6f5;
@@ -1251,8 +1252,8 @@
             <div class="action-btns">
               <button class="btn-sm" onclick="openEditModal('${l.id}')">Edit</button>
               <a href="listing-detail.html?id=${l.id}" class="btn-sm">View</a>
-              ${l.status !== 'rented' ? `<button class="btn-sm" style="background:#fef3c7;color:#92400e;border:1px solid #fbbf24;" onclick="markAsRented('${l.id}', '${l.title.replace(/'/g,"\\'")}')">🔑 Rented</button>` : '<span class="status-badge status-rented" style="font-size:0.72rem;">Rented</span>'}
-              <button class="btn-sm danger" onclick="deleteListing('${l.id}', '${l.title.replace(/'/g,"\\'")}')">Delete</button>
+              ${l.status !== 'rented' ? `<button class="btn-sm" style="background:#fef3c7;color:#92400e;border:1px solid #fbbf24;" onclick="markAsRented('${l.id}', '${l.title.replace(/'/g, "\\'")}')">🔑 Rented</button>` : '<span class="status-badge status-rented" style="font-size:0.72rem;">Rented</span>'}
+              <button class="btn-sm danger" onclick="deleteListing('${l.id}', '${l.title.replace(/'/g, "\\'")}')">Delete</button>
             </div>
           </td>
         </tr>
@@ -1444,7 +1445,7 @@
         const unread = notifications.filter(n => !n.is_read).length;
         const badge = document.getElementById('notif-badge');
         if (badge) { badge.textContent = unread > 0 ? unread : ''; badge.style.display = unread > 0 ? 'inline' : 'none'; }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     // ── AVATAR ──
@@ -1744,10 +1745,10 @@
             </div>
             <div style="display:flex;flex-direction:column;gap:8px;min-width:140px;">
               ${l.status === 'pending' ? `
-                <button class="btn btn-primary" style="padding:8px 16px;font-size:0.85rem;border-radius:8px;" onclick="approveListing('${l.id}', '${l.title.replace(/'/g,"\\'")}')">
+                <button class="btn btn-primary" style="padding:8px 16px;font-size:0.85rem;border-radius:8px;" onclick="approveListing('${l.id}', '${l.title.replace(/'/g, "\\'")}')">
                   ✅ Approve
                 </button>
-                <button class="btn-sm danger" onclick="rejectListing('${l.id}', '${l.title.replace(/'/g,"\\'")}')">
+                <button class="btn-sm danger" onclick="rejectListing('${l.id}', '${l.title.replace(/'/g, "\\'")}')">
                   ❌ Reject
                 </button>
               ` : l.status === 'rented' ? `
