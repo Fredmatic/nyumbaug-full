@@ -1,0 +1,30 @@
+<div id="analytics-container">
+    <h1>Property Performance</h1>
+    <table id="performance-table">
+        <thead>
+            <tr>
+                <th>Property</th>
+                <th>Views</th>
+                <th>Inquiries</th>
+            </tr>
+        </thead>
+        <tbody id="analytics-body"></tbody>
+    </table>
+</div>
+
+<script>
+    async function loadAnalytics() {
+        const res = await fetch('/api/analytics/landlord/1'); // Replace '1' with dynamic ID
+        const { data } = await res.json();
+        const body = document.getElementById('analytics-body');
+
+        data.forEach(item => {
+            body.innerHTML += `<tr>
+        <td>${item.title}</td>
+        <td>${item.views_count}</td>
+        <td>${item.total_enquiries}</td>
+      </tr>`;
+        });
+    }
+    loadAnalytics();
+</script>

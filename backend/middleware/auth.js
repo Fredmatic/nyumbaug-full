@@ -52,8 +52,18 @@ const optionalAuth = async (req, res, next) => {
       );
       if (result.rows.length) req.user = result.rows[0];
     }
-  } catch (_) {}
+  } catch (_) { }
   next();
+};
+const authorizeRole = (requiredRole) => {
+  return (req, res, next) => {
+    // Assuming user role is attached to req.user after authentication
+    if (req.user && req.user.role === requiredRole) {
+      next(); // User is a landlord, proceed
+    } else {
+      res.status(403).json({ success: false, message: 'Access Denied: Landlord only.' });
+    }
+  };
 };
 
 module.exports = { protect, authorize, optionalAuth };
