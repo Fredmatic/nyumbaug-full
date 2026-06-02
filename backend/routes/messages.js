@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 const { protect } = require('../middleware/auth');
+const { upload } = require('../middleware/uploadConfig');
 
 // ── GET /api/messages/unread-count  (MUST be before /:partnerId)
 router.get('/unread-count', protect, async (req, res) => {
@@ -84,13 +85,28 @@ router.get('/:partnerId', protect, async (req, res) => {
 });
 
 // ── POST /api/messages — send a message
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, upload.single('media'), async (req, res) => {
   try {
     const senderId = req.user.id;
     const { receiver_id, body, listing_id } = req.body;
 
-    if (!receiver_id || !body?.trim()) {
-      return res.status(400).json({ success: false, message: 'receiver_id and body are required.' });
+    if (!receiver_id) {
+      return res.status(400).json({ success: false, message: 'receiver_id is required.' });
+    }
+
+    // Handle media upload
+    let media_url = null;
+    let media_type = null;
+    if (req.file) {
+      media_url = req.file.path;       // Cloudinary URL
+      const mime = req.file.mimetype || '';
+      if (mime.startsWith('audio')) media_type = 'audio';
+      else if (mime.startsWith('video')) media_type = 'video';
+      else media_type = 'image';
+    }
+
+    if (!body?.trim() && !media_url) {
+      return res.status(400).json({ success: false, message: 'Message or media is required.' });
     }
 
     const receiver = await pool.query('SELECT id, name FROM users WHERE id = $1', [receiver_id]);
@@ -98,23 +114,31 @@ router.post('/', protect, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Recipient not found.' });
     }
 
+    // Add media columns if they don't exist yet
+    await pool.query(`
+      ALTER TABLE messages
+        ADD COLUMN IF NOT EXISTS media_url TEXT,
+        ADD COLUMN IF NOT EXISTS media_type VARCHAR(20)
+    `).catch(() => { });
+
     const result = await pool.query(`
-      INSERT INTO messages (sender_id, receiver_id, body, listing_id, is_read)
-      VALUES ($1, $2, $3, $4, FALSE) RETURNING *
-    `, [senderId, receiver_id, body.trim(), listing_id || null]);
+      INSERT INTO messages (sender_id, receiver_id, body, listing_id, is_read, media_url, media_type)
+      VALUES ($1, $2, $3, $4, FALSE, $5, $6) RETURNING *
+    `, [senderId, receiver_id, body?.trim() || '', listing_id || null, media_url, media_type]);
 
     // Notify recipient
+    const notifMsg = media_url
+      ? `${req.user.name} sent you a ${media_type}`
+      : `New message from ${req.user.name}: "${(body || '').substring(0, 60)}"`;
+
     await pool.query(`
       INSERT INTO notifications (user_id, type, message, listing_id)
       VALUES ($1, 'message', $2, $3)
-    `, [
-      receiver_id,
-      `New message from ${req.user.name}: "${body.trim().substring(0, 60)}${body.length > 60 ? '…' : ''}"`,
-      listing_id || null
-    ]).catch(() => {});
+    `, [receiver_id, notifMsg, listing_id || null]).catch(() => { });
 
     res.status(201).json({ success: true, message: result.rows[0] });
   } catch (err) {
+    console.error('Send message error:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
