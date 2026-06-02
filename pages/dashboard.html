@@ -608,7 +608,7 @@
 
   <nav>
     <div class="nav-logo"><a href="../index.html">Nyumba<span>UG</span></a></div>
-    <button class="nav-toggle" onclick="toggleNav()" aria-label="Menu">
+    <button class="nav-toggle" onclick="toggleNav()" aria-label="Menu" style="display:none;">
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links" id="nav-links">
@@ -1281,6 +1281,7 @@
         document.getElementById('header-name').textContent = user.name.split(' ')[0];
 
         if (user.role === 'admin') {
+          showSection('admin', null);
           document.getElementById('header-sub').textContent = 'Welcome to your admin panel. Manage listings and its users.';
         }
         document.getElementById('settings-name').value = user.name;
@@ -2141,6 +2142,11 @@
     setTimeout(loadNotifications, 800);
     // Load message unread badge silently
     setTimeout(loadMessages, 1400);
+    // Load admin data if admin (catches the case where showSection fires before override)
+    setTimeout(() => {
+      const u = api.auth.currentUser();
+      if (u && u.role === 'admin') loadAdminData();
+    }, 600);
   </script>
 </body>
 
