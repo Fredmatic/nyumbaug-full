@@ -21,6 +21,123 @@
       background: #f4f6f5;
     }
 
+    /* ── HAMBURGER BUTTON ── */
+    .dash-hamburger {
+      position: fixed;
+      top: 14px;
+      left: 16px;
+      z-index: 1100;
+      background: var(--green-dark);
+      border: none;
+      border-radius: 10px;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+      transition: background 0.2s;
+    }
+
+    .dash-hamburger:hover {
+      background: var(--green-light);
+    }
+
+    .dash-hamburger span {
+      display: block;
+      width: 20px;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
+    .dash-hamburger.open span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .dash-hamburger.open span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .dash-hamburger.open span:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    /* ── OVERLAY ── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1050;
+      backdrop-filter: blur(2px);
+    }
+
+    .sidebar-overlay.show {
+      display: block;
+    }
+
+    /* ── SLIDE-IN SIDEBAR ── */
+    .dash-sidebar {
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 270px;
+      z-index: 1060;
+      overflow-y: auto;
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+      padding-top: 0 !important;
+    }
+
+    .dash-sidebar.open {
+      transform: translateX(0);
+    }
+
+    .dash-sidebar::-webkit-scrollbar {
+      width: 0;
+    }
+
+    /* ── SIDEBAR CLOSE BUTTON ── */
+    .sidebar-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .sidebar-close:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Push user info down to clear close button */
+    .dash-user {
+      padding-top: 56px !important;
+    }
+
+    /* ── DASHBOARD LAYOUT — full width now ── */
+    .dashboard-layout {
+      display: block !important;
+      grid-template-columns: unset !important;
+    }
+
     .dashboard-layout {
       display: grid;
       grid-template-columns: 240px 1fr;
@@ -478,6 +595,17 @@
 
 <body>
 
+
+  <!-- Hamburger button -->
+  <button class="dash-hamburger" id="dash-hamburger" onclick="toggleDashSidebar()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+
+  <!-- Overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeDashSidebar()"></div>
+
+
+
   <nav>
     <div class="nav-logo"><a href="../index.html">Nyumba<span>UG</span></a></div>
     <button class="nav-toggle" onclick="toggleNav()" aria-label="Menu">
@@ -495,6 +623,7 @@
   <div class="dashboard-layout">
 
     <aside class="dash-sidebar">
+      <button class="sidebar-close" onclick="closeDashSidebar()">✕</button>
       <div class="dash-user">
         <div class="dash-avatar" id="sidebar-avatar">?</div>
         <div class="dash-user-name" id="sidebar-name">Loading...</div>
@@ -1634,6 +1763,28 @@
       document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
       if (clickedLink) clickedLink.classList.add('active');
       if (name === 'messages') loadMessages();
+      closeDashSidebar(); // close sidebar after selecting a section
+    }
+
+    function toggleDashSidebar() {
+      const sidebar = document.getElementById('dash-sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const btn = document.getElementById('dash-hamburger');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+      btn.classList.toggle('open');
+    }
+
+    function closeDashSidebar() {
+      document.getElementById('dash-sidebar').classList.remove('open');
+      document.getElementById('sidebar-overlay').classList.remove('show');
+      document.getElementById('dash-hamburger').classList.remove('open');
+    }
+
+    function openDashSidebar() {
+      document.getElementById('dash-sidebar').classList.add('open');
+      document.getElementById('sidebar-overlay').classList.add('show');
+      document.getElementById('dash-hamburger').classList.add('open');
     }
 
     // ── UTILS ──

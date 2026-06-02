@@ -22,11 +22,11 @@ const getListings = asyncHandler(async (req, res) => {
         ), 0) AS avg_rating,
         -- Check if landlord has an active subscription paid on time
         COALESCE((
-          SELECT CASE WHEN s.expires_at > NOW() THEN 1 ELSE 0 END
-          FROM subscriptions s
-          WHERE s.user_id = l.landlord_id
-          LIMIT 1
-        ), 0) AS has_active_subscription
+  SELECT CASE WHEN s.expires_at > NOW() THEN 1 ELSE 0 END
+  FROM subscriptions s
+  WHERE s.user_id::uuid = l.landlord_id::uuid
+  LIMIT 1
+), 0) AS has_active_subscription
       FROM listings l 
       WHERE l.status != 'inactive'
     `;
