@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
   <title>Messages — NyumbaUG</title>
   <link rel="icon" href="../favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -787,12 +787,25 @@
         display: none;
       }
 
+      .chat-area.active .msgs {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+      }
+
+      .chat-area.active .input-area {
+        flex-shrink: 0;
+        position: sticky;
+        bottom: 0;
+        background: var(--white);
+      }
+
       .chat-area.active {
         display: flex;
         flex-direction: column;
-        height: 100dvh;
         position: fixed;
         inset: 56px 0 0 0;
+        height: calc(100dvh - 56px);
       }
 
       .mobile-back {
@@ -815,7 +828,7 @@
   <div class="topbar">
     <a href="../index.html" class="brand">NyumbaUG</a>
     <div style="width:1px;height:18px;background:rgba(255,255,255,0.15)"></div>
-    <a href="dashboard.html" class="back">
+    <a href="../index.html" class="back">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <path d="M19 12H5M12 5l-7 7 7 7" />
       </svg>
@@ -1070,7 +1083,12 @@
       await loadMsgs(t.partner_id);
       clearInterval(pollTimer);
       pollTimer = setInterval(() => poll(t.partner_id), 4000);
-      document.getElementById('msg-input').focus();
+      const input = document.getElementById('msg-input');
+      input.focus();
+      setTimeout(() => {
+        const msgs = document.getElementById('msgs');
+        msgs.scrollTop = msgs.scrollHeight;
+      }, 300);
     }
 
     async function loadMsgs(partnerId) {
@@ -1310,6 +1328,13 @@
         toast('❌ Microphone access denied.');
       }
     }
+    // Keep messages scrolled to bottom when keyboard opens
+    document.getElementById('msg-input')?.addEventListener('focus', () => {
+      setTimeout(() => {
+        const msgs = document.getElementById('msgs');
+        if (msgs) msgs.scrollTop = msgs.scrollHeight;
+      }, 400);
+    });
 
     function stopRecording() {
       if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
