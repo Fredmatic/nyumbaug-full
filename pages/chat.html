@@ -1200,7 +1200,8 @@
           fd.append('receiver_id', active.id);
           fd.append('body', '');
           if (listingId) fd.append('listing_id', listingId);
-          fd.append('media', voiceBlob, 'voice.webm');
+          const voiceFile = new File([voiceBlob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
+          fd.append('media', voiceFile, voiceFile.name);
           await fetch(`${API_BASE}/messages`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` },
@@ -1315,7 +1316,7 @@
         mediaRecorder = new MediaRecorder(stream);
         mediaRecorder.ondataavailable = e => chunks.push(e.data);
         mediaRecorder.onstop = () => {
-          voiceBlob = new Blob(chunks, { type: 'audio/webm' });
+          voiceBlob = new Blob(chunks, { type: 'audio/webm; codecs=opus' });
           stream.getTracks().forEach(t => t.stop());
           document.getElementById('voice-preview').style.display = 'flex';
           document.getElementById('voice-duration').textContent = voiceSeconds + 's';

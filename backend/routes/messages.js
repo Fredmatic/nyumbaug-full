@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 const { protect } = require('../middleware/auth');
-const { upload } = require('../middleware/uploadConfig');
+const { messageUpload } = require('../middleware/uploadConfig');
 
 // ── GET /api/messages/unread-count  (MUST be before /:partnerId)
 router.get('/unread-count', protect, async (req, res) => {
@@ -85,7 +85,7 @@ router.get('/:partnerId', protect, async (req, res) => {
 });
 
 // ── POST /api/messages — send a message
-router.post('/', protect, upload.single('media'), async (req, res) => {
+router.post('/', protect, messageUpload.single('media'), async (req, res) => {
   try {
     const senderId = req.user.id;
     const { receiver_id, body, listing_id } = req.body;
@@ -98,11 +98,15 @@ router.post('/', protect, upload.single('media'), async (req, res) => {
     let media_url = null;
     let media_type = null;
     if (req.file) {
-      media_url = req.file.path;       // Cloudinary URL
-      const mime = req.file.mimetype || '';
-      if (mime.startsWith('audio')) media_type = 'audio';
-      else if (mime.startsWith('video')) media_type = 'video';
-      else media_type = 'image';
+      media_url = req.file.path;
+      const mime = req.file.mimetype || req.file.originalname || '';
+      if (mime.includes('audio') || mime.includes('webm') || mime.includes('ogg')) {
+        media_type = 'audio';
+      } else if (mime.includes('video') || mime.includes('mp4')) {
+        media_type = 'video';
+      } else {
+        media_type = 'image';
+      }
     }
 
     if (!body?.trim() && !media_url) {

@@ -9,14 +9,30 @@ cloudinary.config({
 });
 
 // Store images in Cloudinary under nyumbaug/listings/
-const storage = new CloudinaryStorage({
+// ── MESSAGE MEDIA (images, video, audio) ──
+const messageStorage = new CloudinaryStorage({
   cloudinary,
-  params: {
-    folder: 'nyumbaug/listings',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    transformation: [{ width: 1200, height: 800, crop: 'limit', quality: 'auto' }],
+  params: async (req, file) => {
+    let resource_type = 'image';
+    let folder = 'nyumbaug/messages';
+
+    if (file.mimetype.startsWith('audio') || file.originalname.includes('.webm')) {
+      resource_type = 'video'; // Cloudinary stores audio under 'video' resource type
+      folder = 'nyumbaug/voice-notes';
+    } else if (file.mimetype.startsWith('video')) {
+      resource_type = 'video';
+      folder = 'nyumbaug/message-videos';
+    }
+
+    return {
+      folder,
+      resource_type,
+      allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'webm', 'ogg', 'mp3', 'wav'],
+    };
   },
 });
+
+const messageUpload = multer({ storage: messageStorage });
 
 // Image storage (10MB max)
 const upload = multer({
@@ -92,4 +108,4 @@ const uploadMixedMedia = multer({
 });
 
 // Update your module exports to include the new mixed media handler
-module.exports = { upload, uploadVideo, uploadMixedMedia, deleteImage, cloudinary };
+module.exports = { upload, uploadVideo, uploadMixedMedia, messageUpload, deleteImage, cloudinary };
