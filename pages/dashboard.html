@@ -1865,21 +1865,18 @@
           const formattedDate = new Date(review.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short' });
 
           tbody.innerHTML += `
-            <tr style="border-bottom: 1px solid var(--border); vertical-align: top;">
-              <td style="padding: 16px 20px;">
-                <div style="font-weight: 600; color: var(--text-dark);">${review.tenant_name}</div>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">${review.tenant_email || ''}</div>
-              </td>
-              <td style="padding: 16px 20px;">
-                <div style="font-weight: 600; color: var(--green-light);">${review.listing_title || 'Unknown property'}</div>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">📍 ${review.neighbourhood || 'Kampala'}</div>
-              </td>
-              <td style="padding: 16px 20px; max-width: 320px; white-space: normal; word-break: break-word;">
-                <div style="color: #f59e0b; font-size: 0.9rem; margin-bottom: 4px;">${starDisplay}</div>
-                <strong style="font-size: 0.88rem; color: var(--text-dark); d-block; margin-bottom:2px;">${review.title || 'Untitled'}</strong>
-                <p style="margin: 4px 0; font-size: 0.85rem; color: var(--text-mid); line-height: 1.4;">"${review.comment || '—'}"</p>
-                <small style="color: var(--text-muted); font-size: 0.75rem; display:block; margin-top:4px;">Date: ${formattedDate}</small>
-              </td>
+  <tr style="border-bottom: 1px solid var(--border); vertical-align: top;">
+    <td style="padding: 16px 20px;">
+      <div style="font-weight: 600; color: var(--text-dark);">${review.tenant_name}</div>
+    </td>
+    <td style="padding: 16px 20px;">
+      <div style="font-weight: 600; color: var(--green-light);">${review.property_title || 'Unknown property'}</div>
+    </td>
+    <td style="padding: 16px 20px; max-width: 320px; white-space: normal; word-break: break-word;">
+      <div style="color: #f59e0b; font-size: 0.9rem; margin-bottom: 4px;">${starDisplay}</div>
+      <p style="margin: 4px 0; font-size: 0.85rem; color: var(--text-mid); line-height: 1.4;">${review.comment || '<em style="color:var(--text-muted)">No comment</em>'}</p>
+      <small style="color: var(--text-muted); font-size: 0.75rem; display:block; margin-top:4px;">Date: ${formattedDate}</small>
+    </td>
               <td style="padding: 16px 20px;">
                 <select class="btn-sm" onchange="updateReviewStatus('${review.id}', this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--white); outline: none; cursor: pointer; font-size:0.83rem;">
                   <option value="active" ${review.status === 'active' ? 'selected' : ''}>🟢 Active</option>
