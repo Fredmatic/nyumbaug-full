@@ -7,7 +7,7 @@ const {
     updateEnquiry
 } = require('../controllers/enquiryController');
 const { protect } = require('../middleware/auth');
-router.post('/', createEnquiry);
+router.post('/', protect, createEnquiry);
 
 // Protected routes for viewing and updating enquiries
 router.get('/', protect, getEnquiries);

@@ -185,6 +185,11 @@
     let currentRating = 0;
 
     function openEnquiryModal() {
+      if (!api.auth.isLoggedIn()) {
+        showToast('❌ Please log in to send an enquiry.');
+        setTimeout(() => window.location.href = 'login.html', 1500);
+        return;
+      }
       document.getElementById('enquiry-modal').style.display = 'flex';
     }
 

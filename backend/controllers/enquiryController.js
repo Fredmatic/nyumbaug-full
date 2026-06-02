@@ -24,21 +24,35 @@ const sendEmail = async ({ to, subject, html }) => {
 const createEnquiry = asyncHandler(async (req, res) => {
   const { listing_id, name, email, phone, message } = req.body;
 
+  // Only logged-in users can send enquiries
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'Please log in to send an enquiry.' });
+  }
+
   if (!name || !phone || !message) {
     throw new AppError('name, phone, and message are required.', 400);
   }
 
-  // Handle safe database formatting for the tenant_id field if a guest submits a form
-  const fallbackTenantId = req.user?.id ? String(req.user.id) : null;
-  const parsedTenantId = fallbackTenantId && fallbackTenantId.includes('-')
-    ? fallbackTenantId
-    : (fallbackTenantId ? `00000000-0000-0000-0000-${fallbackTenantId.padStart(12, '0')}` : '00000000-0000-0000-0000-000000000000');
+  if (!listing_id) {
+    throw new AppError('listing_id is required.', 400);
+  }
+
+  // Verify listing exists
+  const listingCheck = await pool.query(
+    'SELECT id FROM listings WHERE id = $1',
+    [listing_id]
+  );
+  if (!listingCheck.rows.length) {
+    throw new AppError('Listing not found.', 404);
+  }
+
+  const tenantId = req.user.id;
 
   const result = await pool.query(`
-    INSERT INTO enquiries (listing_id, tenant_id, name, email, phone, message)
-    VALUES ($1, $2, $3, $4, $5, $6)
-    RETURNING *
-  `, [listing_id || null, parsedTenantId, name, email, phone, message]);
+  INSERT INTO enquiries (listing_id, tenant_id, name, email, phone, message)
+  VALUES ($1, $2, $3, $4, $5, $6)
+  RETURNING *
+`, [listing_id, tenantId, name, email, phone, message]);
 
   // Only email landlord if this is a listing enquiry
   if (listing_id) {
