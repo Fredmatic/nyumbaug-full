@@ -213,7 +213,10 @@
       try {
         const res = await fetch(`${APIBASE}/enquiries`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}`
+          },
           body: JSON.stringify({
             listing_id: currentListingId,
             name, phone, email, message
