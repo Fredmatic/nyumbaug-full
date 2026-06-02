@@ -140,7 +140,6 @@
       }
     }
   </style>
-  <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/png" href="/icons/icon-192.png" />
 
   <script>
@@ -184,6 +183,87 @@
 
     const listingId = new URLSearchParams(location.search).get('id');
     let currentRating = 0;
+
+    function openEnquiryModal() {
+      document.getElementById('enquiry-modal').style.display = 'flex';
+    }
+
+    async function submitEnquiry() {
+      const name = document.getElementById('enq-name').value;
+      const phone = document.getElementById('enq-phone').value;
+      const email = document.getElementById('enq-email').value;
+      const message = document.getElementById('enq-message').value;
+
+      if (!name || !phone || !message) {
+        showToast('❌ Please fill in the required fields.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${APIBASE}/enquiries`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ listing_id: listingId, name, phone, email, message })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showToast('✅ Enquiry sent successfully!');
+          document.getElementById('enquiry-modal').style.display = 'none';
+          // Clear form
+          document.getElementById('enq-message').value = '';
+        }
+      } catch (e) {
+        showToast('❌ Failed to send enquiry.');
+      }
+    }
+
+    async function submitReview() {
+      const rating = parseInt(document.getElementById('review-rating').value);
+      const title = document.getElementById('review-title').value.trim();
+      const comment = document.getElementById('review-body').value.trim(); // ⚡ CHANGED from body to comment
+      const errEl = document.getElementById('review-error');
+
+      if (!errEl) return;
+      errEl.style.display = 'none';
+
+      // Client-side instant validation 
+      if (!rating) {
+        errEl.textContent = 'Please select a star rating.';
+        errEl.style.display = 'block';
+        return;
+      }
+      if (!comment || comment.length < 10) {
+        errEl.textContent = 'Please write a descriptive review of at least 10 characters.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+
+      try {
+        // 🚀 Update the parameters passed into your api service method
+        const data = await api.reviews.submit(listingId, rating, title, comment);
+
+        if (data.success) {
+          showToast('✅ Review submitted successfully!');
+
+          const formWrapper = document.getElementById('review-form-wrapper');
+          if (formWrapper) formWrapper.style.display = 'none';
+
+          // Reset input fields for the next interaction
+          document.getElementById('review-title').value = '';
+          document.getElementById('review-body').value = '';
+          setRating(0);
+
+          // Auto-reload the active visual review stack feed instantly
+          loadReviews();
+        }
+      } catch (e) {
+        // Captures custom error validation strings returned directly from your Node/Express server
+        errEl.textContent = e.message || 'Failed to send your review. Please try again.';
+        errEl.style.display = 'block';
+      }
+    }
 
     function getInitials(name) {
       if (!name) return '?';
@@ -370,7 +450,7 @@
               <button class="btn btn-green" style="width:100%; justify-content:center; margin-top:10px;" 
                 onclick="openEnquiryModal()">
                   📩 Enquire about this Property
-                    </button>
+                    </button><br/><br/>
               ${l.landlord_id ? `<a href="chat.html?with=${l.landlord_id}&listing=${l.id}&title=${encodeURIComponent(l.title)}"
                 class="btn" style="width:100%;justify-content:center;border:1.5px solid var(--green-light);color:var(--green-light);margin-bottom:10px;text-decoration:none;display:flex;align-items:center;gap:8px;">
                 ✉️ Message Landlord
@@ -526,85 +606,6 @@
     function toggleReviewForm() {
       const form = document.getElementById('review-form-wrapper');
       if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    }
-
-    async function submitReview() {
-      const rating = parseInt(document.getElementById('review-rating').value);
-      const title = document.getElementById('review-title').value.trim();
-      const comment = document.getElementById('review-body').value.trim(); // ⚡ CHANGED from body to comment
-      const errEl = document.getElementById('review-error');
-
-      if (!errEl) return;
-      errEl.style.display = 'none';
-
-      // Client-side instant validation 
-      if (!rating) {
-        errEl.textContent = 'Please select a star rating.';
-        errEl.style.display = 'block';
-        return;
-      }
-      if (!comment || comment.length < 10) {
-        errEl.textContent = 'Please write a descriptive review of at least 10 characters.';
-        errEl.style.display = 'block';
-        return;
-      }
-      function openEnquiryModal() {
-        document.getElementById('enquiry-modal').style.display = 'flex';
-      }
-
-      async function submitEnquiry() {
-        const name = document.getElementById('enq-name').value;
-        const phone = document.getElementById('enq-phone').value;
-        const email = document.getElementById('enq-email').value;
-        const message = document.getElementById('enq-message').value;
-
-        if (!name || !phone || !message) {
-          showToast('❌ Please fill in the required fields.');
-          return;
-        }
-
-        try {
-          const res = await fetch(`${APIBASE}/enquiries`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ listing_id: listingId, name, phone, email, message })
-          });
-          const data = await res.json();
-
-          if (data.success) {
-            showToast('✅ Enquiry sent successfully!');
-            document.getElementById('enquiry-modal').style.display = 'none';
-            // Clear form
-            document.getElementById('enq-message').value = '';
-          }
-        } catch (e) {
-          showToast('❌ Failed to send enquiry.');
-        }
-      }
-
-      try {
-        // 🚀 Update the parameters passed into your api service method
-        const data = await api.reviews.submit(listingId, rating, title, comment);
-
-        if (data.success) {
-          showToast('✅ Review submitted successfully!');
-
-          const formWrapper = document.getElementById('review-form-wrapper');
-          if (formWrapper) formWrapper.style.display = 'none';
-
-          // Reset input fields for the next interaction
-          document.getElementById('review-title').value = '';
-          document.getElementById('review-body').value = '';
-          setRating(0);
-
-          // Auto-reload the active visual review stack feed instantly
-          loadReviews();
-        }
-      } catch (e) {
-        // Captures custom error validation strings returned directly from your Node/Express server
-        errEl.textContent = e.message || 'Failed to send your review. Please try again.';
-        errEl.style.display = 'block';
-      }
     }
 
     loadListing();
