@@ -715,8 +715,10 @@
           <div class="panel-body" style="text-align:center;padding:36px;">
             <div style="font-size:2.8rem;margin-bottom:12px;">💬</div>
             <p style="font-weight:600;color:var(--text-dark);margin-bottom:6px;">Full-featured messaging</p>
-            <p style="font-size:0.87rem;color:var(--text-muted);margin-bottom:20px;">Real-time chat with landlords and tenants, linked to property listings.</p>
-            <a href="chat.html" class="btn btn-green" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:11px 28px;">
+            <p style="font-size:0.87rem;color:var(--text-muted);margin-bottom:20px;">Real-time chat with landlords and
+              tenants, linked to property listings.</p>
+            <a href="chat.html" class="btn btn-green"
+              style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:11px 28px;">
               ✉️ Open Messages
             </a>
           </div>
@@ -730,6 +732,21 @@
             <div style="text-align:center;padding:24px;color:var(--text-muted);">Loading…</div>
           </div>
         </div>
+      </div>
+      <div id="payment-banner" style="display:none; background:#fef9c3; border:1px solid #fbbf24;
+            border-radius:10px; padding:14px 20px; margin-bottom:20px; align-items:center;
+            gap:14px; flex-wrap:wrap;">
+        <span style="font-size:1.2rem;">⚠️</span>
+        <div style="flex:1;">
+          <strong style="color:#92400e;">Subscription required</strong>
+          <p style="font-size:0.85rem;color:#78350f;margin-top:2px;">
+            Activate your subscription to keep your listings visible to tenants.
+          </p>
+        </div>
+        <a href="payment.html" class="btn btn-green"
+          style="white-space:nowrap;font-size:0.85rem;padding:8px 18px;text-decoration:none;">
+          Pay Now — UGX 100,000
+        </a>
       </div>
 
       <div id="section-settings" style="display:none;">
@@ -1118,8 +1135,9 @@
       const paid = sub && new Date(sub) > new Date();
       const u0 = api.auth.currentUser();
       if (u0.role === 'landlord' && !paid) {
-        window.location.href = 'payment.html';
-        return;
+        // Show a soft reminder banner instead of forcing redirect
+        const banner = document.getElementById('payment-banner');
+        if (banner) banner.style.display = 'flex';
       }
       // 1. load profile/authentication details safely
       let userRole = u0?.role || 'landlord'; // fallback data
@@ -1370,7 +1388,7 @@
           container.innerHTML = `<div class="empty-state"><div class="emoji">💬</div>
             <p>No conversations yet.<br><a href="listings.html" style="color:var(--green-light);">Browse listings</a> to message a landlord.</p></div>`;
         } else {
-          const inits = name => { const p = (name||'?').trim().split(' '); return (p[0][0]+(p[1]?.[0]||'')).toUpperCase(); };
+          const inits = name => { const p = (name || '?').trim().split(' '); return (p[0][0] + (p[1]?.[0] || '')).toUpperCase(); };
           container.innerHTML = threads.slice(0, 6).map(t => `
             <a href="chat.html?with=${t.partner_id}" style="text-decoration:none;display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);transition:background 0.15s;color:inherit;"
                onmouseover="this.style.background='#f0f7f4'" onmouseout="this.style.background=''">
@@ -1378,14 +1396,14 @@
                 ${inits(t.partner_name)}
               </div>
               <div style="flex:1;min-width:0;">
-                <div style="font-weight:${t.unread_count>0?'700':'500'};color:var(--text-dark);font-size:0.88rem;">${t.partner_name}
-                  <span style="font-size:0.7rem;color:var(--text-muted);font-weight:400;margin-left:4px;text-transform:capitalize;">${t.partner_role||''}</span>
+                <div style="font-weight:${t.unread_count > 0 ? '700' : '500'};color:var(--text-dark);font-size:0.88rem;">${t.partner_name}
+                  <span style="font-size:0.7rem;color:var(--text-muted);font-weight:400;margin-left:4px;text-transform:capitalize;">${t.partner_role || ''}</span>
                 </div>
-                <div style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.last_message||'—'}</div>
+                <div style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.last_message || '—'}</div>
               </div>
               <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
                 <span style="font-size:0.69rem;color:var(--text-muted);">${timeAgo(t.last_at)}</span>
-                ${t.unread_count>0?`<span style="background:var(--green-light);color:#fff;border-radius:50px;font-size:0.62rem;font-weight:700;padding:1px 7px;">${t.unread_count}</span>`:''}
+                ${t.unread_count > 0 ? `<span style="background:var(--green-light);color:#fff;border-radius:50px;font-size:0.62rem;font-weight:700;padding:1px 7px;">${t.unread_count}</span>` : ''}
               </div>
             </a>`).join('') +
             (threads.length > 6 ? `<div style="text-align:center;padding:12px;">
@@ -1394,10 +1412,10 @@
         }
 
         // Update nav badge
-        const unread = threads.reduce((s, t) => s + (t.unread_count||0), 0);
+        const unread = threads.reduce((s, t) => s + (t.unread_count || 0), 0);
         const badge = document.getElementById('msg-badge');
-        if (badge) { badge.textContent = unread||''; badge.style.display = unread>0?'inline':'none'; }
-      } catch(e) {}
+        if (badge) { badge.textContent = unread || ''; badge.style.display = unread > 0 ? 'inline' : 'none'; }
+      } catch (e) { }
     }
 
     // ── EDIT MODAL ──
