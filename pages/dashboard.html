@@ -1793,6 +1793,7 @@
       document.getElementById('section-' + name).style.display = 'block';
       document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
       if (clickedLink) clickedLink.classList.add('active');
+      if (name === 'enquiries') loadEnquiries();
       if (name === 'messages') loadMessages();
       closeDashSidebar(); // close sidebar after selecting a section
     }
