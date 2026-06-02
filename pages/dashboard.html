@@ -578,16 +578,46 @@
     }
 
     @media (max-width: 768px) {
-      .dashboard-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .dash-sidebar {
-        display: none;
-      }
-
       .stats-grid {
         grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .dash-main {
+        padding: 16px;
+      }
+
+      .panel {
+        border-radius: 10px;
+      }
+
+      .dash-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .dash-header h1 {
+        font-size: 1.2rem;
+      }
+
+      table {
+        font-size: 0.78rem;
+      }
+
+      .action-btns {
+        flex-direction: column;
+      }
+
+      /* Admin panel table — stack on mobile */
+      #admin-listings-body>div {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Reviews table — hide last column on mobile */
+      .listings-table th:last-child,
+      .listings-table td:last-child {
+        display: none;
       }
     }
   </style>
@@ -1838,16 +1868,16 @@
             <tr style="border-bottom: 1px solid var(--border); vertical-align: top;">
               <td style="padding: 16px 20px;">
                 <div style="font-weight: 600; color: var(--text-dark);">${review.tenant_name}</div>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">${review.tenant_email}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">${review.tenant_email || ''}</div>
               </td>
               <td style="padding: 16px 20px;">
-                <div style="font-weight: 600; color: var(--green-light);">${review.listing_title}</div>
+                <div style="font-weight: 600; color: var(--green-light);">${review.listing_title || 'Unknown property'}</div>
                 <div style="font-size: 0.8rem; color: var(--text-muted);">📍 ${review.neighbourhood || 'Kampala'}</div>
               </td>
               <td style="padding: 16px 20px; max-width: 320px; white-space: normal; word-break: break-word;">
                 <div style="color: #f59e0b; font-size: 0.9rem; margin-bottom: 4px;">${starDisplay}</div>
                 <strong style="font-size: 0.88rem; color: var(--text-dark); d-block; margin-bottom:2px;">${review.title || 'Untitled'}</strong>
-                <p style="margin: 4px 0; font-size: 0.85rem; color: var(--text-mid); line-height: 1.4;">"${review.body}"</p>
+                <p style="margin: 4px 0; font-size: 0.85rem; color: var(--text-mid); line-height: 1.4;">"${review.comment || '—'}"</p>
                 <small style="color: var(--text-muted); font-size: 0.75rem; display:block; margin-top:4px;">Date: ${formattedDate}</small>
               </td>
               <td style="padding: 16px 20px;">
