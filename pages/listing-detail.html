@@ -189,32 +189,49 @@
     }
 
     async function submitEnquiry() {
-      const name = document.getElementById('enq-name').value;
-      const phone = document.getElementById('enq-phone').value;
-      const email = document.getElementById('enq-email').value;
-      const message = document.getElementById('enq-message').value;
+      const name = document.getElementById('enq-name').value.trim();
+      const phone = document.getElementById('enq-phone').value.trim();
+      const email = document.getElementById('enq-email').value.trim();
+      const message = document.getElementById('enq-message').value.trim();
 
       if (!name || !phone || !message) {
-        showToast('❌ Please fill in the required fields.');
+        showToast('❌ Please fill in Name, Phone and Message.');
         return;
       }
+
+      // Always get listingId fresh from URL
+      const currentListingId = new URLSearchParams(location.search).get('id');
+
+      const btn = document.querySelector('#enquiry-modal .btn.btn-green');
+      if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
 
       try {
         const res = await fetch(`${APIBASE}/enquiries`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ listing_id: listingId, name, phone, email, message })
+          body: JSON.stringify({
+            listing_id: currentListingId,
+            name, phone, email, message
+          })
         });
+
         const data = await res.json();
 
         if (data.success) {
-          showToast('✅ Enquiry sent successfully!');
+          showToast('✅ Enquiry sent! The landlord will contact you soon.');
           document.getElementById('enquiry-modal').style.display = 'none';
-          // Clear form
+          document.getElementById('enq-name').value = '';
+          document.getElementById('enq-phone').value = '';
+          document.getElementById('enq-email').value = '';
           document.getElementById('enq-message').value = '';
+        } else {
+          showToast('❌ ' + (data.message || 'Failed to send enquiry.'));
         }
       } catch (e) {
-        showToast('❌ Failed to send enquiry.');
+        console.error('Enquiry error:', e);
+        showToast('❌ Failed to send. Please check your connection.');
+      } finally {
+        if (btn) { btn.textContent = 'Send Enquiry'; btn.disabled = false; }
       }
     }
 

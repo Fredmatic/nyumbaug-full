@@ -35,6 +35,8 @@
       font-family: 'Inter', sans-serif;
       background: var(--bg);
       height: 100vh;
+      height: 100dvh;
+      /* dynamic viewport — fixes mobile keyboard pushing content */
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -108,6 +110,8 @@
       grid-template-columns: 300px 1fr;
       flex: 1;
       overflow: hidden;
+      min-height: 0;
+      /* critical — prevents flex children from overflowing */
     }
 
     /* SIDEBAR */
@@ -586,6 +590,138 @@
       height: 16px;
     }
 
+    /* Attach & voice buttons */
+    .attach-btn,
+    .voice-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: none;
+      border: 1.5px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .attach-btn:hover {
+      background: #f0f7f4;
+      color: var(--green-light);
+      border-color: var(--green-light);
+    }
+
+    .voice-btn:hover {
+      background: #fff0f0;
+      color: #ef4444;
+      border-color: #ef4444;
+    }
+
+    .voice-btn.recording {
+      background: #ef4444;
+      color: #fff;
+      border-color: #ef4444;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1)
+      }
+
+      50% {
+        transform: scale(1.08)
+      }
+    }
+
+    /* Media preview */
+    .media-preview {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .media-preview-item {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1.5px solid var(--border);
+    }
+
+    .media-preview-item img,
+    .media-preview-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .media-preview-item .remove-media {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .voice-preview {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f0f7f4;
+      border: 1px solid #b8ddc8;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+      color: var(--green-mid);
+    }
+
+    .voice-preview button {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    /* Image bubble */
+    .bubble img {
+      max-width: 220px;
+      border-radius: 10px;
+      display: block;
+      margin-bottom: 4px;
+      cursor: pointer;
+    }
+
+    .bubble video {
+      max-width: 220px;
+      border-radius: 10px;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .bubble audio {
+      width: 200px;
+      margin-bottom: 4px;
+    }
+
     /* Spinner */
     .spin {
       display: inline-block;
@@ -653,6 +789,10 @@
 
       .chat-area.active {
         display: flex;
+        flex-direction: column;
+        height: 100dvh;
+        position: fixed;
+        inset: 56px 0 0 0;
       }
 
       .mobile-back {
@@ -718,7 +858,7 @@
         <p>Select a conversation, or tap "Message Landlord" on any property listing to start chatting.</p>
       </div>
 
-      <div id="active-chat" style="display:none;flex-direction:column;height:100%;">
+      <div id="active-chat" style="display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
         <!-- Header -->
         <div class="chat-head">
           <button class="mobile-back" onclick="mobileBack()">
@@ -747,9 +887,36 @@
             <span>🏠</span><span id="tag-title">–</span>
             <button onclick="clearTag()" title="Remove">✕</button>
           </div>
+          <!-- Media previews -->
+          <div class="media-preview" id="media-preview" style="display:none;"></div>
+          <div class="voice-preview" id="voice-preview" style="display:none;">
+            🎙️ <span id="voice-duration">0s</span> voice note ready
+            <button onclick="cancelVoice()">✕</button>
+          </div>
+
           <div class="input-row">
-            <textarea id="msg-input" placeholder="Type a message… (Enter to send, Shift+Enter for new line)" rows="1"
-              onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+            <!-- Attach file -->
+            <button class="attach-btn" onclick="document.getElementById('file-input').click()"
+              title="Attach image or video">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.41 17.41a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+              </svg>
+            </button>
+            <input type="file" id="file-input" accept="image/*,video/*" multiple style="display:none"
+              onchange="handleFiles(this)" />
+
+            <textarea id="msg-input" placeholder="Type a message…" rows="1" onkeydown="handleKey(event)"
+              oninput="autoResize(this)"></textarea>
+
+            <!-- Voice note -->
+            <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice note">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
+              </svg>
+            </button>
+
             <button class="send-btn" id="send-btn" onclick="sendMsg()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round">
@@ -772,6 +939,12 @@
     let active = null; // { id, name, role, listing_id?, listing_title? }
     let pollTimer = null;
     let lastCount = 0;
+    let mediaFiles = [];      // pending image/video attachments
+    let voiceBlob = null;     // pending voice note
+    let mediaRecorder = null;
+    let isRecording = false;
+    let voiceTimer = null;
+    let voiceSeconds = 0;
 
     async function init() {
       if (!api.auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
@@ -933,10 +1106,21 @@
         }
         const time = d.toLocaleTimeString('en-UG', { hour: '2-digit', minute: '2-digit' });
         const av = initials(isMe ? me.name : (active?.name || '?'));
+        // Build media content
+        let mediaHtml = '';
+        if (m.media_url) {
+          if (m.media_type === 'audio') {
+            mediaHtml = `<audio controls src="${m.media_url}"></audio>`;
+          } else if (m.media_type === 'video') {
+            mediaHtml = `<video controls src="${m.media_url}" style="max-width:220px;border-radius:10px;"></video>`;
+          } else {
+            mediaHtml = `<img src="${m.media_url}" onclick="window.open('${m.media_url}')" alt="image" />`;
+          }
+        }
         html += `<div class="msg-row ${isMe ? 'me' : ''}">
         <div class="msg-av">${av}</div>
         <div class="bwrap">
-          <div class="bubble">${escHtml(m.body)}</div>
+          <div class="bubble">${mediaHtml}${m.body ? escHtml(m.body) : ''}</div>
           <div class="msg-time">${time}${isMe ? `<span class="read-tick">${m.is_read ? ' ✓✓' : ' ✓'}</span>` : ''}</div>
         </div>
       </div>`;
@@ -962,20 +1146,56 @@
       if (!active) return;
       const inp = document.getElementById('msg-input');
       const body = inp.value.trim();
-      if (!body) return;
+      const tag = document.getElementById('listing-tag');
+      const listingId = tag.dataset.lid || active.listing_id || null;
+
+      // Must have text, media, or voice
+      if (!body && !mediaFiles.length && !voiceBlob) return;
+
       const btn = document.getElementById('send-btn');
       btn.disabled = true;
       inp.value = ''; inp.style.height = '';
-      const tag = document.getElementById('listing-tag');
-      const listingId = tag.dataset.lid || active.listing_id || null;
+
       try {
-        await api.messages.send(active.id, body, listingId);
+        if (mediaFiles.length > 0) {
+          // Send each file as a message
+          for (const file of mediaFiles) {
+            const fd = new FormData();
+            fd.append('receiver_id', active.id);
+            fd.append('body', body || '');
+            if (listingId) fd.append('listing_id', listingId);
+            fd.append('media', file);
+            await fetch(`${API_BASE}/messages`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` },
+              body: fd
+            });
+          }
+          clearMediaPreview();
+        } else if (voiceBlob) {
+          const fd = new FormData();
+          fd.append('receiver_id', active.id);
+          fd.append('body', '');
+          if (listingId) fd.append('listing_id', listingId);
+          fd.append('media', voiceBlob, 'voice.webm');
+          await fetch(`${API_BASE}/messages`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` },
+            body: fd
+          });
+          cancelVoice();
+        } else {
+          await api.messages.send(active.id, body, listingId);
+        }
         await loadMsgs(active.id);
         loadThreads();
       } catch (e) {
         toast('❌ Failed to send. Try again.');
         inp.value = body;
-      } finally { btn.disabled = false; inp.focus(); }
+      } finally {
+        btn.disabled = false;
+        inp.focus();
+      }
     }
 
     function handleKey(e) {
@@ -1021,6 +1241,88 @@
       const t = document.getElementById('toast');
       t.textContent = msg; t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ── FILE ATTACHMENTS ──
+    function handleFiles(input) {
+      const files = Array.from(input.files);
+      if (!files.length) return;
+      mediaFiles = files;
+      const preview = document.getElementById('media-preview');
+      preview.style.display = 'flex';
+      preview.innerHTML = files.map((f, i) => {
+        const url = URL.createObjectURL(f);
+        const isVideo = f.type.startsWith('video/');
+        return `<div class="media-preview-item">
+      ${isVideo
+            ? `<video src="${url}" muted></video>`
+            : `<img src="${url}" alt="preview"/>`}
+      <button class="remove-media" onclick="removeMedia(${i})">✕</button>
+    </div>`;
+      }).join('');
+      input.value = '';
+    }
+
+    function removeMedia(i) {
+      mediaFiles.splice(i, 1);
+      if (!mediaFiles.length) clearMediaPreview();
+      else handleFiles({ files: mediaFiles }); // re-render
+    }
+
+    function clearMediaPreview() {
+      mediaFiles = [];
+      const p = document.getElementById('media-preview');
+      p.style.display = 'none';
+      p.innerHTML = '';
+    }
+
+    // ── VOICE NOTES ──
+    async function toggleVoice() {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        await startRecording();
+      }
+    }
+
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const chunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+        mediaRecorder.onstop = () => {
+          voiceBlob = new Blob(chunks, { type: 'audio/webm' });
+          stream.getTracks().forEach(t => t.stop());
+          document.getElementById('voice-preview').style.display = 'flex';
+          document.getElementById('voice-duration').textContent = voiceSeconds + 's';
+        };
+        mediaRecorder.start();
+        isRecording = true;
+        voiceSeconds = 0;
+        document.getElementById('voice-btn').classList.add('recording');
+        voiceTimer = setInterval(() => {
+          voiceSeconds++;
+          // Show live duration on button title
+          document.getElementById('voice-btn').title = voiceSeconds + 's — tap to stop';
+        }, 1000);
+      } catch (e) {
+        toast('❌ Microphone access denied.');
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+      clearInterval(voiceTimer);
+      isRecording = false;
+      document.getElementById('voice-btn').classList.remove('recording');
+      document.getElementById('voice-btn').title = 'Voice note';
+    }
+
+    function cancelVoice() {
+      stopRecording();
+      voiceBlob = null;
+      document.getElementById('voice-preview').style.display = 'none';
     }
 
     init();
