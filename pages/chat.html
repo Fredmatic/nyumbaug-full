@@ -107,10 +107,11 @@
     /* LAYOUT */
     .layout {
       display: grid;
-      grid-template-columns: 300px 1fr;
+      grid-template-columns: 350px 1fr;
       flex: 1;
       overflow: hidden;
       min-height: 0;
+      height: auto;
       /* critical — prevents flex children from overflowing */
     }
 
@@ -788,6 +789,7 @@
 
       .chat-area {
         display: flex !important;
+        visibility: visible !important;
       }
 
       .chat-area.active .msgs {
