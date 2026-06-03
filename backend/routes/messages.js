@@ -146,24 +146,24 @@ router.post('/', protect, messageUpload.single('media'), async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
-// Search users to message
-router.get('/messages/search-users', protect, async (req, res) => {
-  const { q } = req.query;
-  if (!q || q.length < 2) return res.json({ success: true, users: [] });
+// // Search users to message
+// router.get('/messages/search-users', protect, async (req, res) => {
+//   const { q } = req.query;
+//   if (!q || q.length < 2) return res.json({ success: true, users: [] });
 
-  try {
-    const result = await pool.query(`
-      SELECT id, name, role FROM users
-      WHERE is_active = true
-        AND id != $1
-        AND name ILIKE $2
-      ORDER BY name
-      LIMIT 10
-    `, [req.user.id, `%${q}%`]);
-    res.json({ success: true, users: result.rows });
-  } catch (e) {
-    res.status(500).json({ success: false, message: 'Search failed' });
-  }
-});
+//   try {
+//     const result = await pool.query(`
+//       SELECT id, name, role FROM users
+//       WHERE is_active = true
+//         AND id != $1
+//         AND name ILIKE $2
+//       ORDER BY name
+//       LIMIT 10
+//     `, [req.user.id, `%${q}%`]);
+//     res.json({ success: true, users: result.rows });
+//   } catch (e) {
+//     res.status(500).json({ success: false, message: 'Search failed' });
+//   }
+// });
 
 module.exports = router;
