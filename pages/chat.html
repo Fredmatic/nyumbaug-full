@@ -774,7 +774,7 @@
         position: fixed;
         inset: 56px 0 0 0;
         z-index: 20;
-        display: flex;
+        display: flex !important;
         width: 100%;
       }
 
@@ -787,7 +787,7 @@
       }
 
       .chat-area {
-        display: none;
+        display: flex !important;
       }
 
       .chat-area.active .msgs {
@@ -1065,28 +1065,24 @@
           id: t.partner_id, name: t.partner_name, role: t.partner_role,
           listing_id: t.listing_id || null, listing_title: t.listing_title || null
         };
-
-        // Mark active in sidebar
+        // Reset active state in sidebar
         document.querySelectorAll('.thread').forEach(el => el.classList.remove('active'));
         event?.currentTarget?.classList?.add('active');
 
-        // Show chat
-        document.getElementById('chat-empty').style.display = 'none';
-        const ac = document.getElementById('active-chat');
-        ac.style.display = 'flex';
+        // Desktop/Mobile toggle
+        const chatArea = document.getElementById('chat-area');
+        const chatEmpty = document.getElementById('chat-empty');
 
-        document.getElementById('ch-av').textContent = initials(t.partner_name);
-        document.getElementById('ch-name').textContent = t.partner_name;
-        document.getElementById('ch-sub').innerHTML =
-          `<span class="online"></span>${t.partner_role || 'NyumbaUG'}` +
-          (t.listing_title ? ` · <span style="color:var(--green-light)">🏠 ${t.listing_title}</span>` : '');
+        chatEmpty.style.display = 'none';
 
-        if (t.listing_id && t.listing_title) setTag(t.listing_id, t.listing_title);
-
-        // Mobile
         if (window.innerWidth <= 680) {
+          // Mobile specific: show as overlay
           document.getElementById('sidebar').classList.add('hidden');
-          document.getElementById('chat-area').classList.add('active');
+          chatArea.classList.add('active');
+        } else {
+          // Desktop specific: ensure it is visible as a flex child
+          chatArea.style.display = 'flex';
+          chatArea.classList.remove('active'); // Remove mobile class
         }
 
         await loadMsgs(t.partner_id);
