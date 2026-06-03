@@ -853,191 +853,207 @@
       <div class="sidebar-head">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
           <h2 style="margin-bottom:0;">💬 Messages</h2>
-          <a href="../index.html"
-            style="font-size:0.78rem;background:var(--green-dark);color:#fff;padding:5px 12px;border-radius:50px;text-decoration:none;">+
-            New</a>
-        </div>
-        <div class="search-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8" />
-            <path d="M21 21l-4.35-4.35" />
-          </svg>
-          <input type="text" id="thread-search" placeholder="Search conversations…" oninput="filterThreads()" />
-        </div>
-      </div>
-      <div class="threads" id="threads-list">
-        <div class="empty-side">
-          <div class="spin"></div>
-          <p style="margin-top:14px;">Loading…</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- CHAT AREA -->
-    <div class="chat-area" id="chat-area">
-      <div class="chat-empty" id="chat-empty">
-        <div class="ico">🏠</div>
-        <h3>Your messages</h3>
-        <p>Select a conversation, or tap "Message Landlord" on any property listing to start chatting.</p>
-      </div>
-
-      <div id="active-chat" style="display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
-        <!-- Header -->
-        <div class="chat-head">
-          <button class="mobile-back" onclick="mobileBack()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M19 12H5M12 5l-7 7 7 7" />
+          <button onclick="showNewChat()"
+            style="font-size:0.78rem;background:var(--green-dark);color:#fff;padding:5px 12px;border-radius:50px;border:none;cursor:pointer;">+
+            New</button>
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
             </svg>
-            Back
-          </button>
-          <div class="ch-av" id="ch-av">–</div>
-          <div class="ch-info">
-            <div class="ch-name" id="ch-name">–</div>
-            <div class="ch-sub" id="ch-sub">–</div>
+            <input type="text" id="thread-search" placeholder="Search conversations…" oninput="filterThreads()" />
           </div>
         </div>
-
-        <!-- Messages -->
-        <div class="msgs" id="msgs">
-          <div style="text-align:center;padding:40px;">
+        <div class="threads" id="threads-list">
+          <div class="empty-side">
             <div class="spin"></div>
+            <p style="margin-top:14px;">Loading…</p>
           </div>
         </div>
-
-        <!-- Input -->
-        <div class="input-area">
-          <div id="listing-tag" class="listing-tag" style="display:none;">
-            <span>🏠</span><span id="tag-title">–</span>
-            <button onclick="clearTag()" title="Remove">✕</button>
+        <!-- NEW CHAT PANEL -->
+        <div id="new-chat-panel" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+              <button onclick="hideNewChat()"
+                style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.85rem;">←
+                Back</button>
+              <span style="font-weight:600;font-size:0.9rem;color:var(--text-dark);">New Message</span>
+            </div>
+            <input type="text" id="user-search-input" placeholder="Search by name..." oninput="searchUsers(this.value)"
+              style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:50px;font-size:0.83rem;outline:none;" />
           </div>
-          <!-- Media previews -->
-          <div class="media-preview" id="media-preview" style="display:none;"></div>
-          <div class="voice-preview" id="voice-preview" style="display:none;">
-            🎙️ <span id="voice-duration">0s</span> voice note ready
-            <button onclick="cancelVoice()">✕</button>
+          <div id="user-search-results" style="flex:1;overflow-y:auto;padding:8px 0;">
+            <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem;">Type a name to search
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT AREA -->
+      <div class="chat-area" id="chat-area">
+        <div class="chat-empty" id="chat-empty">
+          <div class="ico">🏠</div>
+          <h3>Your messages</h3>
+          <p>Select a conversation, or tap "Message Landlord" on any property listing to start chatting.</p>
+        </div>
+
+        <div id="active-chat" style="display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
+          <!-- Header -->
+          <div class="chat-head">
+            <button class="mobile-back" onclick="mobileBack()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
+              Back
+            </button>
+            <div class="ch-av" id="ch-av">–</div>
+            <div class="ch-info">
+              <div class="ch-name" id="ch-name">–</div>
+              <div class="ch-sub" id="ch-sub">–</div>
+            </div>
           </div>
 
-          <div class="input-row">
-            <!-- Attach file -->
-            <button class="attach-btn" onclick="document.getElementById('file-input').click()"
-              title="Attach image or video">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path
-                  d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.41 17.41a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-              </svg>
-            </button>
-            <input type="file" id="file-input" accept="image/*,video/*" multiple style="display:none"
-              onchange="handleFiles(this)" />
+          <!-- Messages -->
+          <div class="msgs" id="msgs">
+            <div style="text-align:center;padding:40px;">
+              <div class="spin"></div>
+            </div>
+          </div>
 
-            <textarea id="msg-input" placeholder="Type a message…" rows="1" onkeydown="handleKey(event)"
-              oninput="autoResize(this)"></textarea>
+          <!-- Input -->
+          <div class="input-area">
+            <div id="listing-tag" class="listing-tag" style="display:none;">
+              <span>🏠</span><span id="tag-title">–</span>
+              <button onclick="clearTag()" title="Remove">✕</button>
+            </div>
+            <!-- Media previews -->
+            <div class="media-preview" id="media-preview" style="display:none;"></div>
+            <div class="voice-preview" id="voice-preview" style="display:none;">
+              🎙️ <span id="voice-duration">0s</span> voice note ready
+              <button onclick="cancelVoice()">✕</button>
+            </div>
 
-            <!-- Voice note -->
-            <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice note">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
-              </svg>
-            </button>
+            <div class="input-row">
+              <!-- Attach file -->
+              <button class="attach-btn" onclick="document.getElementById('file-input').click()"
+                title="Attach image or video">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.41 17.41a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+              </button>
+              <input type="file" id="file-input" accept="image/*,video/*" multiple style="display:none"
+                onchange="handleFiles(this)" />
 
-            <button class="send-btn" id="send-btn" onclick="sendMsg()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13" />
-                <polygon points="22 2 15 22 11 13 2 9 22 2" />
-              </svg>
-            </button>
+              <textarea id="msg-input" placeholder="Type a message…" rows="1" onkeydown="handleKey(event)"
+                oninput="autoResize(this)"></textarea>
+
+              <!-- Voice note -->
+              <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice note">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
+                </svg>
+              </button>
+
+              <button class="send-btn" id="send-btn" onclick="sendMsg()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="toast" id="toast"></div>
+    <div class="toast" id="toast"></div>
 
-  <script src="../js/api.js"></script>
-  <script>
-    let me = null;
-    let allThreads = [];
-    let active = null; // { id, name, role, listing_id?, listing_title? }
-    let pollTimer = null;
-    let lastCount = 0;
-    let mediaFiles = [];      // pending image/video attachments
-    let voiceBlob = null;     // pending voice note
-    let mediaRecorder = null;
-    let isRecording = false;
-    let voiceTimer = null;
-    let voiceSeconds = 0;
+    <script src="../js/api.js"></script>
+    <script>
+      let me = null;
+      let allThreads = [];
+      let active = null; // { id, name, role, listing_id?, listing_title? }
+      let pollTimer = null;
+      let lastCount = 0;
+      let mediaFiles = [];      // pending image/video attachments
+      let voiceBlob = null;     // pending voice note
+      let mediaRecorder = null;
+      let isRecording = false;
+      let voiceTimer = null;
+      let voiceSeconds = 0;
 
-    async function init() {
-      if (!api.auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
-      const { user } = await api.auth.getMe();
-      me = user;
-      document.getElementById('top-av').textContent = initials(user.name);
-      document.getElementById('top-name').textContent = user.name.split(' ')[0];
+      async function init() {
+        if (!api.auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
+        const { user } = await api.auth.getMe();
+        me = user;
+        document.getElementById('top-av').textContent = initials(user.name);
+        document.getElementById('top-name').textContent = user.name.split(' ')[0];
 
-      await loadThreads();
+        await loadThreads();
 
-      // URL params — open conversation directly
-      const p = new URLSearchParams(location.search);
-      const withId = p.get('with');
-      const listingId = p.get('listing');
-      const listingTitle = decodeURIComponent(p.get('title') || '');
+        // URL params — open conversation directly
+        const p = new URLSearchParams(location.search);
+        const withId = p.get('with');
+        const listingId = p.get('listing');
+        const listingTitle = decodeURIComponent(p.get('title') || '');
 
-      if (withId) {
-        const existing = allThreads.find(t => t.partner_id === withId);
-        if (existing) {
-          openThread(existing);
-        } else {
-          // fetch partner info from the messages endpoint
-          try {
-            const res = await fetch(`${API_BASE}/messages/${withId}`, {
-              headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` }
-            });
-            const data = await res.json();
-            if (data.partner) {
-              openThread({
-                partner_id: data.partner.id,
-                partner_name: data.partner.name,
-                partner_role: data.partner.role,
-                listing_id: listingId || null,
-                listing_title: listingTitle || null,
-                last_message: '', last_at: null, unread_count: 0
+        if (withId) {
+          const existing = allThreads.find(t => t.partner_id === withId);
+          if (existing) {
+            openThread(existing);
+          } else {
+            // fetch partner info from the messages endpoint
+            try {
+              const res = await fetch(`${API_BASE}/messages/${withId}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` }
               });
-              if (listingId && listingTitle) setTag(listingId, listingTitle);
-            }
-          } catch (e) { }
+              const data = await res.json();
+              if (data.partner) {
+                openThread({
+                  partner_id: data.partner.id,
+                  partner_name: data.partner.name,
+                  partner_role: data.partner.role,
+                  listing_id: listingId || null,
+                  listing_title: listingTitle || null,
+                  last_message: '', last_at: null, unread_count: 0
+                });
+                if (listingId && listingTitle) setTag(listingId, listingTitle);
+              }
+            } catch (e) { }
+          }
+        }
+
+        if (window.innerWidth <= 680) {
+          document.getElementById('sidebar').classList.remove('hidden');
+          document.getElementById('chat-area').classList.remove('active');
         }
       }
 
-      if (window.innerWidth <= 680) {
-        document.getElementById('sidebar').classList.remove('hidden');
-        document.getElementById('chat-area').classList.remove('active');
+      async function loadThreads() {
+        try {
+          const data = await api.messages.getAll();
+          allThreads = data.threads || [];
+          renderThreads(allThreads);
+        } catch (e) {
+          document.getElementById('threads-list').innerHTML =
+            '<div class="empty-side"><p>⚠️ Could not load. Please refresh.</p></div>';
+        }
       }
-    }
 
-    async function loadThreads() {
-      try {
-        const data = await api.messages.getAll();
-        allThreads = data.threads || [];
-        renderThreads(allThreads);
-      } catch (e) {
-        document.getElementById('threads-list').innerHTML =
-          '<div class="empty-side"><p>⚠️ Could not load. Please refresh.</p></div>';
-      }
-    }
-
-    function renderThreads(list) {
-      const c = document.getElementById('threads-list');
-      if (!list.length) {
-        c.innerHTML = `<div class="empty-side"><div class="ico">💬</div>
+      function renderThreads(list) {
+        const c = document.getElementById('threads-list');
+        if (!list.length) {
+          c.innerHTML = `<div class="empty-side"><div class="ico">💬</div>
         <p>No conversations yet.<br>Message a landlord from any property listing.</p></div>`;
-        return;
-      }
-      c.innerHTML = list.map(t => {
-        const av = initials(t.partner_name);
-        const isActive = active?.id === t.partner_id;
-        return `<div class="thread ${t.unread_count > 0 ? 'unread' : ''} ${isActive ? 'active' : ''}"
+          return;
+        }
+        c.innerHTML = list.map(t => {
+          const av = initials(t.partner_name);
+          const isActive = active?.id === t.partner_id;
+          return `<div class="thread ${t.unread_count > 0 ? 'unread' : ''} ${isActive ? 'active' : ''}"
           onclick='openThread(${JSON.stringify(t).replace(/'/g, "&#39;")})'>
         <div class="t-av">${av}</div>
         <div class="t-info">
@@ -1050,319 +1066,383 @@
           ${t.unread_count > 0 ? `<span class="t-dot">${t.unread_count}</span>` : ''}
         </div>
       </div>`;
-      }).join('');
-    }
-
-    function filterThreads() {
-      const q = document.getElementById('thread-search').value.toLowerCase();
-      renderThreads(allThreads.filter(t =>
-        t.partner_name.toLowerCase().includes(q) ||
-        (t.last_message || '').toLowerCase().includes(q)
-      ));
-    }
-
-    async function openThread(t) {
-      active = {
-        id: t.partner_id, name: t.partner_name, role: t.partner_role,
-        listing_id: t.listing_id || null, listing_title: t.listing_title || null
-      };
-
-      // Mark active in sidebar
-      document.querySelectorAll('.thread').forEach(el => el.classList.remove('active'));
-      event?.currentTarget?.classList?.add('active');
-
-      // Show chat
-      document.getElementById('chat-empty').style.display = 'none';
-      const ac = document.getElementById('active-chat');
-      ac.style.display = 'flex';
-
-      document.getElementById('ch-av').textContent = initials(t.partner_name);
-      document.getElementById('ch-name').textContent = t.partner_name;
-      document.getElementById('ch-sub').innerHTML =
-        `<span class="online"></span>${t.partner_role || 'NyumbaUG'}` +
-        (t.listing_title ? ` · <span style="color:var(--green-light)">🏠 ${t.listing_title}</span>` : '');
-
-      if (t.listing_id && t.listing_title) setTag(t.listing_id, t.listing_title);
-
-      // Mobile
-      if (window.innerWidth <= 680) {
-        document.getElementById('sidebar').classList.add('hidden');
-        document.getElementById('chat-area').classList.add('active');
+        }).join('');
       }
 
-      await loadMsgs(t.partner_id);
-      clearInterval(pollTimer);
-      pollTimer = setInterval(() => poll(t.partner_id), 4000);
-      const input = document.getElementById('msg-input');
-      input.focus();
-      setTimeout(() => {
-        const msgs = document.getElementById('msgs');
-        msgs.scrollTop = msgs.scrollHeight;
-      }, 300);
-    }
-
-    async function loadMsgs(partnerId) {
-      const c = document.getElementById('msgs');
-      c.innerHTML = '<div style="text-align:center;padding:40px;"><div class="spin"></div></div>';
-      try {
-        const data = await api.messages.getAll(partnerId);
-        lastCount = (data.messages || []).length;
-        renderMsgs(data.messages || []);
-        loadThreads(); // refresh badges
-      } catch (e) {
-        c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Failed to load messages.</div>';
+      function filterThreads() {
+        const q = document.getElementById('thread-search').value.toLowerCase();
+        renderThreads(allThreads.filter(t =>
+          t.partner_name.toLowerCase().includes(q) ||
+          (t.last_message || '').toLowerCase().includes(q)
+        ));
       }
-    }
 
-    function renderMsgs(msgs) {
-      const c = document.getElementById('msgs');
-      if (!msgs.length) {
-        c.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+      async function openThread(t) {
+        active = {
+          id: t.partner_id, name: t.partner_name, role: t.partner_role,
+          listing_id: t.listing_id || null, listing_title: t.listing_title || null
+        };
+
+        // Mark active in sidebar
+        document.querySelectorAll('.thread').forEach(el => el.classList.remove('active'));
+        event?.currentTarget?.classList?.add('active');
+
+        // Show chat
+        document.getElementById('chat-empty').style.display = 'none';
+        const ac = document.getElementById('active-chat');
+        ac.style.display = 'flex';
+
+        document.getElementById('ch-av').textContent = initials(t.partner_name);
+        document.getElementById('ch-name').textContent = t.partner_name;
+        document.getElementById('ch-sub').innerHTML =
+          `<span class="online"></span>${t.partner_role || 'NyumbaUG'}` +
+          (t.listing_title ? ` · <span style="color:var(--green-light)">🏠 ${t.listing_title}</span>` : '');
+
+        if (t.listing_id && t.listing_title) setTag(t.listing_id, t.listing_title);
+
+        // Mobile
+        if (window.innerWidth <= 680) {
+          document.getElementById('sidebar').classList.add('hidden');
+          document.getElementById('chat-area').classList.add('active');
+        }
+
+        await loadMsgs(t.partner_id);
+        clearInterval(pollTimer);
+        pollTimer = setInterval(() => poll(t.partner_id), 4000);
+        const input = document.getElementById('msg-input');
+        input.focus();
+        setTimeout(() => {
+          const msgs = document.getElementById('msgs');
+          msgs.scrollTop = msgs.scrollHeight;
+        }, 300);
+      }
+
+      async function loadMsgs(partnerId) {
+        const c = document.getElementById('msgs');
+        c.innerHTML = '<div style="text-align:center;padding:40px;"><div class="spin"></div></div>';
+        try {
+          const data = await api.messages.getAll(partnerId);
+          lastCount = (data.messages || []).length;
+          renderMsgs(data.messages || []);
+          loadThreads(); // refresh badges
+        } catch (e) {
+          c.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Failed to load messages.</div>';
+        }
+      }
+
+      function renderMsgs(msgs) {
+        const c = document.getElementById('msgs');
+        if (!msgs.length) {
+          c.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
         <div style="font-size:2.2rem;margin-bottom:10px;">👋</div>
         <p style="font-size:0.87rem;">No messages yet — start the conversation!</p></div>`;
-        return;
-      }
-      let html = '', lastDate = '';
-      msgs.forEach(m => {
-        const isMe = m.sender_id === me.id;
-        const d = new Date(m.created_at);
-        const dateStr = d.toLocaleDateString('en-UG', { weekday: 'long', day: 'numeric', month: 'long' });
-        const isToday = d.toDateString() === new Date().toDateString();
-        if (dateStr !== lastDate) {
-          lastDate = dateStr;
-          html += `<div class="date-div"><span>${isToday ? 'Today' : dateStr}</span></div>`;
+          return;
         }
-        const time = d.toLocaleTimeString('en-UG', { hour: '2-digit', minute: '2-digit' });
-        const av = initials(isMe ? me.name : (active?.name || '?'));
-        // Build media content
-        let mediaHtml = '';
-        if (m.media_url) {
-          if (m.media_type === 'audio') {
-            mediaHtml = `<audio controls src="${m.media_url}"></audio>`;
-          } else if (m.media_type === 'video') {
-            mediaHtml = `<video controls src="${m.media_url}" style="max-width:220px;border-radius:10px;"></video>`;
-          } else {
-            mediaHtml = `<img src="${m.media_url}" onclick="window.open('${m.media_url}')" alt="image" />`;
+        let html = '', lastDate = '';
+        msgs.forEach(m => {
+          const isMe = m.sender_id === me.id;
+          const d = new Date(m.created_at);
+          const dateStr = d.toLocaleDateString('en-UG', { weekday: 'long', day: 'numeric', month: 'long' });
+          const isToday = d.toDateString() === new Date().toDateString();
+          if (dateStr !== lastDate) {
+            lastDate = dateStr;
+            html += `<div class="date-div"><span>${isToday ? 'Today' : dateStr}</span></div>`;
           }
-        }
-        html += `<div class="msg-row ${isMe ? 'me' : ''}">
+          const time = d.toLocaleTimeString('en-UG', { hour: '2-digit', minute: '2-digit' });
+          const av = initials(isMe ? me.name : (active?.name || '?'));
+          // Build media content
+          let mediaHtml = '';
+          if (m.media_url) {
+            if (m.media_type === 'audio') {
+              mediaHtml = `<audio controls src="${m.media_url}"></audio>`;
+            } else if (m.media_type === 'video') {
+              mediaHtml = `<video controls src="${m.media_url}" style="max-width:220px;border-radius:10px;"></video>`;
+            } else {
+              mediaHtml = `<img src="${m.media_url}" onclick="window.open('${m.media_url}')" alt="image" />`;
+            }
+          }
+          html += `<div class="msg-row ${isMe ? 'me' : ''}">
         <div class="msg-av">${av}</div>
         <div class="bwrap">
           <div class="bubble">${mediaHtml}${m.body ? escHtml(m.body) : ''}</div>
           <div class="msg-time">${time}${isMe ? `<span class="read-tick">${m.is_read ? ' ✓✓' : ' ✓'}</span>` : ''}</div>
         </div>
       </div>`;
-      });
-      c.innerHTML = html;
-      c.scrollTop = c.scrollHeight;
-    }
+        });
+        c.innerHTML = html;
+        c.scrollTop = c.scrollHeight;
+      }
 
-    async function poll(partnerId) {
-      if (active?.id !== partnerId) return;
-      try {
-        const data = await api.messages.getAll(partnerId);
-        const msgs = data.messages || [];
-        if (msgs.length !== lastCount) {
-          lastCount = msgs.length;
-          renderMsgs(msgs);
-          loadThreads();
-        }
-      } catch (e) { }
-    }
+      async function poll(partnerId) {
+        if (active?.id !== partnerId) return;
+        try {
+          const data = await api.messages.getAll(partnerId);
+          const msgs = data.messages || [];
+          if (msgs.length !== lastCount) {
+            lastCount = msgs.length;
+            renderMsgs(msgs);
+            loadThreads();
+          }
+        } catch (e) { }
+      }
 
-    async function sendMsg() {
-      if (!active) return;
-      const inp = document.getElementById('msg-input');
-      const body = inp.value.trim();
-      const tag = document.getElementById('listing-tag');
-      const listingId = tag.dataset.lid || active.listing_id || null;
+      async function sendMsg() {
+        if (!active) return;
+        const inp = document.getElementById('msg-input');
+        const body = inp.value.trim();
+        const tag = document.getElementById('listing-tag');
+        const listingId = tag.dataset.lid || active.listing_id || null;
 
-      // Must have text, media, or voice
-      if (!body && !mediaFiles.length && !voiceBlob) return;
+        // Must have text, media, or voice
+        if (!body && !mediaFiles.length && !voiceBlob) return;
 
-      const btn = document.getElementById('send-btn');
-      btn.disabled = true;
-      inp.value = ''; inp.style.height = '';
+        const btn = document.getElementById('send-btn');
+        btn.disabled = true;
+        inp.value = ''; inp.style.height = '';
 
-      try {
-        if (mediaFiles.length > 0) {
-          // Send each file as a message
-          for (const file of mediaFiles) {
+        try {
+          if (mediaFiles.length > 0) {
+            // Send each file as a message
+            for (const file of mediaFiles) {
+              const fd = new FormData();
+              fd.append('receiver_id', active.id);
+              fd.append('body', body || '');
+              if (listingId) fd.append('listing_id', listingId);
+              fd.append('media', file);
+              await fetch(`${API_BASE}/messages`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` },
+                body: fd
+              });
+            }
+            clearMediaPreview();
+          } else if (voiceBlob) {
             const fd = new FormData();
             fd.append('receiver_id', active.id);
-            fd.append('body', body || '');
+            fd.append('body', '');
             if (listingId) fd.append('listing_id', listingId);
-            fd.append('media', file);
+            const voiceFile = new File([voiceBlob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
+            fd.append('media', voiceFile, voiceFile.name);
             await fetch(`${API_BASE}/messages`, {
               method: 'POST',
               headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` },
               body: fd
             });
+            cancelVoice();
+          } else {
+            await api.messages.send(active.id, body, listingId);
           }
-          clearMediaPreview();
-        } else if (voiceBlob) {
-          const fd = new FormData();
-          fd.append('receiver_id', active.id);
-          fd.append('body', '');
-          if (listingId) fd.append('listing_id', listingId);
-          const voiceFile = new File([voiceBlob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
-          fd.append('media', voiceFile, voiceFile.name);
-          await fetch(`${API_BASE}/messages`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` },
-            body: fd
-          });
-          cancelVoice();
-        } else {
-          await api.messages.send(active.id, body, listingId);
+          await loadMsgs(active.id);
+          loadThreads();
+        } catch (e) {
+          toast('❌ Failed to send. Try again.');
+          inp.value = body;
+        } finally {
+          btn.disabled = false;
+          inp.focus();
         }
-        await loadMsgs(active.id);
-        loadThreads();
-      } catch (e) {
-        toast('❌ Failed to send. Try again.');
-        inp.value = body;
-      } finally {
-        btn.disabled = false;
-        inp.focus();
       }
-    }
 
-    function handleKey(e) {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
-    }
-    function autoResize(el) { el.style.height = ''; el.style.height = Math.min(el.scrollHeight, 110) + 'px'; }
+      function handleKey(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+      }
+      function autoResize(el) { el.style.height = ''; el.style.height = Math.min(el.scrollHeight, 110) + 'px'; }
 
-    function setTag(id, title) {
-      const tag = document.getElementById('listing-tag');
-      tag.style.display = 'flex'; tag.dataset.lid = id;
-      document.getElementById('tag-title').textContent = 'Re: ' + title;
-    }
-    function clearTag() {
-      const tag = document.getElementById('listing-tag');
-      tag.style.display = 'none'; tag.dataset.lid = '';
-      if (active) active.listing_id = null;
-    }
+      function setTag(id, title) {
+        const tag = document.getElementById('listing-tag');
+        tag.style.display = 'flex'; tag.dataset.lid = id;
+        document.getElementById('tag-title').textContent = 'Re: ' + title;
+      }
+      function clearTag() {
+        const tag = document.getElementById('listing-tag');
+        tag.style.display = 'none'; tag.dataset.lid = '';
+        if (active) active.listing_id = null;
+      }
 
-    function mobileBack() {
-      document.getElementById('sidebar').classList.remove('hidden');
-      document.getElementById('chat-area').classList.remove('active');
-      clearInterval(pollTimer); active = null;
-    }
+      function mobileBack() {
+        document.getElementById('sidebar').classList.remove('hidden');
+        document.getElementById('chat-area').classList.remove('active');
+        clearInterval(pollTimer); active = null;
+      }
 
-    function initials(name) {
-      if (!name) return '?';
-      const p = name.trim().split(' ');
-      return (p[0][0] + (p[1]?.[0] || '')).toUpperCase();
-    }
-    function timeAgo(dateStr) {
-      if (!dateStr) return '';
-      const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-      if (diff < 60) return 'just now';
-      if (diff < 3600) return Math.floor(diff / 60) + 'm';
-      if (diff < 86400) return Math.floor(diff / 3600) + 'h';
-      if (diff < 604800) return Math.floor(diff / 86400) + 'd';
-      return new Date(dateStr).toLocaleDateString('en-UG', { day: 'numeric', month: 'short' });
-    }
-    function escHtml(str) {
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-    function toast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3000);
-    }
+      function initials(name) {
+        if (!name) return '?';
+        const p = name.trim().split(' ');
+        return (p[0][0] + (p[1]?.[0] || '')).toUpperCase();
+      }
+      function timeAgo(dateStr) {
+        if (!dateStr) return '';
+        const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return Math.floor(diff / 60) + 'm';
+        if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+        if (diff < 604800) return Math.floor(diff / 86400) + 'd';
+        return new Date(dateStr).toLocaleDateString('en-UG', { day: 'numeric', month: 'short' });
+      }
+      function escHtml(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+      function toast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+      }
 
-    // ── FILE ATTACHMENTS ──
-    function handleFiles(input) {
-      const files = Array.from(input.files);
-      if (!files.length) return;
-      mediaFiles = files;
-      const preview = document.getElementById('media-preview');
-      preview.style.display = 'flex';
-      preview.innerHTML = files.map((f, i) => {
-        const url = URL.createObjectURL(f);
-        const isVideo = f.type.startsWith('video/');
-        return `<div class="media-preview-item">
+      // ── FILE ATTACHMENTS ──
+      function handleFiles(input) {
+        const files = Array.from(input.files);
+        if (!files.length) return;
+        mediaFiles = files;
+        const preview = document.getElementById('media-preview');
+        preview.style.display = 'flex';
+        preview.innerHTML = files.map((f, i) => {
+          const url = URL.createObjectURL(f);
+          const isVideo = f.type.startsWith('video/');
+          return `<div class="media-preview-item">
       ${isVideo
-            ? `<video src="${url}" muted></video>`
-            : `<img src="${url}" alt="preview"/>`}
+              ? `<video src="${url}" muted></video>`
+              : `<img src="${url}" alt="preview"/>`}
       <button class="remove-media" onclick="removeMedia(${i})">✕</button>
     </div>`;
-      }).join('');
-      input.value = '';
-    }
+        }).join('');
+        input.value = '';
+      }
 
-    function removeMedia(i) {
-      mediaFiles.splice(i, 1);
-      if (!mediaFiles.length) clearMediaPreview();
-      else handleFiles({ files: mediaFiles }); // re-render
-    }
+      function removeMedia(i) {
+        mediaFiles.splice(i, 1);
+        if (!mediaFiles.length) clearMediaPreview();
+        else handleFiles({ files: mediaFiles }); // re-render
+      }
 
-    function clearMediaPreview() {
-      mediaFiles = [];
-      const p = document.getElementById('media-preview');
-      p.style.display = 'none';
-      p.innerHTML = '';
-    }
+      function clearMediaPreview() {
+        mediaFiles = [];
+        const p = document.getElementById('media-preview');
+        p.style.display = 'none';
+        p.innerHTML = '';
+      }
 
-    // ── VOICE NOTES ──
-    async function toggleVoice() {
-      if (isRecording) {
+      // ── VOICE NOTES ──
+      async function toggleVoice() {
+        if (isRecording) {
+          stopRecording();
+        } else {
+          await startRecording();
+        }
+      }
+
+      async function startRecording() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const chunks = [];
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.ondataavailable = e => chunks.push(e.data);
+          mediaRecorder.onstop = () => {
+            voiceBlob = new Blob(chunks, { type: 'audio/webm; codecs=opus' });
+            stream.getTracks().forEach(t => t.stop());
+            document.getElementById('voice-preview').style.display = 'flex';
+            document.getElementById('voice-duration').textContent = voiceSeconds + 's';
+          };
+          mediaRecorder.start();
+          isRecording = true;
+          voiceSeconds = 0;
+          document.getElementById('voice-btn').classList.add('recording');
+          voiceTimer = setInterval(() => {
+            voiceSeconds++;
+            // Show live duration on button title
+            document.getElementById('voice-btn').title = voiceSeconds + 's — tap to stop';
+          }, 1000);
+        } catch (e) {
+          toast('❌ Microphone access denied.');
+        }
+      }
+      // Keep messages scrolled to bottom when keyboard opens
+      document.getElementById('msg-input')?.addEventListener('focus', () => {
+        setTimeout(() => {
+          const msgs = document.getElementById('msgs');
+          if (msgs) msgs.scrollTop = msgs.scrollHeight;
+        }, 400);
+      });
+
+      function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        clearInterval(voiceTimer);
+        isRecording = false;
+        document.getElementById('voice-btn').classList.remove('recording');
+        document.getElementById('voice-btn').title = 'Voice note';
+      }
+
+      function cancelVoice() {
         stopRecording();
-      } else {
-        await startRecording();
+        voiceBlob = null;
+        document.getElementById('voice-preview').style.display = 'none';
       }
-    }
-
-    async function startRecording() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const chunks = [];
-        mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = e => chunks.push(e.data);
-        mediaRecorder.onstop = () => {
-          voiceBlob = new Blob(chunks, { type: 'audio/webm; codecs=opus' });
-          stream.getTracks().forEach(t => t.stop());
-          document.getElementById('voice-preview').style.display = 'flex';
-          document.getElementById('voice-duration').textContent = voiceSeconds + 's';
-        };
-        mediaRecorder.start();
-        isRecording = true;
-        voiceSeconds = 0;
-        document.getElementById('voice-btn').classList.add('recording');
-        voiceTimer = setInterval(() => {
-          voiceSeconds++;
-          // Show live duration on button title
-          document.getElementById('voice-btn').title = voiceSeconds + 's — tap to stop';
-        }, 1000);
-      } catch (e) {
-        toast('❌ Microphone access denied.');
+      function showNewChat() {
+        document.getElementById('threads-list').style.display = 'none';
+        document.getElementById('new-chat-panel').style.display = 'flex';
+        document.getElementById('user-search-input').focus();
+        // On mobile show the sidebar
+        if (window.innerWidth <= 680) {
+          document.getElementById('sidebar').classList.remove('hidden');
+          document.getElementById('chat-area').classList.remove('active');
+        }
       }
-    }
-    // Keep messages scrolled to bottom when keyboard opens
-    document.getElementById('msg-input')?.addEventListener('focus', () => {
-      setTimeout(() => {
-        const msgs = document.getElementById('msgs');
-        if (msgs) msgs.scrollTop = msgs.scrollHeight;
-      }, 400);
-    });
 
-    function stopRecording() {
-      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-      clearInterval(voiceTimer);
-      isRecording = false;
-      document.getElementById('voice-btn').classList.remove('recording');
-      document.getElementById('voice-btn').title = 'Voice note';
-    }
+      function hideNewChat() {
+        document.getElementById('new-chat-panel').style.display = 'none';
+        document.getElementById('threads-list').style.display = 'block';
+      }
 
-    function cancelVoice() {
-      stopRecording();
-      voiceBlob = null;
-      document.getElementById('voice-preview').style.display = 'none';
-    }
+      async function searchUsers(query) {
+        const results = document.getElementById('user-search-results');
+        if (!query || query.length < 2) {
+          results.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem;">Type a name to search</div>';
+          return;
+        }
+        results.innerHTML = '<div style="text-align:center;padding:24px;"><div class="spin"></div></div>';
+        try {
+          const res = await fetch(`${API_BASE}/messages/search-users?q=${encodeURIComponent(query)}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` }
+          });
+          const data = await res.json();
+          const users = data.users || [];
+          if (!users.length) {
+            results.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem;">No users found</div>';
+            return;
+          }
+          results.innerHTML = users.map(u => `
+      <div onclick="startNewChat('${u.id}','${u.name}','${u.role}')"
+        style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s;"
+        onmouseover="this.style.background='#f0f7f4'" onmouseout="this.style.background=''">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;flex-shrink:0;">
+          ${initials(u.name)}
+        </div>
+        <div>
+          <div style="font-weight:600;font-size:0.87rem;color:var(--text-dark);">${u.name}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);text-transform:capitalize;">${u.role}</div>
+        </div>
+      </div>
+    `).join('');
+        } catch (e) {
+          results.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);">Failed to search</div>';
+        }
+      }
 
-    init();
-  </script>
+      function startNewChat(userId, userName, userRole) {
+        hideNewChat();
+        openThread({
+          partner_id: userId,
+          partner_name: userName,
+          partner_role: userRole,
+          listing_id: null,
+          listing_title: null,
+          last_message: '',
+          last_at: null,
+          unread_count: 0
+        });
+      }
+
+      init();
+    </script>
 </body>
 
 </html>
