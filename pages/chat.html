@@ -1241,16 +1241,22 @@
       }
 
       function mobileBack() {
-        // 1. Reset class structure
+        // 1. Reset visual classes for mobile/desktop
         document.getElementById('sidebar').classList.remove('hidden');
         document.getElementById('chat-area').classList.remove('active');
 
-        // 2. EXPLICITLY reset display for mobile (Crucial)
+        // 2. Correctly handle display based on screen width
         if (window.innerWidth <= 680) {
           document.getElementById('chat-area').style.display = 'none';
+        } else {
+          // IMPORTANT: On desktop, we want to show the 'empty' state again, 
+          // not hide the chat-area div itself.
+          document.getElementById('chat-area').style.display = 'flex';
+          document.getElementById('chat-empty').style.display = 'flex';
+          document.getElementById('active-chat').style.display = 'none';
         }
 
-        // 3. Clear data
+        // 3. Clear data and polling
         clearInterval(pollTimer);
         active = null;
       }
