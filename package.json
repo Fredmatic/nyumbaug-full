@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "pg": "^8.21.0"
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.10",
+    "pg": "^8.21.0",
+    "resend": "^6.12.4"
   }
 }

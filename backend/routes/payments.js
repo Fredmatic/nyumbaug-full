@@ -22,7 +22,7 @@ async function ensurePaymentsTable() {
       created_at      TIMESTAMPTZ DEFAULT NOW(),
       updated_at      TIMESTAMPTZ DEFAULT NOW()
     );
-  `).catch(() => {});
+  `).catch(() => { });
 }
 
 // ── GET MTN ACCESS TOKEN ──
@@ -171,13 +171,25 @@ router.get('/mtn/status/:referenceId', protect, async (req, res) => {
         VALUES ($1, $2, $3, $4, $5)
         ON CONFLICT (user_id) DO UPDATE SET
           plan = $2, amount = $3, expires_at = $4, payment_id = $5, updated_at = NOW()
-      `, [user.id, payment.plan, payment.amount, expiry, payment.id]).catch(() => {});
+      `, [user.id, payment.plan, payment.amount, expiry, payment.id]).catch(() => { });
+
+            // Reactivate landlord's inactive listings on renewal
+            await pool.query(`
+        UPDATE listings SET status = 'active', updated_at = NOW()
+        WHERE landlord_id = $1 AND status = 'inactive'
+        `, [user.id]).catch(() => { });
+
+            // Notify landlord
+            await pool.query(`
+        INSERT INTO notifications (user_id, type, message)
+  V     ALUES ($1, 'subscription', $2)
+        `, [user.id, `✅ Your subscription is active until ${expiry.toLocaleDateString('en-UG')}. Your listings are now live!`]).catch(() => { });
 
             // Notify landlord via notification
             await pool.query(`
         INSERT INTO notifications (user_id, type, message, created_at)
         VALUES ($1, 'payment', $2, NOW())
-      `, [user.id, `✅ Your subscription has been activated until ${expiry.toLocaleDateString('en-UG')}.`]).catch(() => {});
+      `, [user.id, `✅ Your subscription has been activated until ${expiry.toLocaleDateString('en-UG')}.`]).catch(() => { });
 
             return res.json({
                 success: true,

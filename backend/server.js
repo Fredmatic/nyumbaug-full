@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 
 const routes = require('./routes/index');
+require('./jobs/subscriptionJob'); // start cron jobs
 const { errorHandler } = require('./middleware/error');
 
 const app = express();
