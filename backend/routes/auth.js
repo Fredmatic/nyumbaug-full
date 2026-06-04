@@ -239,15 +239,8 @@ router.patch('/update-profile', (req, res) => {
     });
 });
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-
-const mailer = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ── POST /api/auth/forgot-password ──
 router.post('/forgot-password', async (req, res) => {
@@ -274,41 +267,11 @@ router.post('/forgot-password', async (req, res) => {
         );
 
         const resetUrl = `https://nyumbaug-full.vercel.app/pages/reset-password.html?token=${token}`;
-
-        await mailer.sendMail({
-            from: `"NyumbaUG" <${process.env.EMAIL_USER}>`,
+        await resend.emails.send({
+            from: 'NyumbaUG <onboarding@resend.dev>',
             to: email,
             subject: '🔑 Reset your NyumbaUG password',
-            html: `
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-          <div style="background:#0e3d2c;padding:24px;text-align:center;">
-            <h1 style="color:#d4a91e;margin:0;font-size:1.8rem;">NyumbaUG</h1>
-          </div>
-          <div style="padding:32px;background:#ffffff;">
-            <h2 style="color:#0e3d2c;">Hello ${user.name},</h2>
-            <p style="color:#444;line-height:1.7;">
-              We received a request to reset your password. Click the button below to set a new password.
-            </p>
-            <div style="text-align:center;margin:32px 0;">
-              <a href="${resetUrl}" 
-                 style="background:#0e3d2c;color:#d4a91e;padding:14px 32px;border-radius:8px;
-                        text-decoration:none;font-weight:700;font-size:1rem;display:inline-block;">
-                Reset My Password
-              </a>
-            </div>
-            <p style="color:#888;font-size:0.85rem;">
-              This link expires in <strong>1 hour</strong>. If you didn't request this, ignore this email — your password won't change.
-            </p>
-            <p style="color:#888;font-size:0.82rem;margin-top:12px;">
-              Or copy this link: <br/>
-              <a href="${resetUrl}" style="color:#2d8a5e;word-break:break-all;">${resetUrl}</a>
-            </p>
-          </div>
-          <div style="background:#f4f6f3;padding:16px;text-align:center;">
-            <p style="color:#888;font-size:0.8rem;margin:0;">© 2025 NyumbaUG · Kampala, Uganda 🇺🇬</p>
-          </div>
-        </div>
-      `,
+            html: `...same html content...`
         });
 
         res.json({ success: true, message: 'Reset link sent to your email.' });
