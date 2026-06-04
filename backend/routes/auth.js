@@ -240,7 +240,6 @@ router.patch('/update-profile', (req, res) => {
 });
 const crypto = require('crypto');
 const { Resend } = require('resend');
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ── POST /api/auth/forgot-password ──
 router.post('/forgot-password', async (req, res) => {
@@ -267,6 +266,7 @@ router.post('/forgot-password', async (req, res) => {
         );
 
         const resetUrl = `https://nyumbaug-full.vercel.app/pages/reset-password.html?token=${token}`;
+        const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
             from: 'NyumbaUG <onboarding@resend.dev>',
             to: email,
