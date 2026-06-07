@@ -97,6 +97,21 @@
     </div>
   </div>
 
+  <!-- RECENTLY VIEWED -->
+  <div id="recently-viewed-section" style="display:none;background:var(--white);padding:40px 5% 20px;">
+    <p class="section-label">Your History</p>
+    <h2 class="section-title" style="margin-bottom:6px;">Recently Viewed</h2>
+    <p class="section-sub" style="margin-bottom:24px;">Properties you've looked at recently.</p>
+    <div id="recently-viewed-grid"
+      style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;"></div>
+    <div style="text-align:right;margin-top:12px;">
+      <button onclick="clearRecentlyViewed()"
+        style="font-size:0.8rem;color:var(--text-muted);background:none;border:none;cursor:pointer;text-decoration:underline;">
+        Clear history
+      </button>
+    </div>
+  </div>
+
   <!-- FEATURED LISTINGS -->
   <section id="featured">
     <p class="section-label">Featured Properties</p>
@@ -261,6 +276,51 @@
       }
       setTimeout(restoreFavs, 100);
     }
+    function loadRecentlyViewed() {
+      const items = JSON.parse(localStorage.getItem('nyumba-recently-viewed') || '[]');
+      const section = document.getElementById('recently-viewed-section');
+      const grid = document.getElementById('recently-viewed-grid');
+      if (!items.length || !section || !grid) return;
+
+      section.style.display = 'block';
+      grid.innerHTML = items.map(l => {
+        const img = l.cover_image ||
+          'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80';
+        const timeStr = timeAgoSimple(l.viewed_at);
+        return `
+      <div onclick="window.location.href='pages/listing-detail.html?id=${l.id}'"
+        style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);
+               border-radius:var(--radius);cursor:pointer;background:#fff;transition:box-shadow 0.2s;"
+        onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'"
+        onmouseout="this.style.boxShadow='none'">
+        <img src="${img}" alt="${l.title}"
+          style="width:72px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0;"
+          onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=200&q=60'" />
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:0.88rem;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${l.title}</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">📍 ${l.neighbourhood}</div>
+          <div style="font-size:0.82rem;color:var(--green-light);font-weight:600;margin-top:2px;">UGX ${l.price.toLocaleString()}/mo</div>
+        </div>
+        <div style="font-size:0.7rem;color:var(--text-muted);flex-shrink:0;">${timeStr}</div>
+      </div>`;
+      }).join('');
+    }
+
+    function clearRecentlyViewed() {
+      localStorage.removeItem('nyumba-recently-viewed');
+      const section = document.getElementById('recently-viewed-section');
+      if (section) section.style.display = 'none';
+    }
+
+    function timeAgoSimple(ts) {
+      const diff = Math.floor((Date.now() - ts) / 1000);
+      if (diff < 60) return 'just now';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      return Math.floor(diff / 86400) + 'd ago';
+    }
+
+    loadRecentlyViewed();
 
     loadFeatured();
     initScrollHighlight();

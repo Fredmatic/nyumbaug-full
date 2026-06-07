@@ -508,6 +508,25 @@
       if (!name) return '?';
       return name.split(' ').map(n => n[0]).slice(0, 2).join('');
     }
+    function saveRecentlyViewed(l) {
+      const key = 'nyumba-recently-viewed';
+      const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      const entry = {
+        id: l.id,
+        title: l.title,
+        price: l.price,
+        neighbourhood: l.neighbourhood || l.district || 'Kampala',
+        type: l.type,
+        bedrooms: l.bedrooms,
+        cover_image: l.cover_image || l.images?.[0]?.url || l.image || null,
+        viewed_at: Date.now()
+      };
+      // Remove if already exists
+      const filtered = existing.filter(p => p.id !== l.id);
+      // Add to front, keep only 5
+      filtered.unshift(entry);
+      localStorage.setItem(key, JSON.stringify(filtered.slice(0, 5)));
+    }
 
     async function loadListing() {
       if (!listingId) { showNotFound(); return; }
@@ -541,6 +560,9 @@
     }
 
     function renderDetail(l) {
+
+      // Save to recently viewed
+      saveRecentlyViewed(l);
       const image = (l.image_url ? (l.image_url.startsWith('http') ? l.image_url : `${APIBASE.replace('/api', '')}${l.image_url}`) : null) ||
         l.images?.[0]?.url || l.cover_image || l.image ||
         'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80';
