@@ -1038,9 +1038,7 @@ footer {
   /* ── HERO MOBILE ── */
   .hero {
     grid-template-columns: 1fr;
-    /* single column */
     padding-right: 5%;
-    /* match left padding */
     padding-top: calc(var(--nav-h) + 32px);
     padding-bottom: 48px;
     min-height: auto;
@@ -1049,7 +1047,6 @@ footer {
 
   .hero-image {
     display: none;
-    /* hide the photo on mobile — keeps it clean */
   }
 
   .hero h1 {
@@ -1060,7 +1057,6 @@ footer {
     font-size: 0.72rem;
     letter-spacing: 0.5px;
     white-space: normal;
-    /* let badge text wrap instead of overflow */
   }
 
   .hero-sub {
@@ -1092,5 +1088,72 @@ footer {
   .search-bar .btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* ── LANDSCAPE PHONES (e.g. flipped iPhone/Android) ── */
+@media (max-width: 900px) and (orientation: landscape) {
+
+  /* Shrink nav to fit everything on one line */
+  nav {
+    height: 52px;
+    --nav-h: 52px;
+  }
+
+  .nav-logo {
+    font-size: 1.2rem;
+    flex: 0 0 auto;
+    /* don't let logo grow and push links off */
+    margin-right: 16px;
+  }
+
+  .nav-links {
+    gap: 1rem;
+    /* tighter spacing between links */
+  }
+
+  .nav-links a {
+    font-size: 0.78rem;
+    /* smaller text so everything fits */
+    white-space: nowrap;
+    /* prevent individual words breaking */
+  }
+
+  .nav-cta {
+    padding: 5px 12px;
+    /* smaller pill */
+    font-size: 0.78rem !important;
+    margin-left: 0.5rem;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    /* "👤 Ssaazi" stays on one line */
+  }
+
+  /* Hero on landscape: two-column but shorter */
+  .hero {
+    grid-template-columns: 1fr 1fr;
+    padding-right: 0;
+    min-height: 100vh;
+    padding-top: 52px;
+  }
+
+  .hero-image {
+    display: block;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+  }
+
+  .hero-stats {
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 20px;
+  }
+
+  .hero-stat-num {
+    font-size: 1.3rem;
   }
 }
