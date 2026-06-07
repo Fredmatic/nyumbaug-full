@@ -28,8 +28,9 @@ const getListings = asyncHandler(async (req, res) => {
   WHERE s.user_id::uuid = l.landlord_id::uuid
   LIMIT 1
 ), 0) AS has_active_subscription
-      FROM listings l 
-      WHERE l.status != 'inactive'
+     FROM listings l
+LEFT JOIN users u ON l.landlord_id = u.id
+WHERE l.status != 'inactive'
     `;
 
     const queryParams = [];
