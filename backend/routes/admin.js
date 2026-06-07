@@ -4,7 +4,7 @@ const { protect, authorize } = require('../middleware/auth');
 const pool = require('../config/db');
 
 router.get('/users', protect, authorize('admin'), async (req, res) => {
-    const result = await pool.query('SELECT id, name, email, phone, role, is_active, is_verified, created_at FROM users ORDER BY created_at DESC');
+    const result = await pool.query('SELECT id, name, email, phone, role, is_active, is_verified, is_verified_landlord, created_at FROM users ORDER BY created_at DESC');
     res.json({ success: true, users: result.rows });
 });
 
@@ -14,6 +14,19 @@ router.patch('/users/:id/role', protect, authorize('admin'), async (req, res) =>
     const result = await pool.query('UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING id, name, role', [role, req.params.id]);
     if (!result.rows.length) return res.status(404).json({ success: false, message: 'User not found.' });
     res.json({ success: true, user: result.rows[0] });
+});
+
+router.patch('/users/:id/verify', protect, authorize('admin'), async (req, res) => {
+    try {
+        const { is_verified_landlord } = req.body;
+        await pool.query(
+            'UPDATE users SET is_verified_landlord = $1 WHERE id = $2',
+            [is_verified_landlord, req.params.id]
+        );
+        res.json({ success: true, message: is_verified_landlord ? 'Landlord verified.' : 'Verification removed.' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
 
 router.patch('/users/:id/toggle', protect, authorize('admin'), async (req, res) => {

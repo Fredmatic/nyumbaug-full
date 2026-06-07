@@ -662,7 +662,7 @@
                 <div class="landlord-avatar">${getInitials(l.landlord_name || l.landlord)}</div>
                 <div>
                   <div style="font-weight:600;color:var(--text-dark);">${l.landlord_name || l.landlord || 'Landlord'}</div>
-                  <div style="font-size:0.8rem;color:var(--text-muted);">Property Owner · Verified ✓</div>
+                  <div style="font-size:0.8rem;color:var(--text-muted);">Property Owner ${l.is_verified_landlord ? '<span style="color:#16a34a;font-weight:600;">· ✅ Verified Landlord</span>' : ''}</div>
                 </div>
               </div>
 

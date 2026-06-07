@@ -50,7 +50,7 @@ function renderListings(data, containerId) {
       </div>
       <div class="listing-body">
         <div class="listing-price">${formatUGX(l.price)} <span>/ month</span></div>
-        <div class="listing-title">${l.title}</div>
+        <div class="listing-title">${l.title} ${l.is_verified_landlord ? '<span style="font-size:0.75rem;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:50px;font-weight:600;vertical-align:middle;">✅ Verified</span>' : ''}</div>
         <div class="listing-location">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           ${location}

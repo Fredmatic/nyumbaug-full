@@ -14,6 +14,7 @@ const getListings = asyncHandler(async (req, res) => {
         (SELECT url FROM listing_images 
          WHERE listing_id = l.id AND is_cover = true 
          LIMIT 1) AS cover_image,
+         u.is_verified_landlord,
         COALESCE((
           SELECT COUNT(*) FROM reviews r WHERE r.listing_id = l.id
         ), 0) AS review_count,
