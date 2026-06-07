@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
   <title>Messages — NyumbaUG</title>
   <link rel="icon" href="../favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -505,8 +505,7 @@
       border-top: 1px solid var(--border);
       padding: 12px 16px;
       flex-shrink: 0;
-      position: sticky;
-      bottom: 0;
+      position: relative;
       z-index: 10;
     }
 
@@ -815,12 +814,21 @@
         inset: 56px 0 0 0;
         display: flex;
         flex-direction: column;
+        height: calc(100dvh - 56px);
+        overflow: hidden;
       }
 
       .msgs {
         flex: 1;
         overflow-y: auto;
+        min-height: 0;
         -webkit-overflow-scrolling: touch;
+      }
+
+      .input-area {
+        flex-shrink: 0;
+        padding: 10px 12px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
       }
 
       .bwrap {
@@ -1085,6 +1093,11 @@
       if (window.innerWidth <= 680) {
         document.getElementById('sidebar').classList.add('hidden');
         document.getElementById('chat-area').classList.add('active');
+        // Apply viewport fix immediately
+        if (window.visualViewport) {
+          const chatArea = document.getElementById('chat-area');
+          chatArea.style.height = (window.visualViewport.height - 56) + 'px';
+        }
       }
 
       await loadMsgs(t.partner_id);
@@ -1236,8 +1249,11 @@
     }
 
     function mobileBack() {
+      const chatArea = document.getElementById('chat-area');
+      chatArea.classList.remove('active');
+      chatArea.style.height = '';
+      chatArea.style.top = '';
       document.getElementById('sidebar').classList.remove('hidden');
-      document.getElementById('chat-area').classList.remove('active');
       clearInterval(pollTimer); active = null;
     }
 
@@ -1346,6 +1362,28 @@
     }
 
     init();
+
+    // ── MOBILE KEYBOARD FIX ──
+    // On older mobile browsers that don't support interactive-widget or dvh,
+    // the keyboard can cover the input area. This listens for visual viewport
+    // resize (keyboard open/close) and keeps the chat area sized correctly.
+    if (window.visualViewport) {
+      function onViewportResize() {
+        const chatArea = document.getElementById('chat-area');
+        if (chatArea && chatArea.classList.contains('active')) {
+          const topbarH = 56;
+          const vpHeight = window.visualViewport.height;
+          const offsetTop = window.visualViewport.offsetTop;
+          chatArea.style.height = (vpHeight - topbarH + offsetTop) + 'px';
+          chatArea.style.top = (topbarH - offsetTop) + 'px';
+          // Scroll messages to bottom when keyboard opens
+          const msgs = document.getElementById('msgs');
+          if (msgs) msgs.scrollTop = msgs.scrollHeight;
+        }
+      }
+      window.visualViewport.addEventListener('resize', onViewportResize);
+      window.visualViewport.addEventListener('scroll', onViewportResize);
+    }
   </script>
 </body>
 
