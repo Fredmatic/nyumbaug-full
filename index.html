@@ -320,7 +320,15 @@
       return Math.floor(diff / 86400) + 'd ago';
     }
 
-    loadRecentlyViewed();
+    // Expose clearRecentlyViewed to window so the button onclick can find it
+    window.clearRecentlyViewed = clearRecentlyViewed;
+
+    // Wait for DOM before reading elements
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadRecentlyViewed);
+    } else {
+      loadRecentlyViewed();
+    }
 
     loadFeatured();
     initScrollHighlight();
@@ -339,10 +347,14 @@
     ↑
   </button>
   <script>
-    const backBtn = document.getElementById('back-to-top');
-    window.addEventListener('scroll', () => {
-      backBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
-    });
+    (function () {
+      var backBtn = document.getElementById('back-to-top');
+      function handleScroll() {
+        var scrolled = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+        backBtn.style.display = scrolled > 400 ? 'flex' : 'none';
+      }
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    })();
   </script>
 </body>
 
