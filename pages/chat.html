@@ -777,10 +777,6 @@
         width: 100%;
       }
 
-      .sidebar.open {
-        display: flex;
-      }
-
       .sidebar.hidden {
         display: none;
       }
@@ -791,37 +787,24 @@
 
       .chat-area.active {
         display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 56px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
       }
 
       .mobile-back {
         display: flex !important;
       }
 
-      .chat-area.active {
-        display: flex;
-        flex-direction: column;
-        height: 100dvh;
-        position: fixed;
-        inset: 56px 0 0 0;
-      }
-
-      .msgs {
-        padding: 14px;
-      }
-
-      .chat-area.active {
-        position: fixed;
-        inset: 56px 0 0 0;
-        display: flex;
-        flex-direction: column;
-        height: calc(100dvh - 56px);
-        overflow: hidden;
-      }
-
       .msgs {
         flex: 1;
-        overflow-y: auto;
         min-height: 0;
+        overflow-y: auto;
+        padding: 14px;
         -webkit-overflow-scrolling: touch;
       }
 
@@ -1093,11 +1076,6 @@
       if (window.innerWidth <= 680) {
         document.getElementById('sidebar').classList.add('hidden');
         document.getElementById('chat-area').classList.add('active');
-        // Apply viewport fix immediately
-        if (window.visualViewport) {
-          const chatArea = document.getElementById('chat-area');
-          chatArea.style.height = (window.visualViewport.height - 56) + 'px';
-        }
       }
 
       await loadMsgs(t.partner_id);
@@ -1249,11 +1227,8 @@
     }
 
     function mobileBack() {
-      const chatArea = document.getElementById('chat-area');
-      chatArea.classList.remove('active');
-      chatArea.style.height = '';
-      chatArea.style.top = '';
       document.getElementById('sidebar').classList.remove('hidden');
+      document.getElementById('chat-area').classList.remove('active');
       clearInterval(pollTimer); active = null;
     }
 
@@ -1362,34 +1337,6 @@
     }
 
     init();
-
-    // ── MOBILE KEYBOARD FIX ──
-    // When the soft keyboard opens on iOS/Android, visualViewport.height shrinks.
-    // We resize the chat area to fit the remaining visible space so the input
-    // stays visible without jumping up. We intentionally do NOT touch `top` —
-    // the topbar is fixed and the chat area already sits below it via `inset`.
-    if (window.visualViewport) {
-      const TOPBAR_H = 56;
-
-      function onViewportResize() {
-        const chatArea = document.getElementById('chat-area');
-        if (!chatArea || !chatArea.classList.contains('active')) return;
-
-        // visualViewport.height = visible area above the keyboard
-        // We want chatArea to fill from below topbar to bottom of visible area
-        const availableH = window.visualViewport.height - TOPBAR_H;
-        chatArea.style.height = Math.max(availableH, 100) + 'px';
-        chatArea.style.top = TOPBAR_H + 'px'; // always fixed below topbar
-
-        // Scroll messages to bottom so latest message stays visible
-        const msgs = document.getElementById('msgs');
-        if (msgs) msgs.scrollTop = msgs.scrollHeight;
-      }
-
-      window.visualViewport.addEventListener('resize', onViewportResize);
-      // Do NOT listen to 'scroll' — that fires when page scrolls under keyboard
-      // and causes the jumping behaviour seen in the screenshot
-    }
   </script>
 </body>
 
