@@ -30,6 +30,11 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
 }
 
 body {
@@ -1028,5 +1033,64 @@ footer {
     background: var(--green-dark);
     color: var(--gold);
     border-color: var(--green-dark);
+  }
+
+  /* ── HERO MOBILE ── */
+  .hero {
+    grid-template-columns: 1fr;
+    /* single column */
+    padding-right: 5%;
+    /* match left padding */
+    padding-top: calc(var(--nav-h) + 32px);
+    padding-bottom: 48px;
+    min-height: auto;
+    gap: 32px;
+  }
+
+  .hero-image {
+    display: none;
+    /* hide the photo on mobile — keeps it clean */
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
+  .hero-badge {
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+    white-space: normal;
+    /* let badge text wrap instead of overflow */
+  }
+
+  .hero-sub {
+    font-size: 1rem;
+    max-width: 100%;
+  }
+
+  .hero-stats {
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .hero-stat-num {
+    font-size: 1.5rem;
+  }
+
+  /* ── SEARCH BAR MOBILE ── */
+  .search-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .search-bar input,
+  .search-bar select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .search-bar .btn {
+    width: 100%;
+    justify-content: center;
   }
 }
