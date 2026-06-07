@@ -689,6 +689,19 @@
                 onclick="toggleFav(event,this,'${l.id}');showToast('❤️ Saved to favourites')">
                 ♡ Save Property
               </button>
+              <div style="margin-top:12px;">
+  <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:8px;">Share this Property</div>
+  <div style="display:flex;gap:8px;">
+    <button onclick="shareWhatsApp('${l.id}','${l.title.replace(/'/g, "\\'")}')"
+      style="flex:1;padding:10px;border:none;border-radius:8px;background:#25D366;color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
+      💬 WhatsApp
+    </button>
+    <button onclick="copyLink('${l.id}')"
+      style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--text-mid);cursor:pointer;font-size:0.82rem;font-weight:600;">
+      🔗 Copy Link
+    </button>
+  </div>
+</div>
 
               <div style="margin-top:20px;padding:14px;background:var(--cream);border-radius:var(--radius);font-size:0.82rem;color:var(--text-muted);line-height:1.6;">
                 📌 <strong>Tip:</strong> Always view the property in person before making any payments.
@@ -953,6 +966,27 @@
       lightboxIndex = (lightboxIndex - 1 + galleryImages.length) % galleryImages.length;
       document.getElementById('lb-img').src = galleryImages[lightboxIndex];
       document.getElementById('lb-counter').textContent = (lightboxIndex + 1) + ' / ' + galleryImages.length;
+    }
+    function shareWhatsApp(id, title) {
+      const url = 'https://nyumbaug-full.vercel.app/pages/listing-detail.html?id=' + id;
+      const text = 'Check out this property on NyumbaUG: ' + title + '\n' + url;
+      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+    }
+
+    function copyLink(id) {
+      const url = 'https://nyumbaug-full.vercel.app/pages/listing-detail.html?id=' + id;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('🔗 Link copied to clipboard!');
+      }).catch(() => {
+        // Fallback for older browsers
+        const el = document.createElement('textarea');
+        el.value = url;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        showToast('🔗 Link copied!');
+      });
     }
 
     loadListing();
