@@ -9,6 +9,9 @@
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/png" href="/icons/icon-192.png" />
 
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -16,7 +19,9 @@
       });
     }
   </script>
+
   <style>
+    /* ── Layout ── */
     .listings-layout {
       display: grid;
       grid-template-columns: 280px 1fr;
@@ -107,16 +112,25 @@
       height: 16px;
     }
 
+    /* ── Result header & view toggle ── */
     .result-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 24px;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .result-count {
       font-size: 0.9rem;
       color: var(--text-muted);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .sort-select {
@@ -129,13 +143,184 @@
       cursor: pointer;
     }
 
+    /* ── View toggle buttons ── */
+    .view-toggle {
+      display: flex;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .view-btn {
+      padding: 7px 12px;
+      border: none;
+      background: var(--white);
+      cursor: pointer;
+      font-size: 1rem;
+      color: var(--text-muted);
+      transition: background 0.18s, color 0.18s;
+      line-height: 1;
+    }
+
+    .view-btn.active {
+      background: var(--green-dark);
+      color: #fff;
+    }
+
+    /* ── Map container ── */
+    #map-view {
+      display: none;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      height: 620px;
+      position: relative;
+    }
+
+    #map-view.visible {
+      display: block;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── Leaflet custom marker ── */
+    .map-price-marker {
+      background: var(--green-dark, #1a3c2e);
+      color: #f5c842;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    .map-price-marker:hover {
+      transform: scale(1.1);
+    }
+
+    .map-price-marker.active-marker {
+      background: #f5c842;
+      color: var(--green-dark, #1a3c2e);
+      transform: scale(1.15);
+      z-index: 1000 !important;
+    }
+
+    /* ── Map popup card ── */
+    .leaflet-popup-content-wrapper {
+      border-radius: 12px !important;
+      padding: 0 !important;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
+      border: none !important;
+      min-width: 220px;
+    }
+
+    .leaflet-popup-content {
+      margin: 0 !important;
+      width: 220px !important;
+    }
+
+    .leaflet-popup-tip-container {
+      display: none;
+    }
+
+    .map-popup-img {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .map-popup-body {
+      padding: 12px 14px 14px;
+    }
+
+    .map-popup-price {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--green-dark, #1a3c2e);
+    }
+
+    .map-popup-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin: 4px 0 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .map-popup-loc {
+      font-size: 0.75rem;
+      color: #777;
+      margin-bottom: 10px;
+    }
+
+    .map-popup-btn {
+      display: block;
+      width: 100%;
+      padding: 8px;
+      background: var(--green-dark, #1a3c2e);
+      color: #f5c842;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    /* ── Map listing count badge ── */
+    .map-count-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 800;
+      background: #fff;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--green-dark, #1a3c2e);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.13);
+      border: 1px solid var(--border);
+      pointer-events: none;
+    }
+
+    /* ── No results ── */
+    #no-results {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+    }
+
     @media (max-width: 768px) {
       .listings-layout {
         grid-template-columns: 1fr;
+        padding: 20px 4%;
       }
 
       .sidebar {
         position: static;
+      }
+
+      #map-view {
+        height: 420px;
+      }
+
+      .header-right {
+        gap: 8px;
       }
     }
   </style>
@@ -149,7 +334,6 @@
       <span></span><span></span><span></span>
     </button>
     <ul class="nav-links" id="nav-links">
-
       <li><a href="../index.html">Home</a></li>
       <li><a href="listings.html" class="active">Browse Listings</a></li>
       <li><a href="list-property.html">List Property</a></li>
@@ -178,7 +362,7 @@
   </div>
 
   <div class="listings-layout">
-    <!-- SIDEBAR FILTERS -->
+    <!-- SIDEBAR -->
     <aside class="sidebar">
       <h3>🔍 Filter Properties</h3>
 
@@ -215,7 +399,6 @@
           <option value="Wandegeya">Wandegeya</option>
           <option value="Bwaise">Bwaise</option>
           <option value="Kawempe">Kawempe</option>
-
         </select>
       </div>
 
@@ -239,12 +422,23 @@
     <div>
       <div class="result-header">
         <span class="result-count" id="result-count">Showing all properties</span>
-        <select class="sort-select" id="sort-select" onchange="applyFilters()">
-          <option value="default">Sort: Featured</option>
-          <option value="price-asc">Price: Low to High</option>
-          <option value="price-desc">Price: High to Low</option>
-          <option value="beds-desc">Most Bedrooms</option>
-        </select>
+        <div class="header-right">
+          <select class="sort-select" id="sort-select" onchange="applyFilters()">
+            <option value="default">Sort: Featured</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="beds-desc">Most Bedrooms</option>
+          </select>
+          <!-- View toggle -->
+          <div class="view-toggle" role="group" aria-label="View mode">
+            <button class="view-btn active" id="btn-grid" onclick="setView('grid')" title="Grid view">
+              ⊞
+            </button>
+            <button class="view-btn" id="btn-map" onclick="setView('map')" title="Map view">
+              🗺
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="tab-bar">
@@ -254,11 +448,18 @@
         <button class="tab" data-filter="studio">Studios</button>
       </div>
 
+      <!-- GRID VIEW -->
       <div class="listings-grid" id="listings-container"></div>
 
-      <div id="no-results" style="display:none; text-align:center; padding: 60px 20px;">
+      <!-- MAP VIEW -->
+      <div id="map-view">
+        <div class="map-count-badge" id="map-count-badge">0 properties</div>
+        <div id="map"></div>
+      </div>
+
+      <div id="no-results">
         <div style="font-size:3rem;margin-bottom:16px;">🏠</div>
-        <h3 style="color:var(--green-dark); margin-bottom:8px;">No properties found</h3>
+        <h3 style="color:var(--green-dark);margin-bottom:8px;">No properties found</h3>
         <p style="color:var(--text-muted);">Try adjusting your filters or search a different area.</p>
         <button class="btn btn-green" style="margin-top:20px;" onclick="clearFilters()">Clear Filters</button>
       </div>
@@ -300,10 +501,154 @@
 
   <script src="../js/api.js"></script>
   <script src="../js/main.js"></script>
-  <script>
-    // listings.html uses renderListings from main.js — which already handles rented overlay
-    // We just override count display here
+  <!-- Leaflet JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
+  <script>
+    // ── Neighbourhood coordinates (Kampala + surroundings) ──
+    const NEIGHBOURHOOD_COORDS = {
+      'kololo': [0.3349, 32.5917],
+      'bugolobi': [0.3167, 32.6083],
+      'ntinda': [0.3500, 32.6167],
+      'naguru': [0.3333, 32.6000],
+      'muyenga': [0.2833, 32.6000],
+      'kira': [0.3833, 32.6333],
+      'wandegeya': [0.3417, 32.5750],
+      'bwaise': [0.3583, 32.5667],
+      'kawempe': [0.3750, 32.5583],
+      'makindye': [0.2833, 32.5833],
+      'rubaga': [0.3083, 32.5583],
+      'nakawa': [0.3250, 32.6250],
+      'entebbe': [0.0617, 32.4575],
+      'jinja': [0.4244, 33.2041],
+      'mbarara': [-0.6072, 30.6545],
+      'gulu': [2.7747, 32.2990],
+      'kampala': [0.3163, 32.5822],
+      'default': [0.3163, 32.5822],
+    };
+
+    function getCoords(listing) {
+      // Use stored lat/lng if available
+      if (listing.latitude && listing.longitude) {
+        return [parseFloat(listing.latitude), parseFloat(listing.longitude)];
+      }
+      const hood = (listing.neighbourhood || listing.district || '').toLowerCase().trim();
+      // Try exact match first
+      if (NEIGHBOURHOOD_COORDS[hood]) return NEIGHBOURHOOD_COORDS[hood];
+      // Try partial match
+      for (const key of Object.keys(NEIGHBOURHOOD_COORDS)) {
+        if (hood.includes(key) || key.includes(hood)) return NEIGHBOURHOOD_COORDS[key];
+      }
+      // Slight random offset so pins don't stack on "default"
+      const base = NEIGHBOURHOOD_COORDS['default'];
+      return [base[0] + (Math.random() - 0.5) * 0.02, base[1] + (Math.random() - 0.5) * 0.02];
+    }
+
+    // ── Map state ──
+    let mapInstance = null;
+    let mapMarkers = [];
+    let currentView = 'grid';
+    let lastFilteredListings = [];
+
+    function setView(mode) {
+      currentView = mode;
+      const gridEl = document.getElementById('listings-container');
+      const mapEl = document.getElementById('map-view');
+      const btnGrid = document.getElementById('btn-grid');
+      const btnMap = document.getElementById('btn-map');
+
+      if (mode === 'map') {
+        gridEl.style.display = 'none';
+        mapEl.classList.add('visible');
+        btnGrid.classList.remove('active');
+        btnMap.classList.add('active');
+        initMap();
+        renderMapMarkers(lastFilteredListings);
+      } else {
+        gridEl.style.display = '';
+        mapEl.classList.remove('visible');
+        btnGrid.classList.add('active');
+        btnMap.classList.remove('active');
+      }
+    }
+
+    function initMap() {
+      if (mapInstance) return; // already initialised
+      mapInstance = L.map('map', {
+        center: [0.3163, 32.5822],
+        zoom: 12,
+        zoomControl: true,
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(mapInstance);
+    }
+
+    function renderMapMarkers(listings) {
+      if (!mapInstance) return;
+
+      // Clear old markers
+      mapMarkers.forEach(m => m.remove());
+      mapMarkers = [];
+
+      const badge = document.getElementById('map-count-badge');
+      if (badge) badge.textContent = `${listings.length} propert${listings.length === 1 ? 'y' : 'ies'}`;
+
+      if (!listings.length) return;
+
+      const bounds = [];
+
+      listings.forEach(l => {
+        const coords = getCoords(l);
+        bounds.push(coords);
+
+        const price = 'UGX ' + Number(l.price).toLocaleString('en-UG');
+        const img = l.cover_image || l.image ||
+          'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&q=70';
+        const title = l.title || 'Property';
+        const hood = l.neighbourhood || l.district || 'Kampala';
+        const detailUrl = `listing-detail.html?id=${l.id}`;
+
+        // Custom DivIcon — price pill
+        const icon = L.divIcon({
+          className: '',
+          html: `<div class="map-price-marker">${price}</div>`,
+          iconAnchor: [0, 0],
+        });
+
+        const marker = L.marker(coords, { icon })
+          .addTo(mapInstance)
+          .bindPopup(`
+            <img class="map-popup-img" src="${img}" alt="${title}"
+              onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&q=60'" />
+            <div class="map-popup-body">
+              <div class="map-popup-price">${price}<span style="font-size:0.7rem;font-weight:400;color:#777;"> /mo</span></div>
+              <div class="map-popup-title">${title}</div>
+              <div class="map-popup-loc">📍 ${hood}</div>
+              <a class="map-popup-btn" href="${detailUrl}">View Property →</a>
+            </div>
+          `, { maxWidth: 220 });
+
+        // Highlight marker on popup open
+        marker.on('popupopen', () => {
+          marker.getElement()?.querySelector('.map-price-marker')?.classList.add('active-marker');
+        });
+        marker.on('popupclose', () => {
+          marker.getElement()?.querySelector('.map-price-marker')?.classList.remove('active-marker');
+        });
+
+        mapMarkers.push(marker);
+      });
+
+      // Fit map to show all markers (with padding)
+      if (bounds.length) {
+        mapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+      }
+    }
+
+    // ── Filters ──
     function applyFilters() {
       const search = document.getElementById('search-input').value.toLowerCase();
       const type = document.getElementById('filter-type').value;
@@ -334,11 +679,21 @@
       else if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
       else if (sort === 'beds-desc') filtered.sort((a, b) => b.bedrooms - a.bedrooms);
 
+      lastFilteredListings = filtered;
+
+      // Update grid
       renderListings(filtered, 'listings-container');
+
+      // Update map if open
+      if (currentView === 'map') renderMapMarkers(filtered);
+
+      // Update count
       const countEl = document.getElementById('result-count');
       if (countEl) countEl.textContent = `Showing ${filtered.length} propert${filtered.length === 1 ? 'y' : 'ies'}`;
+
       const noResults = document.getElementById('no-results');
       if (noResults) noResults.style.display = filtered.length === 0 ? 'block' : 'none';
+
       setTimeout(restoreFavs, 50);
     }
 
@@ -353,20 +708,25 @@
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       const allTab = document.querySelector('.tab[data-filter="all"]');
       if (allTab) allTab.classList.add('active');
-      renderListings(window.currentListings || [], 'listings-container');
-      setTimeout(restoreFavs, 50);
+      applyFilters();
     }
 
+    // ── Load listings ──
     async function loadListings() {
       const container = document.getElementById('listings-container');
-      if (container) container.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-muted);grid-column:1/-1;"><div style="font-size:2rem;margin-bottom:12px;">⏳</div><p>Loading listings...</p></div>`;
+      if (container) container.innerHTML = `
+        <div style="text-align:center;padding:48px;color:var(--text-muted);grid-column:1/-1;">
+          <div style="font-size:2rem;margin-bottom:12px;">⏳</div>
+          <p>Loading listings...</p>
+        </div>`;
 
       try {
         const data = await api.listings.getAll();
         const list = data.data || data.listings || [];
         window.currentListings = list;
+        lastFilteredListings = list;
 
-        // Apply URL param filter
+        // URL param pre-filter
         const urlParams = new URLSearchParams(location.search);
         const locParam = urlParams.get('location');
         if (locParam) {
@@ -377,12 +737,18 @@
         applyFilters();
       } catch (err) {
         console.error('Failed to fetch listings:', err);
-        if (container) container.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-muted);grid-column:1/-1;"><p>Failed to load listings. <button onclick="loadListings()" class="btn btn-green" style="margin-left:8px;">Retry</button></p></div>`;
+        if (container) container.innerHTML = `
+          <div style="text-align:center;padding:48px;color:var(--text-muted);grid-column:1/-1;">
+            <p>Failed to load listings.
+              <button onclick="loadListings()" class="btn btn-green" style="margin-left:8px;">Retry</button>
+            </p>
+          </div>`;
       }
     }
 
     loadListings();
 
+    // Tab clicks
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -392,19 +758,23 @@
     });
   </script>
 
-  <!-- BACK TO TOP BUTTON -->
+  <!-- BACK TO TOP -->
   <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="display:none;position:fixed;bottom:28px;right:24px;width:46px;height:46px;
-         border-radius:50%;background:var(--green-dark);color:var(--gold);border:none;
-         cursor:pointer;font-size:1.3rem;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,0.2);
-         align-items:center;justify-content:center;transition:all 0.3s;">
+           border-radius:50%;background:var(--green-dark);color:var(--gold);border:none;
+           cursor:pointer;font-size:1.3rem;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,0.2);
+           align-items:center;justify-content:center;transition:all 0.3s;">
     ↑
   </button>
   <script>
-    const backBtn = document.getElementById('back-to-top');
-    window.addEventListener('scroll', () => {
-      backBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
-    });
+    (function () {
+      var backBtn = document.getElementById('back-to-top');
+      window.addEventListener('scroll', function () {
+        var scrolled = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+        backBtn.style.display = scrolled > 400 ? 'flex' : 'none';
+      }, { passive: true });
+    })();
   </script>
+
 </body>
 
 </html>
