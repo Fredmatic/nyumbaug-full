@@ -269,7 +269,8 @@
 
           <div class="form-group">
             <label>Email Address *</label>
-            <input type="email" id="reg-email" placeholder="your@email.com" required autocomplete="email" />
+            <input type="email" id="reg-email" placeholder="your@gmail.com" required autocomplete="email"
+              pattern="[a-zA-Z0-9._%+\-]+@gmail\.com" title="Please use a Gmail address (@gmail.com)" />
           </div>
 
           <div class="form-group">
@@ -336,6 +337,13 @@
 
       btn.textContent = 'Creating account...';
       btn.disabled = true;
+      if (!email.endsWith('@gmail.com')) {
+        errMsg.textContent = 'Please use a Gmail address (@gmail.com) to register.';
+        errMsg.style.display = 'block';
+        btn.textContent = 'Create Account';
+        btn.disabled = false;
+        return;
+      }
 
       try {
         await api.auth.register(name, email, phone, password, role);

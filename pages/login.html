@@ -242,6 +242,14 @@
       const btn = document.getElementById('submit-btn');
       const errMsg = document.getElementById('error-msg');
       errMsg.style.display = 'none';
+      const emailVal = document.getElementById('login-email').value;
+      if (!emailVal.endsWith('@gmail.com')) {
+        errMsg.textContent = 'Please use your Gmail address (@gmail.com) to log in.';
+        errMsg.style.display = 'block';
+        btn.textContent = 'Log In';
+        btn.disabled = false;
+        return;
+      }
 
       btn.textContent = 'Logging in...';
       btn.disabled = true;

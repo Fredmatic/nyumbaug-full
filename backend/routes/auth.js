@@ -9,6 +9,9 @@ router.post('/register', async (req, res) => {
     const { name, email, phone, password, role } = req.body;
 
     if (!name || !email || !password) {
+        if (!email.toLowerCase().endsWith('@gmail.com')) {
+            return res.status(400).json({ success: false, message: 'Only Gmail addresses are accepted.' });
+        }
         return res.status(400).json({ success: false, message: 'Name, email and password are required.' });
     }
 
