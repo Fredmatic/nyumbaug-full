@@ -1364,25 +1364,31 @@
     init();
 
     // ── MOBILE KEYBOARD FIX ──
-    // On older mobile browsers that don't support interactive-widget or dvh,
-    // the keyboard can cover the input area. This listens for visual viewport
-    // resize (keyboard open/close) and keeps the chat area sized correctly.
+    // When the soft keyboard opens on iOS/Android, visualViewport.height shrinks.
+    // We resize the chat area to fit the remaining visible space so the input
+    // stays visible without jumping up. We intentionally do NOT touch `top` —
+    // the topbar is fixed and the chat area already sits below it via `inset`.
     if (window.visualViewport) {
+      const TOPBAR_H = 56;
+
       function onViewportResize() {
         const chatArea = document.getElementById('chat-area');
-        if (chatArea && chatArea.classList.contains('active')) {
-          const topbarH = 56;
-          const vpHeight = window.visualViewport.height;
-          const offsetTop = window.visualViewport.offsetTop;
-          chatArea.style.height = (vpHeight - topbarH + offsetTop) + 'px';
-          chatArea.style.top = (topbarH - offsetTop) + 'px';
-          // Scroll messages to bottom when keyboard opens
-          const msgs = document.getElementById('msgs');
-          if (msgs) msgs.scrollTop = msgs.scrollHeight;
-        }
+        if (!chatArea || !chatArea.classList.contains('active')) return;
+
+        // visualViewport.height = visible area above the keyboard
+        // We want chatArea to fill from below topbar to bottom of visible area
+        const availableH = window.visualViewport.height - TOPBAR_H;
+        chatArea.style.height = Math.max(availableH, 100) + 'px';
+        chatArea.style.top = TOPBAR_H + 'px'; // always fixed below topbar
+
+        // Scroll messages to bottom so latest message stays visible
+        const msgs = document.getElementById('msgs');
+        if (msgs) msgs.scrollTop = msgs.scrollHeight;
       }
+
       window.visualViewport.addEventListener('resize', onViewportResize);
-      window.visualViewport.addEventListener('scroll', onViewportResize);
+      // Do NOT listen to 'scroll' — that fires when page scrolls under keyboard
+      // and causes the jumping behaviour seen in the screenshot
     }
   </script>
 </body>
