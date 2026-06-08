@@ -776,6 +776,62 @@
     })();
   </script>
 
+  <!-- Bottom tab bar (mobile) -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <a href="../index.html" id="tab-home">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+      Home
+    </a>
+    <a href="../pages/listings.html" id="tab-listings">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="3" width="7" height="7" />
+        <rect x="14" y="3" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" />
+      </svg>
+      Browse
+    </a>
+    <a href="../pages/chat.html" id="tab-messages" style="position:relative;">
+      <svg viewBox="0 0 24 24">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+      <span class="tab-badge" id="tab-msg-badge" style="display:none"></span>
+      Messages
+    </a>
+    <a href="../pages/dashboard.html" id="tab-dashboard">
+      <svg viewBox="0 0 24 24">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+      Account
+    </a>
+  </nav>
+  <script>
+    // Highlight active tab based on current page
+    (function () {
+      const path = location.pathname;
+      if (path.includes('listings') && !path.includes('listing-detail')) document.getElementById('tab-listings')?.classList.add('active');
+      else if (path.includes('chat')) document.getElementById('tab-messages')?.classList.add('active');
+      else if (path.includes('dashboard')) document.getElementById('tab-dashboard')?.classList.add('active');
+      else document.getElementById('tab-home')?.classList.add('active');
+
+      // Show unread message badge if logged in
+      const token = localStorage.getItem('nyumba_token');
+      if (token) {
+        fetch('/api/messages/unread-count', { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(r => r.json()).then(d => {
+            if (d.count > 0) {
+              const badge = document.getElementById('tab-msg-badge');
+              if (badge) { badge.textContent = d.count > 9 ? '9+' : d.count; badge.style.display = 'flex'; }
+            }
+          }).catch(() => { });
+      }
+    })();
+  </script>
+
 </body>
 
 </html>

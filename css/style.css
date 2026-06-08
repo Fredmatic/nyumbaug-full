@@ -1214,3 +1214,104 @@ footer {
 .theme-toggle:hover {
   background: rgba(255, 255, 255, 0.1);
 }
+
+/* ── BOTTOM TAB BAR (mobile only) ── */
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+
+  /* Push page content up so it's not hidden behind the tab bar */
+  body {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: var(--green-dark);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    height: calc(64px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    align-items: stretch;
+  }
+
+  .bottom-nav a {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.65rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+    position: relative;
+    padding-top: 8px;
+  }
+
+  .bottom-nav a svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .bottom-nav a.active,
+  .bottom-nav a:hover {
+    color: var(--gold);
+  }
+
+  .bottom-nav a.active svg {
+    stroke: var(--gold);
+  }
+
+  /* Active indicator dot */
+  .bottom-nav a.active::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    width: 4px;
+    height: 4px;
+    background: var(--gold);
+    border-radius: 50%;
+  }
+
+  /* Badge for unread messages */
+  .bottom-nav .tab-badge {
+    position: absolute;
+    top: 4px;
+    right: calc(50% - 18px);
+    background: #e53935;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+  }
+
+  /* Hide hamburger menu on mobile since tab bar replaces it */
+  .nav-toggle {
+    display: none !important;
+  }
+
+  /* Hide the dropdown nav links — tab bar handles navigation */
+  .nav-links {
+    display: none !important;
+  }
+}
