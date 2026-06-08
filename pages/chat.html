@@ -1199,10 +1199,14 @@
 
       // Position menu near tap/click
       document.body.appendChild(menu);
-      const x = Math.min(e.clientX || e.touches?.[0]?.clientX || 100, window.innerWidth - 190);
-      const y = Math.min(e.clientY || e.touches?.[0]?.clientY || 200, window.innerHeight - menu.offsetHeight - 20);
-      menu.style.left = x + 'px';
-      menu.style.top = y + 'px';
+      const menuW = menu.offsetWidth || 190;
+      const menuH = menu.offsetHeight || 160;
+      const clickX = e.clientX || e.touches?.[0]?.clientX || 100;
+      const clickY = e.clientY || e.touches?.[0]?.clientY || 200;
+      const x = (clickX + menuW > window.innerWidth) ? clickX - menuW : clickX;
+      const y = (clickY + menuH > window.innerHeight) ? clickY - menuH : clickY;
+      menu.style.left = Math.max(8, x) + 'px';
+      menu.style.top = Math.max(8, y) + 'px';
 
       // Close on outside click
       setTimeout(() => document.addEventListener('click', closeCtx, { once: true }), 10);
