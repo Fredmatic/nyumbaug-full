@@ -311,6 +311,10 @@
         padding: 20px 4%;
       }
 
+      .sidebar-close-btn {
+        display: block !important;
+      }
+
       .sidebar {
         position: static;
       }
@@ -321,6 +325,127 @@
 
       .header-right {
         gap: 8px;
+      }
+    }
+
+    /* Search input icon wrapper */
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+    }
+
+    .search-input-wrap input {
+      width: 100%;
+    }
+
+    /* Mobile filter button — hidden on desktop */
+    .filter-toggle-btn {
+      display: none;
+      background: var(--white);
+      color: var(--green-dark);
+      border: 1.5px solid var(--border);
+      gap: 6px;
+      padding: 10px 14px;
+      white-space: nowrap;
+    }
+
+    .filter-toggle-btn.has-filters {
+      border-color: var(--green-dark);
+      background: var(--green-dark);
+      color: var(--white);
+    }
+
+    /* Active filter pills strip */
+    .active-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 20px 12px;
+    }
+
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--green-dark);
+      color: var(--white);
+      border-radius: 50px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+
+    .filter-pill button {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .filter-pill button:hover {
+      color: #fff;
+    }
+
+    /* Price slider */
+    .price-slider-wrap {
+      padding: 4px 0;
+    }
+
+    .price-slider-wrap input[type=range] {
+      width: 100%;
+      accent-color: var(--green-dark);
+    }
+
+    .price-slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    @media (max-width: 768px) {
+      .filter-toggle-btn {
+        display: inline-flex !important;
+      }
+
+      /* Sidebar becomes a slide-up drawer on mobile */
+      .sidebar {
+        position: fixed !important;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto !important;
+        width: 100% !important;
+        max-height: 80vh;
+        overflow-y: auto;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+        z-index: 150;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        background: var(--white);
+        padding: 20px 20px 100px;
+      }
+
+      .sidebar.mobile-open {
+        transform: translateY(0);
+      }
+
+      /* Dim overlay behind drawer */
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 149;
+      }
+
+      .sidebar-overlay.show {
+        display: block;
       }
     }
   </style>
@@ -351,29 +476,60 @@
 
   <div class="search-section">
     <div class="search-bar">
-      <input type="text" id="search-input" placeholder="Search location or property name..." oninput="applyFilters()" />
+      <div class="search-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          style="width:16px;height:16px;position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" id="search-input" placeholder="Search location or property name..." oninput="applyFilters()"
+          style="padding-left:38px;" />
+      </div>
       <select id="filter-type" onchange="applyFilters()">
         <option value="">All Types</option>
         <option value="apartment">Apartment</option>
         <option value="house">House</option>
         <option value="studio">Studio</option>
+        <option value="mansion">Mansion</option>
+        <option value="townhouse">Townhouse</option>
       </select>
       <button class="btn btn-primary" onclick="applyFilters()">Search</button>
+      <!-- Mobile filter toggle -->
+      <button class="btn filter-toggle-btn" onclick="toggleMobileFilters()" id="filter-toggle-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;">
+          <line x1="4" y1="6" x2="20" y2="6" />
+          <line x1="8" y1="12" x2="16" y2="12" />
+          <line x1="11" y1="18" x2="13" y2="18" />
+        </svg>
+        Filters <span class="filter-count" id="filter-count"
+          style="display:none;background:var(--gold);color:var(--green-dark);border-radius:50%;width:18px;height:18px;font-size:0.7rem;font-weight:700;display:none;align-items:center;justify-content:center;"></span>
+      </button>
     </div>
   </div>
 
   <div class="listings-layout">
     <!-- SIDEBAR -->
     <aside class="sidebar">
-      <h3>🔍 Filter Properties</h3>
+      <div
+        style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+        <h3 style="margin:0;padding:0;border:none;">🔍 Filter Properties</h3>
+        <button onclick="toggleMobileFilters()"
+          style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);display:none;"
+          class="sidebar-close-btn">✕</button>
+      </div>
 
       <div class="filter-section">
-        <label>Price Range (UGX/month)</label>
-        <div class="price-range">
-          <input type="number" id="min-price" placeholder="Min" onchange="applyFilters()" step="50000" />
-          <span>–</span>
-          <input type="number" id="max-price" placeholder="Max" onchange="applyFilters()" step="50000" />
+        <label>Max Price: <strong id="price-display">Any</strong></label>
+        <div class="price-slider-wrap">
+          <input type="range" id="max-price-slider" min="0" max="5000000" step="50000" value="5000000"
+            oninput="updatePriceDisplay(this.value); applyFilters()" />
+          <div class="price-slider-labels">
+            <span>UGX 0</span><span>UGX 5M+</span>
+          </div>
         </div>
+        <!-- Keep hidden number inputs so applyFilters() still works -->
+        <input type="hidden" id="min-price" value="0" />
+        <input type="hidden" id="max-price" value="" />
       </div>
 
       <div class="filter-section">
@@ -709,6 +865,8 @@
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       const allTab = document.querySelector('.tab[data-filter="all"]');
       if (allTab) allTab.classList.add('active');
+      const slider = document.getElementById('max-price-slider');
+      if (slider) { slider.value = 5000000; updatePriceDisplay(5000000); }
       applyFilters();
     }
 
@@ -830,6 +988,59 @@
           }).catch(() => { });
       }
     })();
+
+    // Mobile filter drawer toggle
+    function toggleMobileFilters() {
+      const sidebar = document.querySelector('.sidebar');
+      const isOpen = sidebar.classList.contains('mobile-open');
+      if (isOpen) {
+        sidebar.classList.remove('mobile-open');
+        document.getElementById('sidebar-overlay')?.remove();
+      } else {
+        sidebar.classList.add('mobile-open');
+        const overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay show';
+        overlay.id = 'sidebar-overlay';
+        overlay.onclick = toggleMobileFilters;
+        document.body.appendChild(overlay);
+      }
+    }
+
+    // Price slider display
+    function updatePriceDisplay(val) {
+      const v = parseInt(val);
+      const display = document.getElementById('price-display');
+      const maxInput = document.getElementById('max-price');
+      if (v >= 5000000) {
+        display.textContent = 'Any';
+        maxInput.value = '';
+      } else {
+        display.textContent = 'UGX ' + v.toLocaleString('en-UG');
+        maxInput.value = v;
+      }
+    }
+
+    // Update active filter count badge on the filter button
+    function updateFilterCount() {
+      const filters = [
+        document.getElementById('filter-type')?.value,
+        document.getElementById('filter-beds')?.value,
+        document.getElementById('filter-area')?.value,
+        document.getElementById('max-price')?.value,
+        document.getElementById('search-input')?.value,
+        ...[...document.querySelectorAll('.checkbox-group input:checked')].map(c => c.value)
+      ].filter(Boolean);
+
+      const btn = document.getElementById('filter-toggle-btn');
+      const count = document.getElementById('filter-count');
+      if (filters.length > 0) {
+        btn?.classList.add('has-filters');
+        if (count) { count.textContent = filters.length; count.style.display = 'inline-flex'; }
+      } else {
+        btn?.classList.remove('has-filters');
+        if (count) count.style.display = 'none';
+      }
+    }
   </script>
 
 </body>
