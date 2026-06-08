@@ -724,6 +724,190 @@
       margin-bottom: 4px;
     }
 
+    /* ── Reply quote bar ── */
+    .reply-quote {
+      border-left: 3px solid var(--green-light);
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 6px;
+      padding: 4px 8px;
+      margin-bottom: 4px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      max-width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .msg-row.me .reply-quote {
+      background: rgba(255, 255, 255, 0.18);
+      color: rgba(255, 255, 255, 0.8);
+      border-left-color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Reply preview banner above input */
+    .reply-banner {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .reply-banner.show {
+      display: flex;
+    }
+
+    .reply-banner-text {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .reply-banner span.label {
+      color: var(--green-dark);
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    .reply-banner button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      color: var(--text-muted);
+      padding: 0 4px;
+      line-height: 1;
+    }
+
+    /* ── Reactions ── */
+    .reactions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      margin-top: 3px;
+    }
+
+    .reaction-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1px 7px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      user-select: none;
+    }
+
+    .reaction-pill:hover {
+      background: var(--border);
+    }
+
+    .reaction-pill.mine {
+      border-color: var(--green-light);
+      background: rgba(74, 124, 89, 0.08);
+    }
+
+    .reaction-pill .count {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Context menu (long press / right click) ── */
+    .ctx-menu {
+      position: fixed;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      z-index: 9999;
+      overflow: hidden;
+      min-width: 170px;
+      animation: ctxIn 0.12s ease;
+    }
+
+    @keyframes ctxIn {
+      from {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .ctx-emoji-row {
+      display: flex;
+      gap: 0;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      justify-content: space-between;
+    }
+
+    .ctx-emoji {
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 4px 5px;
+      border-radius: 8px;
+      transition: background 0.1s, transform 0.1s;
+    }
+
+    .ctx-emoji:hover {
+      background: var(--bg);
+      transform: scale(1.25);
+    }
+
+    .ctx-emoji.selected {
+      background: rgba(74, 124, 89, 0.15);
+    }
+
+    .ctx-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      font-size: 0.87rem;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: background 0.1s;
+    }
+
+    .ctx-item:hover {
+      background: var(--bg);
+    }
+
+    .ctx-item.danger {
+      color: #e53935;
+    }
+
+    .ctx-item .icon {
+      font-size: 1rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    /* Deleted message style */
+    .bubble.deleted {
+      font-style: italic;
+      color: var(--text-muted) !important;
+      background: var(--bg) !important;
+      border: 1px solid var(--border);
+    }
+
+    .msg-row.me .bubble.deleted {
+      background: rgba(255, 255, 255, 0.15) !important;
+      color: rgba(255, 255, 255, 0.6) !important;
+    }
+
     /* Spinner */
     .spin {
       display: inline-block;
@@ -894,6 +1078,16 @@
 
         <!-- Input -->
         <div class="input-area">
+          <!-- Reply preview banner -->
+          <div class="reply-banner" id="reply-banner">
+            <span style="font-size:1rem;">↩️</span>
+            <div class="reply-banner-text">
+              <span class="label" id="reply-banner-name"></span>
+              <span id="reply-banner-body"></span>
+            </div>
+            <button onclick="clearReply()" title="Cancel reply">✕</button>
+          </div>
+
           <div id="listing-tag" class="listing-tag" style="display:none;">
             <span>🏠</span><span id="tag-title">–</span>
             <button onclick="clearTag()" title="Remove">✕</button>
@@ -952,10 +1146,131 @@
     let lastCount = 0;
     let mediaFiles = [];      // pending image/video attachments
     let voiceBlob = null;     // pending voice note
+    let replyToMsg = null;    // message being replied to
+    let longPressTimer = null; // for mobile long press
     let mediaRecorder = null;
     let isRecording = false;
     let voiceTimer = null;
     let voiceSeconds = 0;
+
+    // ── CONTEXT MENU ──────────────────────────────────────────────
+    const EMOJIS = ['❤️', '👍', '😂', '😮', '😢', '🙏'];
+
+    function showCtx(e, msgId, isMe) {
+      e.preventDefault();
+      closeCtx();
+
+      // Find the message data from current rendered messages
+      const msgRow = document.querySelector(`.msg-row[data-id="${msgId}"]`);
+      if (!msgRow) return;
+
+      const menu = document.createElement('div');
+      menu.className = 'ctx-menu';
+      menu.id = 'ctx-menu';
+
+      // Emoji row
+      const emojiRow = document.createElement('div');
+      emojiRow.className = 'ctx-emoji-row';
+      EMOJIS.forEach(emoji => {
+        const btn = document.createElement('span');
+        btn.className = 'ctx-emoji';
+        btn.textContent = emoji;
+        btn.title = 'React';
+        btn.onclick = () => { toggleReaction(msgId, emoji); closeCtx(); };
+        emojiRow.appendChild(btn);
+      });
+      menu.appendChild(emojiRow);
+
+      // Reply option
+      const replyItem = document.createElement('div');
+      replyItem.className = 'ctx-item';
+      replyItem.innerHTML = `<span class="icon">↩️</span> Reply`;
+      replyItem.onclick = () => { startReply(msgId); closeCtx(); };
+      menu.appendChild(replyItem);
+
+      // Delete (only sender can delete)
+      if (isMe) {
+        const delItem = document.createElement('div');
+        delItem.className = 'ctx-item danger';
+        delItem.innerHTML = `<span class="icon">🗑️</span> Delete for everyone`;
+        delItem.onclick = () => { deleteMsg(msgId); closeCtx(); };
+        menu.appendChild(delItem);
+      }
+
+      // Position menu near tap/click
+      document.body.appendChild(menu);
+      const x = Math.min(e.clientX || e.touches?.[0]?.clientX || 100, window.innerWidth - 190);
+      const y = Math.min(e.clientY || e.touches?.[0]?.clientY || 200, window.innerHeight - menu.offsetHeight - 20);
+      menu.style.left = x + 'px';
+      menu.style.top = y + 'px';
+
+      // Close on outside click
+      setTimeout(() => document.addEventListener('click', closeCtx, { once: true }), 10);
+    }
+
+    function closeCtx() {
+      const m = document.getElementById('ctx-menu');
+      if (m) m.remove();
+    }
+
+    // Long press for mobile
+    function startLongPress(e, msgId, isMe) {
+      longPressTimer = setTimeout(() => {
+        showCtx(e.touches[0], msgId, isMe);
+      }, 500);
+    }
+    function cancelLongPress() {
+      clearTimeout(longPressTimer);
+    }
+
+    // ── REPLY ──────────────────────────────────────────────────────
+    function startReply(msgId) {
+      // Find message body from the DOM
+      const msgRow = document.querySelector(`.msg-row[data-id="${msgId}"]`);
+      if (!msgRow) return;
+      const bubble = msgRow.querySelector('.bubble');
+      const bodyText = bubble?.innerText?.trim() || '(media)';
+      const isMe = msgRow.classList.contains('me');
+      const senderName = isMe ? 'You' : (active?.name || 'Them');
+
+      replyToMsg = { id: msgId, body: bodyText, sender_id: isMe ? me.id : active.id };
+
+      document.getElementById('reply-banner-name').textContent = senderName;
+      document.getElementById('reply-banner-body').textContent = bodyText.substring(0, 80);
+      document.getElementById('reply-banner').classList.add('show');
+      document.getElementById('msg-input').focus();
+    }
+
+    function clearReply() {
+      replyToMsg = null;
+      document.getElementById('reply-banner').classList.remove('show');
+    }
+
+    // ── REACTIONS ──────────────────────────────────────────────────
+    async function toggleReaction(msgId, emoji) {
+      try {
+        // Check if user already reacted with this emoji
+        // We optimistically update then refresh
+        await api.messages.react(msgId, emoji);
+        await loadMsgs(active.id);
+      } catch (e) {
+        toast('Could not react. Try again.');
+      }
+    }
+
+    // ── DELETE ─────────────────────────────────────────────────────
+    async function deleteMsg(msgId) {
+      if (!confirm('Delete this message for everyone?')) return;
+      try {
+        await api.messages.deleteForEveryone(msgId);
+        await loadMsgs(active.id);
+        toast('Message deleted');
+      } catch (e) {
+        toast('Could not delete. Try again.');
+      }
+    }
+
+    // ──────────────────────────────────────────────────────────────
 
     async function init() {
       if (!api.auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
@@ -1117,7 +1432,27 @@
         }
         const time = d.toLocaleTimeString('en-UG', { hour: '2-digit', minute: '2-digit' });
         const av = initials(isMe ? me.name : (active?.name || '?'));
-        // Build media content
+
+        // Deleted message
+        if (m.deleted_at) {
+          html += `<div class="msg-row ${isMe ? 'me' : ''}" data-id="${m.id}">
+            <div class="msg-av">${av}</div>
+            <div class="bwrap">
+              <div class="bubble deleted">🚫 This message was deleted</div>
+              <div class="msg-time">${time}</div>
+            </div>
+          </div>`;
+          return;
+        }
+
+        // Reply quote
+        let quoteHtml = '';
+        if (m.reply_to_body) {
+          const qName = m.reply_to_sender_id === me.id ? 'You' : (active?.name || 'Them');
+          quoteHtml = `<div class="reply-quote"><strong>${escHtml(qName)}</strong>: ${escHtml((m.reply_to_body || '').substring(0, 80))}</div>`;
+        }
+
+        // Media
         let mediaHtml = '';
         if (m.media_url) {
           if (m.media_type === 'audio') {
@@ -1128,17 +1463,41 @@
             mediaHtml = `<img src="${m.media_url}" onclick="window.open('${m.media_url}')" alt="image" />`;
           }
         }
-        html += `<div class="msg-row ${isMe ? 'me' : ''}">
-        <div class="msg-av">${av}</div>
-        <div class="bwrap">
-          <div class="bubble">${mediaHtml}${m.body ? escHtml(m.body) : ''}</div>
-          <div class="msg-time">${time}${isMe ? `<span class="read-tick">${m.is_read ? ' ✓✓' : ' ✓'}</span>` : ''}</div>
-        </div>
-      </div>`;
+
+        // Reactions
+        let reactHtml = '';
+        if (m.reactions && m.reactions.length) {
+          const grouped = {};
+          m.reactions.forEach(r => {
+            if (!grouped[r.emoji]) grouped[r.emoji] = [];
+            grouped[r.emoji].push(r.user_id);
+          });
+          reactHtml = `<div class="reactions">` +
+            Object.entries(grouped).map(([emoji, users]) => {
+              const isMine = users.includes(me.id);
+              return `<span class="reaction-pill ${isMine ? 'mine' : ''}" onclick="toggleReaction('${m.id}','${emoji}')" title="${users.length} reaction${users.length > 1 ? 's' : ''}">
+                ${emoji}<span class="count">${users.length > 1 ? users.length : ''}</span>
+              </span>`;
+            }).join('') + `</div>`;
+        }
+
+        html += `<div class="msg-row ${isMe ? 'me' : ''}" data-id="${m.id}"
+          oncontextmenu="showCtx(event,'${m.id}',${isMe})"
+          ontouchstart="startLongPress(event,'${m.id}',${isMe})"
+          ontouchend="cancelLongPress()"
+          ontouchmove="cancelLongPress()">
+          <div class="msg-av">${av}</div>
+          <div class="bwrap">
+            <div class="bubble">${quoteHtml}${mediaHtml}${m.body ? escHtml(m.body) : ''}</div>
+            ${reactHtml}
+            <div class="msg-time">${time}${isMe ? `<span class="read-tick">${m.is_read ? ' ✓✓' : ' ✓'}</span>` : ''}</div>
+          </div>
+        </div>`;
       });
       c.innerHTML = html;
       c.scrollTop = c.scrollHeight;
     }
+
 
     async function poll(partnerId) {
       if (active?.id !== partnerId) return;
@@ -1167,14 +1526,18 @@
       btn.disabled = true;
       inp.value = ''; inp.style.height = '';
 
+      // Capture and clear reply state before async work
+      const replyId = replyToMsg ? replyToMsg.id : null;
+      clearReply();
+
       try {
         if (mediaFiles.length > 0) {
-          // Send each file as a message
           for (const file of mediaFiles) {
             const fd = new FormData();
             fd.append('receiver_id', active.id);
             fd.append('body', body || '');
             if (listingId) fd.append('listing_id', listingId);
+            if (replyId) fd.append('reply_to_id', replyId);
             fd.append('media', file);
             await fetch(`${API_BASE}/messages`, {
               method: 'POST',
@@ -1188,6 +1551,7 @@
           fd.append('receiver_id', active.id);
           fd.append('body', '');
           if (listingId) fd.append('listing_id', listingId);
+          if (replyId) fd.append('reply_to_id', replyId);
           const voiceFile = new File([voiceBlob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
           fd.append('media', voiceFile, voiceFile.name);
           await fetch(`${API_BASE}/messages`, {
@@ -1197,7 +1561,7 @@
           });
           cancelVoice();
         } else {
-          await api.messages.send(active.id, body, listingId);
+          await api.messages.send(active.id, body, listingId, replyId);
         }
         await loadMsgs(active.id);
         loadThreads();

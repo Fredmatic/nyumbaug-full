@@ -65,12 +65,35 @@ router.get('/:partnerId', protect, async (req, res) => {
       [partnerId, userId]
     );
 
+    // Ensure new columns exist
+    await pool.query(`
+      ALTER TABLE messages
+        ADD COLUMN IF NOT EXISTS reply_to_id UUID REFERENCES messages(id) ON DELETE SET NULL,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS media_url TEXT,
+        ADD COLUMN IF NOT EXISTS media_type VARCHAR(20)
+    `).catch(() => { });
+
     const result = await pool.query(`
-      SELECT m.*, su.name AS sender_name, su.role AS sender_role
+      SELECT
+        m.*,
+        su.name AS sender_name,
+        su.role AS sender_role,
+        rm.body AS reply_to_body,
+        rm.sender_id AS reply_to_sender_id,
+        COALESCE(
+          json_agg(
+            json_build_object('emoji', mr.emoji, 'user_id', mr.user_id)
+          ) FILTER (WHERE mr.id IS NOT NULL),
+          '[]'
+        ) AS reactions
       FROM messages m
       JOIN users su ON m.sender_id = su.id
+      LEFT JOIN messages rm ON m.reply_to_id = rm.id
+      LEFT JOIN message_reactions mr ON mr.message_id = m.id
       WHERE (m.sender_id = $1 AND m.receiver_id = $2)
          OR (m.sender_id = $2 AND m.receiver_id = $1)
+      GROUP BY m.id, su.name, su.role, rm.body, rm.sender_id
       ORDER BY m.created_at ASC
     `, [userId, partnerId]);
 
@@ -88,7 +111,7 @@ router.get('/:partnerId', protect, async (req, res) => {
 router.post('/', protect, messageUpload.single('media'), async (req, res) => {
   try {
     const senderId = req.user.id;
-    const { receiver_id, body, listing_id } = req.body;
+    const { receiver_id, body, listing_id, reply_to_id } = req.body;
 
     if (!receiver_id) {
       return res.status(400).json({ success: false, message: 'receiver_id is required.' });
@@ -118,17 +141,19 @@ router.post('/', protect, messageUpload.single('media'), async (req, res) => {
       return res.status(404).json({ success: false, message: 'Recipient not found.' });
     }
 
-    // Add media columns if they don't exist yet
+    // Ensure columns exist
     await pool.query(`
       ALTER TABLE messages
         ADD COLUMN IF NOT EXISTS media_url TEXT,
-        ADD COLUMN IF NOT EXISTS media_type VARCHAR(20)
+        ADD COLUMN IF NOT EXISTS media_type VARCHAR(20),
+        ADD COLUMN IF NOT EXISTS reply_to_id UUID REFERENCES messages(id) ON DELETE SET NULL,
+        ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ
     `).catch(() => { });
 
     const result = await pool.query(`
-      INSERT INTO messages (sender_id, receiver_id, body, listing_id, is_read, media_url, media_type)
-      VALUES ($1, $2, $3, $4, FALSE, $5, $6) RETURNING *
-    `, [senderId, receiver_id, body?.trim() || '', listing_id || null, media_url, media_type]);
+      INSERT INTO messages (sender_id, receiver_id, body, listing_id, is_read, media_url, media_type, reply_to_id)
+      VALUES ($1, $2, $3, $4, FALSE, $5, $6, $7) RETURNING *
+    `, [senderId, receiver_id, body?.trim() || '', listing_id || null, media_url, media_type, reply_to_id || null]);
 
     // Notify recipient
     const notifMsg = media_url
@@ -143,6 +168,92 @@ router.post('/', protect, messageUpload.single('media'), async (req, res) => {
     res.status(201).json({ success: true, message: result.rows[0] });
   } catch (err) {
     console.error('Send message error:', err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ── DELETE /api/messages/:id — delete for everyone (sender only)
+router.delete('/:id', protect, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    // Only the sender can delete
+    const msg = await pool.query('SELECT sender_id FROM messages WHERE id = $1', [id]);
+    if (!msg.rows.length) return res.status(404).json({ success: false, message: 'Message not found.' });
+    if (msg.rows[0].sender_id !== userId) {
+      return res.status(403).json({ success: false, message: 'Only the sender can delete this message.' });
+    }
+
+    await pool.query(
+      'UPDATE messages SET deleted_at = NOW(), body = \'\', media_url = NULL WHERE id = $1',
+      [id]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ── POST /api/messages/:id/react — add or toggle a reaction
+router.post('/:id/react', protect, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user.id;
+
+    if (!emoji) return res.status(400).json({ success: false, message: 'emoji is required.' });
+
+    // Create table if it doesn't exist
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS message_reactions (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        message_id UUID NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        emoji VARCHAR(10) NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(message_id, user_id, emoji)
+      )
+    `);
+
+    // Toggle: if already reacted with same emoji, remove it; otherwise add
+    const existing = await pool.query(
+      'SELECT id FROM message_reactions WHERE message_id = $1 AND user_id = $2 AND emoji = $3',
+      [id, userId, emoji]
+    );
+
+    if (existing.rows.length) {
+      await pool.query(
+        'DELETE FROM message_reactions WHERE message_id = $1 AND user_id = $2 AND emoji = $3',
+        [id, userId, emoji]
+      );
+      res.json({ success: true, action: 'removed' });
+    } else {
+      await pool.query(
+        'INSERT INTO message_reactions (message_id, user_id, emoji) VALUES ($1, $2, $3)',
+        [id, userId, emoji]
+      );
+      res.json({ success: true, action: 'added' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ── DELETE /api/messages/:id/react — remove a reaction
+router.delete('/:id/react', protect, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user.id;
+
+    await pool.query(
+      'DELETE FROM message_reactions WHERE message_id = $1 AND user_id = $2 AND emoji = $3',
+      [id, userId, emoji]
+    );
+    res.json({ success: true });
+  } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });

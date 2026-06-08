@@ -177,11 +177,11 @@ const api = {
 
   // ── MESSAGES ──
   messages: {
-    async send(receiver_id, body, listing_id = null) {
+    async send(receiver_id, body, listing_id = null, reply_to_id = null) {
       const res = await fetch(`${API_BASE}/messages`, {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ receiver_id, body, listing_id }),
+        body: JSON.stringify({ receiver_id, body, listing_id, reply_to_id }),
       });
       return handleResponse(res);
     },
@@ -194,6 +194,32 @@ const api = {
 
     async getUnreadCount() {
       const res = await fetch(`${API_BASE}/messages/unread-count`, { headers: authHeaders() });
+      return handleResponse(res);
+    },
+
+    async deleteForEveryone(messageId) {
+      const res = await fetch(`${API_BASE}/messages/${messageId}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
+      return handleResponse(res);
+    },
+
+    async react(messageId, emoji) {
+      const res = await fetch(`${API_BASE}/messages/${messageId}/react`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ emoji }),
+      });
+      return handleResponse(res);
+    },
+
+    async unreact(messageId, emoji) {
+      const res = await fetch(`${API_BASE}/messages/${messageId}/react`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+        body: JSON.stringify({ emoji }),
+      });
       return handleResponse(res);
     },
   },
