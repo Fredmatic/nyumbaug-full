@@ -65,7 +65,7 @@ router.get('/:partnerId', protect, async (req, res) => {
       [partnerId, userId]
     );
 
-    // Ensure new columns exist
+    // Ensure all new columns + reactions table exist before querying
     await pool.query(`
       ALTER TABLE messages
         ADD COLUMN IF NOT EXISTS reply_to_id UUID REFERENCES messages(id) ON DELETE SET NULL,
@@ -73,6 +73,17 @@ router.get('/:partnerId', protect, async (req, res) => {
         ADD COLUMN IF NOT EXISTS media_url TEXT,
         ADD COLUMN IF NOT EXISTS media_type VARCHAR(20)
     `).catch(() => { });
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS message_reactions (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        message_id UUID NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        emoji VARCHAR(10) NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(message_id, user_id, emoji)
+      )
+    `);
 
     const result = await pool.query(`
       SELECT
@@ -103,6 +114,7 @@ router.get('/:partnerId', protect, async (req, res) => {
 
     res.json({ success: true, messages: result.rows, partner: partner.rows[0] || null });
   } catch (err) {
+    console.error('getMessages error:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
