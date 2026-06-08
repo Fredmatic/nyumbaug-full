@@ -1157,3 +1157,60 @@ footer {
     font-size: 1.3rem;
   }
 }
+
+/* ── DARK MODE ── */
+[data-theme="dark"] {
+  --cream: #0f1a14;
+  --cream-dark: #162010;
+  --white: #1a2e20;
+  --text-dark: #e8f0e9;
+  --text-mid: #b0c4b8;
+  --text-muted: #7a9e85;
+  --border: #2a3d2f;
+  --shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] body {
+  background: var(--cream);
+  color: var(--text-dark);
+}
+
+[data-theme="dark"] .listing-card,
+[data-theme="dark"] .dashboard-card,
+[data-theme="dark"] .card,
+[data-theme="dark"] .modal,
+[data-theme="dark"] .form-card {
+  background: var(--white);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: #0f1a14;
+  color: var(--text-dark);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}

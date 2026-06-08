@@ -391,7 +391,34 @@ function toggleNav() {
   if (btn) btn.classList.toggle('open');
 }
 
+// ── DARK MODE ──
+function initTheme() {
+  const saved = localStorage.getItem('nyumba-theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = saved || (prefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+  updateThemeIcon(theme);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('nyumba-theme', next);
+  updateThemeIcon(next);
+}
+
+function updateThemeIcon(theme) {
+  document.querySelectorAll('.theme-toggle').forEach(btn => {
+    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    btn.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+  });
+}
+
+window.toggleTheme = toggleTheme;
+
 document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   document.querySelectorAll('.nav-links a').forEach(link => {
     link.addEventListener('click', () => {
       const nav = document.getElementById('nav-links');
