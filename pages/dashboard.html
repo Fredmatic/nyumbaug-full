@@ -668,6 +668,11 @@
         <div class="section-label">My Properties</div>
         <li><a href="#" onclick="showSection('listings', this)"><span class="icon">🏠</span> My Listings</a></li>
         <li><a href="/pages/list-property.html"><span class="icon">➕</span> List a property</a></li>
+        <div class="section-label">Applications</div>
+        <li><a href="#" onclick="showSection('applications', this)"><span class="icon">📋</span> Applications
+            <span id="app-badge"
+              style="background:var(--gold);color:var(--green-dark);padding:1px 7px;border-radius:50px;font-size:0.7rem;margin-left:4px;display:none;"></span>
+          </a></li>
 
         <div class="section-label">Enquiries</div>
         <li><a href="#" onclick="showSection('enquiries', this)"><span class="icon">📩</span> Enquiries <span
@@ -861,6 +866,27 @@
           </div>
           <div class="panel-body" id="enquiries-list">
             <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="section-applications" style="display:none;">
+        <div class="dash-header">
+          <div>
+            <h1>📋 Tenant Applications</h1>
+            <p>Review and respond to tenant applications for your properties.</p>
+          </div>
+          <select id="app-status-filter" onchange="loadApplications()"
+            style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;background:var(--white);">
+            <option value="">All</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="panel">
+          <div id="applications-list">
+            <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading applications...</div>
           </div>
         </div>
       </div>
@@ -2174,6 +2200,7 @@ ${u.is_active ? `<button class="btn-sm danger" onclick="toggleUser('${u.id}', fa
       if (name === 'admin') loadAdminData();
       if (name === 'contact-messages') loadContactMessages();
       if (name === 'notifications') loadNotifications();
+      if (name === 'applications') loadApplications();
     };
 
     async function markAllNotifsRead() {
@@ -2187,10 +2214,96 @@ ${u.is_active ? `<button class="btn-sm danger" onclick="toggleUser('${u.id}', fa
       } catch (e) { showToast('❌ ' + e.message); }
     }
 
+    // ── APPLICATIONS ──
+    async function loadApplications() {
+      const status = document.getElementById('app-status-filter')?.value || '';
+      const url = `https://nyumbaug-full.onrender.com/api/applications${status ? '?status=' + status : ''}`;
+      const list = document.getElementById('applications-list');
+      if (!list) return;
+      try {
+        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` } });
+        const data = await res.json();
+        const apps = data.applications || [];
+
+        // Update badge
+        const pending = apps.filter(a => a.status === 'pending').length;
+        const badge = document.getElementById('app-badge');
+        if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? 'inline' : 'none'; }
+
+        if (!apps.length) {
+          list.innerHTML = '<div class="empty-state"><div class="emoji">📋</div><p>No applications yet.</p></div>';
+          return;
+        }
+        const statusStyle = {
+          pending: 'background:#fef3c7;color:#92400e',
+          approved: 'background:#dcfce7;color:#16a34a',
+          rejected: 'background:#fef2f2;color:#dc2626'
+        };
+        list.innerHTML = apps.map(a => `
+          <div style="padding:20px 24px;border-bottom:1px solid var(--border);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+              <div>
+                <div style="font-weight:700;font-size:0.95rem;color:var(--text-dark);">${a.full_name}</div>
+                <div style="font-size:0.82rem;color:var(--text-muted);">${a.tenant_email} · ${a.phone}</div>
+                <div style="font-size:0.82rem;color:var(--green-light);margin-top:2px;">🏠 ${a.listing_title}</div>
+              </div>
+              <span style="padding:4px 12px;border-radius:50px;font-size:0.75rem;font-weight:700;${statusStyle[a.status]}">${a.status.toUpperCase()}</span>
+            </div>
+            <div style="display:flex;gap:20px;font-size:0.82rem;color:var(--text-mid);flex-wrap:wrap;margin-bottom:8px;">
+              <span>📅 Move-in: ${new Date(a.move_in_date).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+              ${a.viewing_date ? `<span>👁️ Viewing: ${new Date(a.viewing_date).toLocaleDateString('en-UG', { day: 'numeric', month: 'short' })} ${a.viewing_time || ''}</span>` : ''}
+              ${a.occupation ? `<span>💼 ${a.occupation}</span>` : ''}
+              ${a.monthly_income ? `<span>💰 UGX ${parseInt(a.monthly_income).toLocaleString()}/mo</span>` : ''}
+            </div>
+            ${a.message ? `<div style="padding:8px 12px;background:var(--cream);border-radius:8px;font-size:0.82rem;color:var(--text-mid);margin-bottom:10px;">"${a.message}"</div>` : ''}
+            ${a.rejection_reason ? `<div style="font-size:0.8rem;color:#dc2626;margin-bottom:8px;">Reason: ${a.rejection_reason}</div>` : ''}
+            ${a.status === 'pending' ? `
+            <div style="display:flex;gap:8px;">
+              <button onclick="reviewApplication('${a.id}','approved')"
+                style="flex:1;padding:9px;background:var(--green-dark);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem;">
+                ✅ Approve
+              </button>
+              <button onclick="rejectApplication('${a.id}')"
+                style="flex:1;padding:9px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem;">
+                ❌ Reject
+              </button>
+            </div>` : ''}
+          </div>
+        `).join('');
+      } catch (e) {
+        list.innerHTML = '<div class="empty-state"><p>Failed to load applications.</p></div>';
+      }
+    }
+
+    async function reviewApplication(id, status) {
+      try {
+        await fetch(`https://nyumbaug-full.onrender.com/api/applications/${id}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        showToast(status === 'approved' ? '✅ Application approved!' : '❌ Application rejected');
+        loadApplications();
+      } catch (e) { showToast('❌ Failed. Try again.'); }
+    }
+
+    async function rejectApplication(id) {
+      const reason = prompt('Reason for rejection (optional):') || '';
+      await fetch(`https://nyumbaug-full.onrender.com/api/applications/${id}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'rejected', rejection_reason: reason })
+      });
+      showToast('Application rejected');
+      loadApplications();
+    }
+
     init();
 
     // Load notifications badge count silently on dashboard open
     setTimeout(loadNotifications, 800);
+
+    setTimeout(loadApplications, 1200);
     // Load message unread badge silently
     setTimeout(loadMessages, 1400);
     // Load admin data if admin (catches the case where showSection fires before override)

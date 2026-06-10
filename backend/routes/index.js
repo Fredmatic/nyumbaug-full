@@ -14,6 +14,8 @@ const notifRoutes = adminModule.notifRouter;
 
 const analyticsRoutes = require('./analytics');
 router.use('/analytics', analyticsRoutes);
+const applicationRoutes = require('./applications');
+router.use('/applications', applicationRoutes);
 
 router.use('/auth', authRoutes);
 router.use('/listings', listingRoutes);
