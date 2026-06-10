@@ -2,6 +2,22 @@
 <html lang="en">
 
 <head>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet" />
+  </noscript>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet" />
+  </noscript>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
   <title>Messages — NyumbaUG</title>
@@ -1399,7 +1415,24 @@
 
       await loadMsgs(t.partner_id);
       clearInterval(pollTimer);
-      pollTimer = setInterval(() => poll(t.partner_id), 4000);
+      let pollInterval = 4000;
+      let lastActivityTime = Date.now();
+
+      function resetPollInterval() {
+        lastActivityTime = Date.now();
+        pollInterval = 4000;
+      }
+
+      // Call resetPollInterval() on any user interaction in chat
+      document.getElementById('msg-input')?.addEventListener('input', resetPollInterval);
+
+      pollTimer = setInterval(() => {
+        // Slow down polling if user has been idle for 30+ seconds
+        const idle = Date.now() - lastActivityTime;
+        if (idle > 30000) pollInterval = 15000;
+        if (idle > 120000) pollInterval = 30000;
+        poll(active.partner_id);
+      }, pollInterval);
       document.getElementById('msg-input').focus();
     }
 

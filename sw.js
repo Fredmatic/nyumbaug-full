@@ -5,10 +5,19 @@ self.addEventListener("install", (event) => {
     self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(["/", "/index.html"]);
+            return cache.addAll([
+                "/",
+                "/index.html",
+                "/css/style.css",
+                "/js/api.js",
+                "/js/main.js",
+                "/icons/icon-192.png",
+                "/icons/icon-512.png"
+            ]);
         })
     );
 });
+
 
 self.addEventListener("activate", (event) => {
     // Delete old caches so stale index.html is gone

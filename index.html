@@ -2,10 +2,20 @@
 <html lang="en">
 
 <head>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet" />
+  </noscript>
   <meta name="google-site-verification" content="FtTNriIJIb_BZ9vP24sUgtagdhNDiV4xqixXTaEpg7g" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Nyumba UG & Own a Land</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <!-- SEO -->
   <meta name="description"
     content="Find verified apartments, houses and land for rent in Kampala, Uganda. Connect directly with landlords — no agents, no commission. Browse hundreds of listings on NyumbaUG." />
@@ -333,7 +343,16 @@
 
     async function loadFeatured() {
       const container = document.getElementById('listings-container');
-      container.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-muted);grid-column:1/-1;"><div style="font-size:2rem;margin-bottom:12px;">⏳</div><p>Loading properties...</p></div>`;
+      container.innerHTML = Array(6).fill(`
+  <div style="background:var(--white);border-radius:14px;overflow:hidden;border:1px solid var(--border);">
+    <div style="height:200px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;"></div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="height:16px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px;width:70%;"></div>
+      <div style="height:12px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px;width:50%;"></div>
+      <div style="height:20px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px;width:40%;"></div>
+    </div>
+  </div>
+`).join('');
 
       try {
         const data = await api.listings.getAll({ limit: 9 });

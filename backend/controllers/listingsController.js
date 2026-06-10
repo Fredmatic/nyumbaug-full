@@ -10,27 +10,34 @@ const getListings = asyncHandler(async (req, res) => {
     const { district, neighbourhood, type, minPrice, maxPrice } = req.query;
 
     let queryText = `
-      SELECT l.*, 
-        (SELECT url FROM listing_images 
-         WHERE listing_id = l.id AND is_cover = true 
-         LIMIT 1) AS cover_image,
-         u.is_verified_landlord,
-        COALESCE((
-          SELECT COUNT(*) FROM reviews r WHERE r.listing_id = l.id
-        ), 0) AS review_count,
-        COALESCE((
-          SELECT AVG(r.rating) FROM reviews r WHERE r.listing_id = l.id
-        ), 0) AS avg_rating,
-        -- Check if landlord has an active subscription paid on time
-        COALESCE((
-  SELECT CASE WHEN s.expires_at > NOW() THEN 1 ELSE 0 END
-  FROM subscriptions s
-  WHERE s.user_id::uuid = l.landlord_id::uuid
-  LIMIT 1
-), 0) AS has_active_subscription
-     FROM listings l
-LEFT JOIN users u ON l.landlord_id = u.id
-WHERE l.status != 'inactive'
+      SELECT l.*,
+        u.is_verified_landlord,
+        li.url AS cover_image,
+        COALESCE(rv.review_count, 0) AS review_count,
+        COALESCE(rv.avg_rating, 0) AS avg_rating,
+        COALESCE(s.has_active_subscription, 0) AS has_active_subscription
+      FROM listings l
+      LEFT JOIN users u ON l.landlord_id = u.id
+      LEFT JOIN LATERAL (
+        SELECT url FROM listing_images
+        WHERE listing_id = l.id AND is_cover = true
+        LIMIT 1
+      ) li ON true
+      LEFT JOIN LATERAL (
+        SELECT
+          COUNT(*) AS review_count,
+          AVG(rating) AS avg_rating
+        FROM reviews
+        WHERE listing_id = l.id
+      ) rv ON true
+      LEFT JOIN LATERAL (
+        SELECT CASE WHEN expires_at > NOW() THEN 1 ELSE 0 END AS has_active_subscription
+        FROM subscriptions
+        WHERE user_id::uuid = l.landlord_id::uuid
+        ORDER BY expires_at DESC
+        LIMIT 1
+      ) s ON true
+      WHERE l.status != 'inactive'
     `;
 
     const queryParams = [];
