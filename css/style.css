@@ -1329,3 +1329,34 @@ footer {
     background-position: -200% 0;
   }
 }
+
+/* ── NETFLIX-STYLE LANDLORD ROWS ── */
+
+/* Hide scrollbar on horizontal rows */
+[id^="landlord-row-"]::-webkit-scrollbar {
+  display: none;
+}
+
+[id^="landlord-row-"] {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* When in row mode, override the grid layout */
+.listings-grid:has(.landlord-row) {
+  display: block !important;
+}
+
+/* Fade edges to hint at scrollability */
+.landlord-row {
+  position: relative;
+}
+
+/* Mobile — slightly smaller cards */
+@media (max-width: 768px) {
+  .listings-grid .listing-card {
+    min-width: 240px !important;
+    max-width: 240px !important;
+    flex: 0 0 240px !important;
+  }
+}

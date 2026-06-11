@@ -21,7 +21,8 @@ function renderListings(data, containerId) {
   const isInPages = window.location.pathname.includes('/pages/');
   const detailPath = isInPages ? 'listing-detail.html' : 'pages/listing-detail.html';
 
-  container.innerHTML = data.map(l => {
+  // ── Build card HTML (reused per listing) ──
+  function buildCard(l) {
     const isRented = l.status === 'rented';
     const badgeText = isRented ? 'Rented' : (l.badge === 'new' || l.status === 'active' ? 'New' : 'Available');
     const badgeClass = isRented ? 'rented' : (l.badge === 'new' ? 'new' : '');
@@ -71,8 +72,97 @@ function renderListings(data, containerId) {
         </div>
       </div>
     </div>`;
+  }
+
+  // ── Group listings by landlord ──
+  const groups = {};
+  const order = []; // preserve first-seen order
+  data.forEach(l => {
+    const key = l.landlord_id || 'unknown';
+    if (!groups[key]) {
+      groups[key] = {
+        landlord_id: key,
+        landlord_name: l.landlord_name || 'Landlord',
+        is_verified: l.is_verified_landlord,
+        listings: []
+      };
+      order.push(key);
+    }
+    groups[key].listings.push(l);
+  });
+
+  // ── If only 1 landlord or search is active — show normal grid ──
+  if (order.length === 1) {
+    container.style.display = '';
+    container.innerHTML = data.map(buildCard).join('');
+    return;
+  }
+
+  // ── Multiple landlords — Netflix rows ──
+  container.style.display = 'block';
+  container.innerHTML = order.map((key, rowIndex) => {
+    const group = groups[key];
+    const rowId = `landlord-row-${rowIndex}`;
+    const cards = group.listings.map(buildCard).join('');
+    const count = group.listings.length;
+
+    return `
+    <div class="landlord-row" style="margin-bottom:36px;">
+      <!-- Row header -->
+      <div style="display:flex;align-items:center;gap:10px;padding:0 4px;margin-bottom:12px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--green-dark);color:var(--gold);
+          display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0;">
+          ${group.landlord_name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()}
+        </div>
+        <div>
+          <div style="font-weight:700;color:var(--text-dark);font-size:0.95rem;">
+            ${group.landlord_name}
+            ${group.is_verified ? '<span style="font-size:0.72rem;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:50px;font-weight:600;margin-left:4px;">✅ Verified</span>' : ''}
+          </div>
+          <div style="font-size:0.78rem;color:var(--text-muted);">${count} propert${count === 1 ? 'y' : 'ies'}</div>
+        </div>
+        <!-- Scroll arrows (desktop) -->
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <button onclick="scrollRow('${rowId}', -1)" style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.background='var(--green-dark)';this.style.color='white'" onmouseout="this.style.background='var(--white)';this.style.color='inherit'">‹</button>
+          <button onclick="scrollRow('${rowId}', 1)"  style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.background='var(--green-dark)';this.style.color='white'" onmouseout="this.style.background='var(--white)';this.style.color='inherit'">›</button>
+        </div>
+      </div>
+
+      <!-- Horizontal scroll row -->
+      <div id="${rowId}" style="
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding-bottom: 12px;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      " onscroll="updateScrollFade(this)">
+        ${cards}
+      </div>
+    </div>`;
   }).join('');
+
+  // Hide scrollbars on webkit
+  document.querySelectorAll('[id^="landlord-row-"]').forEach(row => {
+    row.style.cssText += 'scrollbar-width:none;';
+  });
+
+  // Constrain card width inside horizontal rows
+  container.querySelectorAll('.listing-card').forEach(card => {
+    card.style.minWidth = '280px';
+    card.style.maxWidth = '280px';
+    card.style.flex = '0 0 280px';
+  });
 }
+
+// Scroll a landlord row left (-1) or right (1)
+function scrollRow(rowId, direction) {
+  const row = document.getElementById(rowId);
+  if (row) row.scrollBy({ left: direction * 310, behavior: 'smooth' });
+}
+
+
 
 // Favourite toggle
 function toggleFav(e, btn, id) {
