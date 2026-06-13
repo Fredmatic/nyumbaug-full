@@ -14,6 +14,7 @@ const {
 
 const { protect } = require('../middleware/auth');
 const { upload } = require('../middleware/uploadConfig');
+const { requireSubscription, checkListingLimit } = require('../middleware/subscription');
 
 // ── STATIC ROUTES FIRST ──
 router.get('/', getListings);
@@ -21,7 +22,7 @@ router.get('/user/me', protect, getMyListings);
 router.get('/my', protect, getMyListings);
 
 // ── PROTECTED ACTIONS ──
-router.post('/', protect, upload.fields([{ name: 'images', maxCount: 10 }]), createListing);
+router.post('/', protect, requireSubscription, checkListingLimit, upload.fields([{ name: 'images', maxCount: 10 }]), createListing);
 
 // ── DYNAMIC ROUTES LAST ──
 router.get('/:id', getListing);

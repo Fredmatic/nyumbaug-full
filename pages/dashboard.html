@@ -736,6 +736,9 @@
         <div class="section-label">My Properties</div>
         <li><a href="#" onclick="showSection('listings', this)"><span class="icon">🏠</span> My Listings</a></li>
         <li><a href="/pages/list-property.html"><span class="icon">➕</span> List a property</a></li>
+        <div class="section-label">Subscription</div>
+        <li><a href="#" onclick="showSection('subscription', this)"><span class="icon">💳</span> Manage Subscription</a>
+        </li>
         <div class="section-label">Applications</div>
         <li><a href="#" onclick="showSection('applications', this)"><span class="icon">📋</span> Applications
             <span id="app-badge"
@@ -758,6 +761,7 @@
 
         <div class="section-label">Account</div>
         <li><a href="#" onclick="showSection('settings', this)"><span class="icon">⚙️</span> Settings</a></li>
+        <li><a href="#" onclick="showSection('subscription', this)"><span class="icon">💳</span> Subscription</a></li>
         <li><a href="#" onclick="api.auth.logout()"><span class="icon">🚪</span> Logout</a></li>
       </ul>
 
@@ -1086,6 +1090,78 @@
               </div>
               <button type="submit" class="btn btn-green">Update Password</button>
             </form>
+          </div>
+        </div>
+      </div>
+
+      <div id="section-subscription" style="display:none;">
+        <div class="dash-header">
+          <div>
+            <h1>Subscription</h1>
+            <p>Manage your plan and unlock more features.</p>
+          </div>
+        </div>
+
+        <!-- Current Plan Card -->
+        <div class="panel" style="margin-bottom:20px;">
+          <h3 style="color:var(--green-dark);margin-bottom:16px;">Current Plan</h3>
+          <div id="current-plan-info" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+            <div
+              style="background:var(--green-dark);color:var(--gold);padding:12px 24px;border-radius:12px;font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;"
+              id="plan-badge">Free</div>
+            <div>
+              <p id="plan-desc" style="color:#555;margin:0 0 4px;">Get started with 1 listing at no cost</p>
+              <p id="plan-expiry" style="color:#888;font-size:0.85rem;margin:0;"></p>
+            </div>
+          </div>
+
+          <!-- Usage bar -->
+          <div style="margin-top:20px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:0.85rem;color:#555;">Listings used</span>
+              <span style="font-size:0.85rem;color:var(--green-dark);font-weight:600;" id="usage-text">0 / 1</span>
+            </div>
+            <div style="background:#e5e7eb;border-radius:99px;height:8px;">
+              <div id="usage-bar"
+                style="background:var(--green-dark);height:8px;border-radius:99px;width:0%;transition:width 0.4s;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Plan features -->
+          <div id="plan-features" style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;"></div>
+        </div>
+
+        <!-- Plan Cards -->
+        <div class="panel">
+          <h3 style="color:var(--green-dark);margin-bottom:20px;">Available Plans</h3>
+          <div id="plan-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+          </div>
+        </div>
+
+        <!-- Upgrade Modal -->
+        <div id="upgrade-modal"
+          style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+          <div
+            style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <h3 style="color:var(--green-dark);margin:0 0 8px;" id="modal-plan-name">Upgrade to Basic</h3>
+            <p style="color:#888;margin:0 0 24px;font-size:0.9rem;" id="modal-plan-desc"></p>
+            <div style="background:#f4f6f5;border-radius:10px;padding:16px;margin-bottom:24px;">
+              <p style="margin:0;font-size:1.5rem;font-weight:700;color:var(--green-dark);" id="modal-plan-price">UGX
+                25,000</p>
+              <p style="margin:4px 0 0;color:#888;font-size:0.8rem;">per month</p>
+            </div>
+            <p style="color:#555;font-size:0.9rem;margin-bottom:20px;">
+              Payment via MTN Mobile Money will be available soon. For now, contact us to manually activate your plan.
+            </p>
+            <div style="display:flex;gap:12px;">
+              <button onclick="document.getElementById('upgrade-modal').style.display='none'"
+                style="flex:1;padding:12px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">Cancel</button>
+              <a id="modal-whatsapp-link" href="#" target="_blank"
+                style="flex:2;padding:12px;background:var(--green-dark);color:var(--gold);border-radius:8px;text-align:center;text-decoration:none;font-weight:600;display:block;">
+                📲 Contact via WhatsApp
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -2401,6 +2477,114 @@ ${u.is_active ? `<button class="btn-sm danger" onclick="toggleUser('${u.id}', fa
         setTimeout(() => splash.style.display = 'none', 500);
       }, 1500);
     });
+
+    // ── SUBSCRIPTION SECTION ──
+    const API_BASE = window.API_BASE || 'https://nyumbaug-full.onrender.com/api';
+
+    async function loadSubscriptionSection() {
+      try {
+        const token = localStorage.getItem('nyumba_token');
+        const headers = { 'Authorization': `Bearer ${token}` };
+
+        // Fetch current subscription and plans in parallel
+        const [subRes, plansRes, limitRes] = await Promise.all([
+          fetch(`${API_BASE}/subscriptions/my`, { headers }),
+          fetch(`${API_BASE}/subscriptions/plans`),
+          fetch(`${API_BASE}/subscriptions/check-limit`, { headers })
+        ]);
+
+        const { subscription } = await subRes.json();
+        const { plans } = await plansRes.json();
+        const limitData = await limitRes.json();
+
+        // ── Current plan display ──
+        if (subscription) {
+          document.getElementById('plan-badge').textContent = subscription.display_name || subscription.plan_name;
+          document.getElementById('plan-desc').textContent = subscription.description || '';
+
+          const expiry = subscription.expires_at
+            ? `Expires: ${new Date(subscription.expires_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'long', year: 'numeric' })}`
+            : 'No expiry date (Free plan)';
+          document.getElementById('plan-expiry').textContent = expiry;
+
+          // Features
+          const features = [
+            { key: 'max_listings', label: `${subscription.max_listings} listing(s)`, icon: '🏠' },
+            { key: 'can_chat', label: 'Tenant chat', icon: '💬' },
+            { key: 'can_view_analytics', label: 'Analytics', icon: '📊' },
+            { key: 'verification_badge', label: 'Verified badge', icon: '✅' },
+          ];
+          document.getElementById('plan-features').innerHTML = features.map(f => {
+            const active = f.key === 'max_listings' || subscription[f.key];
+            return `<span style="padding:6px 14px;border-radius:99px;font-size:0.8rem;font-weight:500;
+          background:${active ? '#d1fae5' : '#f3f4f6'};color:${active ? '#065f46' : '#9ca3af'};">
+          ${f.icon} ${f.label}
+        </span>`;
+          }).join('');
+        }
+
+        // Usage bar
+        if (limitData.success) {
+          const pct = Math.min(100, Math.round((limitData.currentCount / limitData.maxListings) * 100));
+          document.getElementById('usage-text').textContent = `${limitData.currentCount} / ${limitData.maxListings}`;
+          document.getElementById('usage-bar').style.width = pct + '%';
+          document.getElementById('usage-bar').style.background = pct >= 100 ? '#dc2626' : 'var(--green-dark)';
+        }
+
+        // ── Plan cards ──
+        const currentPlan = subscription?.plan_name || 'free';
+        document.getElementById('plan-cards').innerHTML = plans.map(plan => {
+          const isCurrent = plan.name === currentPlan;
+          const isUpgrade = plan.price_ugx > (subscription?.price_ugx || 0);
+          return `
+        <div style="border:2px solid ${isCurrent ? 'var(--green-dark)' : '#e5e7eb'};border-radius:14px;padding:24px;
+          background:${isCurrent ? '#f0fdf4' : '#fff'};position:relative;transition:box-shadow 0.2s;"
+          onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'"
+          onmouseout="this.style.boxShadow='none'">
+          ${isCurrent ? '<div style="position:absolute;top:12px;right:12px;background:var(--green-dark);color:var(--gold);font-size:0.7rem;padding:3px 10px;border-radius:99px;font-weight:700;">CURRENT</div>' : ''}
+          <p style="font-family:\'Fraunces\',serif;font-size:1.2rem;font-weight:700;color:var(--green-dark);margin:0 0 4px;">${plan.display_name}</p>
+          <p style="font-size:1.4rem;font-weight:700;color:#111;margin:0 0 12px;">
+            ${plan.price_ugx === 0 ? 'Free' : 'UGX ' + plan.price_ugx.toLocaleString() + '/mo'}
+          </p>
+          <ul style="list-style:none;padding:0;margin:0 0 20px;font-size:0.85rem;color:#555;">
+            <li>🏠 ${plan.max_listings} listing(s)</li>
+            <li>${plan.can_chat ? '✅' : '❌'} Tenant messaging</li>
+            <li>${plan.can_view_analytics ? '✅' : '❌'} Analytics</li>
+            <li>${plan.verification_badge ? '✅' : '❌'} Verified badge</li>
+            ${plan.featured_listings > 0 ? `<li>⭐ ${plan.featured_listings} featured slot(s)</li>` : ''}
+          </ul>
+          ${!isCurrent ? `
+            <button onclick="openUpgradeModal('${plan.name}', '${plan.display_name}', ${plan.price_ugx}, '${plan.description}')"
+              style="width:100%;padding:10px;background:${isUpgrade ? 'var(--green-dark)' : '#6b7280'};color:${isUpgrade ? 'var(--gold)' : '#fff'};
+                border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.9rem;">
+              ${isUpgrade ? '⬆️ Upgrade' : '⬇️ Downgrade'}
+            </button>` : `
+            <button disabled style="width:100%;padding:10px;background:#e5e7eb;color:#9ca3af;border:none;border-radius:8px;font-size:0.9rem;">
+              Current Plan
+            </button>`}
+        </div>`;
+        }).join('');
+
+      } catch (err) {
+        console.error('Subscription load error:', err);
+      }
+    }
+
+    function openUpgradeModal(planName, displayName, priceUgx, desc) {
+      document.getElementById('modal-plan-name').textContent = `Upgrade to ${displayName}`;
+      document.getElementById('modal-plan-desc').textContent = desc;
+      document.getElementById('modal-plan-price').textContent = priceUgx === 0 ? 'Free' : `UGX ${priceUgx.toLocaleString()}`;
+      const msg = encodeURIComponent(`Hi, I'd like to upgrade my NyumbaUG subscription to the ${displayName} plan (UGX ${priceUgx.toLocaleString()}/month). Please assist.`);
+      document.getElementById('modal-whatsapp-link').href = `https://wa.me/256740193837?text=${msg}`;
+      document.getElementById('upgrade-modal').style.display = 'flex';
+    }
+
+    // Hook into showSection to load subscription data
+    const origShowSection = showSection;
+    showSection = function (name, el) {
+      origShowSection(name, el);
+      if (name === 'subscription') loadSubscriptionSection();
+    };
   </script>
 </body>
 
