@@ -787,11 +787,11 @@
     <div class="admin-login-wrap" id="login-screen">
         <div class="admin-login-box">
             <div class="logo">Nyumba<span>UG</span></div>
-            <p>Admin Panel — Authorised Access Only</p>
+            <p>Admin Panel — Enter your admin email and password</p>
 
             <div class="login-error" id="login-error">⚠️ Incorrect password. Please try again.</div>
 
-            <input type="text" id="admin-username" placeholder="Admin username" autocomplete="off" />
+            <input type="email" id="admin-username" placeholder="Admin email" autocomplete="off" />
             <input type="password" id="admin-password" placeholder="Admin password"
                 onkeydown="if(event.key==='Enter') adminLogin()" />
             <button class="btn btn-green" onclick="adminLogin()">Access Admin Panel →</button>
@@ -1131,7 +1131,7 @@
         // ─────────────────────────────────────────
         // ADMIN CREDENTIALS (stored in localStorage so admin can change password)
         // ─────────────────────────────────────────
-        const ADMIN_DEFAULTS = { username: 'fred', password: 'ssaazif.5' };
+        const ADMIN_DEFAULTS = { username: 'fred@gmail.co.ug', password: 'ssaazif.5' };
 
         function getAdminCreds() {
             return JSON.parse(localStorage.getItem('nyumba-admin-creds') || JSON.stringify(ADMIN_DEFAULTS));
