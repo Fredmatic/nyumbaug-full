@@ -1,227 +1,338 @@
 // ── NYUMBA UG — Main JS ──
 
-// Format UGX price
+// ─────────────────────────────────────────
+// AUTH SYSTEM (localStorage)
+// ─────────────────────────────────────────
+const Auth = {
+  register(data) {
+    const users = JSON.parse(localStorage.getItem('nyumba-users') || '[]');
+    const exists = users.find(u => u.email === data.email);
+    if (exists) return { ok: false, msg: 'An account with this email already exists.' };
+    const user = {
+      id: Date.now(),
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      district: data.district,
+      role: data.role || 'tenant',
+      plan: 'free',
+      nationalId: data.nationalId || '',
+      createdAt: new Date().toISOString(),
+      password: btoa(data.password)
+    };
+    users.push(user);
+    localStorage.setItem('nyumba-users', JSON.stringify(users));
+    const session = { id: user.id, name: user.name, email: user.email, role: user.role, phone: user.phone, plan: user.plan };
+    localStorage.setItem('nyumba-session', JSON.stringify(session));
+    return { ok: true, user: session };
+  },
+
+  login(email, password) {
+    const users = JSON.parse(localStorage.getItem('nyumba-users') || '[]');
+    const user = users.find(u => u.email === email && u.password === btoa(password));
+    if (!user) return { ok: false, msg: 'Incorrect email or password. Please try again.' };
+    const session = { id: user.id, name: user.name, email: user.email, role: user.role, phone: user.phone, plan: user.plan || 'free' };
+    localStorage.setItem('nyumba-session', JSON.stringify(session));
+    return { ok: true, user: session };
+  },
+
+  getUser() {
+    return JSON.parse(localStorage.getItem('nyumba-session') || 'null');
+  },
+
+  isLoggedIn() {
+    return !!this.getUser();
+  },
+
+  logout() {
+    localStorage.removeItem('nyumba-session');
+  }
+};
+
+// ─────────────────────────────────────────
+// NAV — update based on login state
+// ─────────────────────────────────────────
+function initNav() {
+  const user = Auth.getUser();
+  const ctaLink = document.querySelector('.nav-cta');
+  const navList = document.querySelector('.nav-links');
+  if (!ctaLink || !navList) return;
+
+  if (user) {
+    ctaLink.textContent = '👤 ' + user.name.split(' ')[0];
+    ctaLink.href = '#';
+    ctaLink.style.background = 'rgba(255,255,255,0.15)';
+    ctaLink.style.color = 'var(--gold)';
+
+    const logoutLi = document.createElement('li');
+    logoutLi.innerHTML = `<a href="#" id="nav-logout" style="color:rgba(255,255,255,0.5);font-size:0.85rem;">Log out</a>`;
+    navList.appendChild(logoutLi);
+    document.getElementById('nav-logout').addEventListener('click', e => {
+      e.preventDefault();
+      Auth.logout();
+      showToast('👋 You have been logged out.');
+      setTimeout(() => location.reload(), 800);
+    });
+  } else {
+    // Show login link next to sign up
+    const loginLi = document.createElement('li');
+    const inPages = location.pathname.includes('/pages/');
+    loginLi.innerHTML = `<a href="${inPages ? 'login.html' : 'pages/login.html'}" style="color:rgba(255,255,255,0.7);">Log In</a>`;
+    navList.insertBefore(loginLi, navList.lastElementChild);
+  }
+}
+
+// ─────────────────────────────────────────
+// REDIRECT IF ALREADY LOGGED IN
+// ─────────────────────────────────────────
+function redirectIfLoggedIn() {
+  if (Auth.isLoggedIn()) {
+    const inPages = location.pathname.includes('/pages/');
+    window.location.href = inPages ? 'listings.html' : 'pages/listings.html';
+  }
+}
+
+// ─────────────────────────────────────────
+// LISTINGS DATA
+// ─────────────────────────────────────────
+const listings = [
+  {
+    id: 1,
+    title: "Modern 3-Bedroom Apartment",
+    location: "Kololo, Kampala",
+    price: 1800000,
+    type: "apartment",
+    bedrooms: 3,
+    bathrooms: 2,
+    area: 140,
+    badge: "new",
+    image: "https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=600&q=80",
+    featured: true,
+    description: "Spacious modern apartment in the heart of Kololo with stunning city views, fully fitted kitchen, and 24/7 security.",
+    amenities: ["WiFi", "Parking", "Generator", "Security", "Water Tank", "Balcony"],
+    landlord: "Mr. Ssemakula James",
+    phone: "+256 772 123 456",
+    available: "Immediately"
+  },
+  {
+    id: 2,
+    title: "Executive 2-Bedroom Flat",
+    location: "Bugolobi, Kampala",
+    price: 1200000,
+    type: "apartment",
+    bedrooms: 2,
+    bathrooms: 2,
+    area: 95,
+    badge: "available",
+    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80",
+    featured: true,
+    description: "Well-maintained executive flat in quiet Bugolobi estate. Ideal for professionals and small families.",
+    amenities: ["Parking", "Security", "Water Tank", "Tiled Floors"],
+    landlord: "Mrs. Namubiru Jane",
+    phone: "+256 766 513 833",
+    available: "1st Jan 2025"
+  },
+  {
+    id: 3,
+    title: "Self-Contained Studio",
+    location: "Ntinda, Kampala",
+    price: 450000,
+    type: "studio",
+    bedrooms: 1,
+    bathrooms: 1,
+    area: 35,
+    badge: "available",
+    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80",
+    featured: false,
+    description: "Cozy self-contained studio perfect for a single professional. Close to Ntinda market and major roads.",
+    amenities: ["Water Tank", "Security"],
+    landlord: "Mr. George Doris",
+    phone: "+256 740 271 661",
+    available: "Immediately"
+  },
+  {
+    id: 4,
+    title: "Spacious Family Home",
+    location: "Muyenga, Kampala",
+    price: 3500000,
+    type: "house",
+    bedrooms: 5,
+    bathrooms: 3,
+    area: 280,
+    badge: "new",
+    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80",
+    featured: true,
+    description: "Beautiful standalone house with large garden in prestigious Muyenga. Perfect for families who value space and privacy.",
+    amenities: ["WiFi", "Parking", "Generator", "Security", "Garden", "Water Tank", "DSTV"],
+    landlord: "Dr. Wamala Robert",
+    phone: "+256 777 321 987",
+    available: "15th Jan 2025"
+  },
+  {
+    id: 5,
+    title: "3-Bedroom Bungalow",
+    location: "Kira, Wakiso",
+    price: 900000,
+    type: "house",
+    bedrooms: 3,
+    bathrooms: 2,
+    area: 120,
+    badge: "available",
+    image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80",
+    featured: false,
+    description: "Affordable and spacious bungalow in developing Kira suburb. Great for families looking for value.",
+    amenities: ["Parking", "Water Tank", "Compound"],
+    landlord: "Mrs. Namutebi Sarah",
+    phone: "+256 754 456 789",
+    available: "Immediately"
+  },
+  {
+    id: 6,
+    title: "Luxury 4-Bedroom Duplex",
+    location: "Naguru, Kampala",
+    price: 4200000,
+    type: "apartment",
+    bedrooms: 4,
+    bathrooms: 3,
+    area: 220,
+    badge: "available",
+    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80",
+    featured: true,
+    description: "Prestigious duplex apartment in Naguru with panoramic views of Kampala. High-end finishes throughout.",
+    amenities: ["WiFi", "Parking", "Generator", "Security", "Swimming Pool", "Gym", "Water Tank"],
+    landlord: "Mr. Musoke Brian",
+    phone: "+256 792 789 123",
+    available: "1st Feb 2025"
+  }
+];
+
+// ─────────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────────
 function formatUGX(amount) {
   return "UGX " + amount.toLocaleString('en-UG');
 }
 
-// Render listing cards
+function getInitials(name) {
+  return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+}
+
+// ─────────────────────────────────────────
+// RENDER LISTING CARDS
+// ─────────────────────────────────────────
 function renderListings(data, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  if (!data || !data.length) {
-    container.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-muted);grid-column:1/-1;">
-      <div style="font-size:2.5rem;margin-bottom:12px;">🏠</div>
-      <p>No listings found.</p>
-    </div>`;
+  const inPages = location.pathname.includes('/pages/');
+  const detailPath = inPages ? 'listing-detail.html' : 'pages/listing-detail.html';
+
+  if (data.length === 0) {
+    container.innerHTML = '';
+    const noResults = document.getElementById('no-results');
+    if (noResults) noResults.style.display = 'block';
+    const countEl = document.getElementById('result-count');
+    if (countEl) countEl.textContent = '0 properties found';
     return;
   }
 
-  const isInPages = window.location.pathname.includes('/pages/');
-  const detailPath = isInPages ? 'listing-detail.html' : 'pages/listing-detail.html';
+  const noResults = document.getElementById('no-results');
+  if (noResults) noResults.style.display = 'none';
+  const countEl = document.getElementById('result-count');
+  if (countEl) countEl.textContent = `Showing ${data.length} propert${data.length === 1 ? 'y' : 'ies'}`;
 
-  // ── Build card HTML (reused per listing) ──
-  function buildCard(l) {
-    const isRented = l.status === 'rented';
-    const badgeText = isRented ? 'Rented' : (l.badge === 'new' || l.status === 'active' ? 'New' : 'Available');
-    const badgeClass = isRented ? 'rented' : (l.badge === 'new' ? 'new' : '');
-    const fallbacks = {
-      apartment: 'images/fancy2.jpg',
-      house: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80',
-      studio: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80',
-      townhouse: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80',
-      mansion: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80',
-    };
-    const image = l.cover_image || l.image || fallbacks[l.type] || fallbacks.apartment;
-    const location = l.neighbourhood || l.location || 'Kampala';
-    const area = l.area_sqm || l.area || '—';
-    const beds = l.bedrooms || 0;
-    const baths = l.bathrooms || 0;
-
-    return `
-    <div class="listing-card${isRented ? ' listing-rented' : ''}" onclick="window.location.href='${detailPath}?id=${l.id}'">
+  container.innerHTML = data.map(l => `
+    <div class="listing-card" onclick="window.location.href='${detailPath}?id=${l.id}'">
       <div class="listing-img">
-        <img src="${image}" alt="${l.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=80'" />
-        <span class="listing-badge ${badgeClass}">${badgeText}</span>
-        ${isRented ? '<div class="rented-overlay"><span class="rented-label">RENTED</span></div>' : ''}
-        <button class="listing-fav" onclick="toggleFav(event, this, '${l.id}')" aria-label="Save listing">
+        <img src="${l.image}" alt="${l.title}" loading="lazy" />
+        <span class="listing-badge ${l.badge === 'new' ? 'new' : ''}">${l.badge === 'new' ? '🆕 New' : 'Available'}</span>
+        <button class="listing-fav" onclick="toggleFav(event, this, ${l.id})" aria-label="Save listing">
           <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
         </button>
       </div>
       <div class="listing-body">
         <div class="listing-price">${formatUGX(l.price)} <span>/ month</span></div>
-        <div class="listing-title">${l.title} ${l.is_verified_landlord ? '<span style="font-size:0.75rem;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:50px;font-weight:600;vertical-align:middle;">✅ Verified</span>' : ''}</div>
+        <div class="listing-title">${l.title}</div>
         <div class="listing-location">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          ${location}
+          ${l.location}
         </div>
         <div class="listing-amenities">
           <div class="amenity">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            ${beds} Bed${beds !== 1 ? 's' : ''}
+            ${l.bedrooms} Bed${l.bedrooms > 1 ? 's' : ''}
           </div>
           <div class="amenity">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M4 6h16M4 18h16"/></svg>
-            ${baths} Bath${baths !== 1 ? 's' : ''}
+            ${l.bathrooms} Bath${l.bathrooms > 1 ? 's' : ''}
           </div>
           <div class="amenity">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-            ${area} m²
+            ${l.area} m²
           </div>
         </div>
       </div>
-    </div>`;
-  }
+    </div>
+  `).join('');
 
-  // ── Group listings by landlord ──
-  const groups = {};
-  const order = []; // preserve first-seen order
-  data.forEach(l => {
-    const key = l.landlord_id || 'unknown';
-    if (!groups[key]) {
-      groups[key] = {
-        landlord_id: key,
-        landlord_name: l.landlord_name || 'Landlord',
-        is_verified: l.is_verified_landlord,
-        listings: []
-      };
-      order.push(key);
-    }
-    groups[key].listings.push(l);
-  });
-
-  // ── If only 1 landlord or search is active — show normal grid ──
-  if (order.length === 1) {
-    container.style.display = '';
-    container.innerHTML = data.map(buildCard).join('');
-    return;
-  }
-
-  // ── Multiple landlords — Netflix rows ──
-  container.style.display = 'block';
-  container.innerHTML = order.map((key, rowIndex) => {
-    const group = groups[key];
-    const rowId = `landlord-row-${rowIndex}`;
-    const cards = group.listings.map(buildCard).join('');
-    const count = group.listings.length;
-
-    return `
-    <div class="landlord-row" style="margin-bottom:36px;">
-      <!-- Row header -->
-      <div style="display:flex;align-items:center;gap:10px;padding:0 4px;margin-bottom:12px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:var(--green-dark);color:var(--gold);
-          display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0;">
-          ${group.landlord_name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()}
-        </div>
-        <div>
-          <div style="font-weight:700;color:var(--text-dark);font-size:0.95rem;">
-            ${group.landlord_name}
-            ${group.is_verified ? '<span style="font-size:0.72rem;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:50px;font-weight:600;margin-left:4px;">✅ Verified</span>' : ''}
-          </div>
-          <div style="font-size:0.78rem;color:var(--text-muted);">${count} propert${count === 1 ? 'y' : 'ies'}</div>
-        </div>
-        <!-- Scroll arrows (desktop) -->
-        <div style="margin-left:auto;display:flex;gap:6px;">
-          <button onclick="scrollRow('${rowId}', -1)" style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.background='var(--green-dark)';this.style.color='white'" onmouseout="this.style.background='var(--white)';this.style.color='inherit'">‹</button>
-          <button onclick="scrollRow('${rowId}', 1)"  style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onmouseover="this.style.background='var(--green-dark)';this.style.color='white'" onmouseout="this.style.background='var(--white)';this.style.color='inherit'">›</button>
-        </div>
-      </div>
-
-      <!-- Horizontal scroll row -->
-      <div id="${rowId}" style="
-        display: flex;
-        gap: 16px;
-        overflow-x: auto;
-        padding-bottom: 12px;
-        scroll-behavior: smooth;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-      " onscroll="updateScrollFade(this)">
-        ${cards}
-      </div>
-    </div>`;
-  }).join('');
-
-  // Hide scrollbars on webkit
-  document.querySelectorAll('[id^="landlord-row-"]').forEach(row => {
-    row.style.cssText += 'scrollbar-width:none;';
-  });
-
-  // Constrain card width inside horizontal rows
-  container.querySelectorAll('.listing-card').forEach(card => {
-    card.style.minWidth = '280px';
-    card.style.maxWidth = '280px';
-    card.style.flex = '0 0 280px';
-  });
+  setTimeout(restoreFavs, 50);
 }
 
-// Scroll a landlord row left (-1) or right (1)
-function scrollRow(rowId, direction) {
-  const row = document.getElementById(rowId);
-  if (row) row.scrollBy({ left: direction * 310, behavior: 'smooth' });
-}
-
-
-
-// Favourite toggle
+// ─────────────────────────────────────────
+// FAVOURITES
+// ─────────────────────────────────────────
 function toggleFav(e, btn, id) {
   e.stopPropagation();
   btn.classList.toggle('liked');
   const saved = JSON.parse(localStorage.getItem('nyumba-favs') || '[]');
-  const idx = saved.indexOf(String(id));
-  if (idx === -1) {
-    saved.push(String(id));
-    showToast('❤️ Saved to favourites');
-    // Notify landlord via API if logged in
-    const user = typeof api !== 'undefined' ? api.auth.currentUser() : null;
-    if (user && user.role === 'tenant' && typeof api !== 'undefined') {
-      fetch(`${API_BASE}/listings/${id}/like`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}`, 'Content-Type': 'application/json' }
-      }).catch(() => { });
-    }
-  } else {
-    saved.splice(idx, 1);
-    showToast('Removed from favourites');
-  }
+  const idx = saved.indexOf(id);
+  if (idx === -1) { saved.push(id); showToast('❤️ Saved to favourites'); }
+  else { saved.splice(idx, 1); showToast('Removed from favourites'); }
   localStorage.setItem('nyumba-favs', JSON.stringify(saved));
 }
 
-// Tab switching for homepage
-function initTabs(apiListings) {
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const filter = tab.dataset.filter;
-      const filtered = filter === 'all' ? apiListings : apiListings.filter(l => l.type === filter);
-      renderListings(filtered.length ? filtered : apiListings, 'listings-container');
-      setTimeout(restoreFavs, 50);
-    });
+function restoreFavs() {
+  const saved = JSON.parse(localStorage.getItem('nyumba-favs') || '[]');
+  document.querySelectorAll('.listing-fav').forEach(btn => {
+    const match = btn.getAttribute('onclick').match(/\d+/);
+    const id = parseInt(match?.[0] || 0);
+    if (saved.includes(id)) btn.classList.add('liked');
   });
 }
 
-// Filter listings (used on listings.html page with API data stored in window.currentListings)
+// ─────────────────────────────────────────
+// FILTER & TABS
+// ─────────────────────────────────────────
 function filterListings() {
   const search = document.getElementById('search-input')?.value.toLowerCase() || '';
   const type = document.getElementById('filter-type')?.value || '';
   const maxPrice = document.getElementById('filter-price')?.value || '';
+  const tab = document.querySelector('.tab.active')?.dataset.filter || 'all';
 
-  const source = window.currentListings || [];
-  let filtered = source.filter(l => {
-    const loc = (l.neighbourhood || l.district || '').toLowerCase();
-    const title = (l.title || '').toLowerCase();
-    const matchSearch = !search || loc.includes(search) || title.includes(search);
+  let filtered = listings.filter(l => {
+    const matchSearch = l.location.toLowerCase().includes(search) || l.title.toLowerCase().includes(search);
     const matchType = !type || l.type === type;
     const matchPrice = !maxPrice || l.price <= parseInt(maxPrice);
-    return matchSearch && matchType && matchPrice;
+    const matchTab = tab === 'all' || l.type === tab;
+    return matchSearch && matchType && matchPrice && matchTab;
   });
 
   renderListings(filtered, 'listings-container');
 }
 
-// Toast notification
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      filterListings();
+    });
+  });
+}
+
+// ─────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────
 function showToast(msg) {
   let toast = document.getElementById('toast');
   if (!toast) {
@@ -235,64 +346,171 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('show'), 2800);
 }
 
-// Smooth scroll nav highlight
+// ─────────────────────────────────────────
+// SCROLL / NAV HIGHLIGHT
+// ─────────────────────────────────────────
 function initScrollHighlight() {
-  const links = document.querySelectorAll('.nav-links a');
-  window.addEventListener('scroll', () => {
-    links.forEach(link => link.classList.remove('active'));
-    const path = location.pathname.split('/').pop() || 'index.html';
-    links.forEach(link => {
-      if (link.getAttribute('href') === path || link.getAttribute('href') === '../index.html') {
-        link.classList.add('active');
-      }
-    });
+  const path = location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    const href = link.getAttribute('href') || '';
+    if (href.endsWith(path)) link.classList.add('active');
   });
 }
 
-// Load saved favs on cards
-function restoreFavs() {
-  const saved = JSON.parse(localStorage.getItem('nyumba-favs') || '[]');
-  document.querySelectorAll('.listing-fav').forEach(btn => {
-    const card = btn.closest('.listing-card');
-    if (!card) return;
-    const onclick = btn.getAttribute('onclick') || '';
-    const match = onclick.match(/'([^']+)'\s*\)/);
-    const id = match ? match[1] : '';
-    if (id && saved.includes(String(id))) btn.classList.add('liked');
+// ─────────────────────────────────────────
+// REGISTER HANDLER
+// ─────────────────────────────────────────
+function handleRegister(e) {
+  e.preventDefault();
+  let valid = true;
+
+  const firstName = document.getElementById('first-name').value.trim();
+  const lastName = document.getElementById('last-name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const district = document.getElementById('district').value;
+  const password = document.getElementById('password').value;
+  const confirmPw = document.getElementById('confirm-password').value;
+  const terms = document.getElementById('agree-terms').checked;
+  const isLandlord = document.getElementById('role-landlord')?.classList.contains('selected');
+  const nationalId = document.getElementById('national-id')?.value.trim() || '';
+
+  function se(id, show, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = show ? 'block' : 'none';
+    if (msg) el.textContent = msg;
+  }
+  function ie(id, has) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('input-error', has);
+  }
+
+  if (!firstName) { se('err-first', true); ie('first-name', true); valid = false; }
+  else { se('err-first', false); ie('first-name', false); }
+
+  if (!lastName) { se('err-last', true); ie('last-name', true); valid = false; }
+  else { se('err-last', false); ie('last-name', false); }
+
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRe.test(email)) { se('err-email', true); ie('email', true); valid = false; }
+  else { se('err-email', false); ie('email', false); }
+
+  if (phone.length < 10) { se('err-phone', true); ie('phone', true); valid = false; }
+  else { se('err-phone', false); ie('phone', false); }
+
+  if (!district) { se('err-district', true); ie('district', true); valid = false; }
+  else { se('err-district', false); ie('district', false); }
+
+  if (password.length < 8) { se('err-password', true); ie('password', true); valid = false; }
+  else { se('err-password', false); ie('password', false); }
+
+  if (password !== confirmPw) { se('err-confirm', true); ie('confirm-password', true); valid = false; }
+  else { se('err-confirm', false); ie('confirm-password', false); }
+
+  if (isLandlord && !nationalId) { se('err-nid', true); ie('national-id', true); valid = false; }
+  else { se('err-nid', false); ie('national-id', false); }
+
+  if (!terms) { se('err-terms', true); valid = false; }
+  else { se('err-terms', false); }
+
+  if (!valid) return;
+
+  const result = Auth.register({
+    name: firstName + ' ' + lastName,
+    email, phone, district, password,
+    role: isLandlord ? 'landlord' : 'tenant',
+    nationalId
   });
+
+  if (!result.ok) {
+    se('err-email', true, result.msg);
+    ie('email', true);
+    return;
+  }
+
+  document.getElementById('success-overlay').classList.add('show');
+  document.getElementById('register-form').reset();
+  const fill = document.getElementById('strength-fill');
+  if (fill) fill.style.width = '0%';
+  const lbl = document.getElementById('strength-label');
+  if (lbl) lbl.textContent = 'Enter a password';
+  if (typeof selectRole === 'function') selectRole('tenant');
+
+  setTimeout(() => {
+    const inPages = location.pathname.includes('/pages/');
+    window.location.href = inPages ? 'listings.html' : 'pages/listings.html';
+  }, 2500);
 }
 
-// ── Mobile nav toggle ──
-function toggleNav() {
-  const nav = document.getElementById('nav-links');
-  if (!nav) return;
-  nav.classList.toggle('open');
-  const btn = document.querySelector('.nav-toggle');
-  if (btn) btn.classList.toggle('open');
+// ─────────────────────────────────────────
+// LOGIN HANDLER
+// ─────────────────────────────────────────
+function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  let valid = true;
+
+  function se(id, show) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = show ? 'block' : 'none';
+  }
+  function ie(id, has) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('input-error', has);
+  }
+
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRe.test(email)) { se('err-email', true); ie('email', true); valid = false; }
+  else { se('err-email', false); ie('email', false); }
+
+  if (!password) { se('err-password', true); ie('password', true); valid = false; }
+  else { se('err-password', false); ie('password', false); }
+
+  if (!valid) return;
+
+  const result = Auth.login(email, password);
+  if (!result.ok) {
+    const alertEl = document.getElementById('alert-error');
+    const alertMsg = document.getElementById('alert-msg');
+    if (alertEl && alertMsg) {
+      alertMsg.textContent = result.msg;
+      alertEl.classList.add('show');
+      setTimeout(() => alertEl.classList.remove('show'), 5000);
+    }
+    return;
+  }
+
+  showToast('✅ Welcome back, ' + result.user.name.split(' ')[0] + '!');
+  setTimeout(() => {
+    const inPages = location.pathname.includes('/pages/');
+    window.location.href = inPages ? 'listings.html' : 'pages/listings.html';
+  }, 800);
 }
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
-}
+
+// ─────────────────────────────────────────
+// AUTO-INIT ON EVERY PAGE
+// ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  initNav();
+  initScrollHighlight();
+});
+
+// ─────────────────────────────────────────
+// EXPORTS
+// ─────────────────────────────────────────
+window.Auth = Auth;
+window.listings = listings;
 window.formatUGX = formatUGX;
+window.getInitials = getInitials;
 window.renderListings = renderListings;
 window.toggleFav = toggleFav;
-window.initTabs = initTabs;
 window.filterListings = filterListings;
+window.initTabs = initTabs;
 window.showToast = showToast;
 window.initScrollHighlight = initScrollHighlight;
 window.restoreFavs = restoreFavs;
-window.toggleNav = toggleNav;
-
-document.addEventListener('DOMContentLoaded', () => {
-  // Close nav on link click
-  document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', () => {
-      const nav = document.getElementById('nav-links');
-      const btn = document.querySelector('.nav-toggle');
-      if (nav) nav.classList.remove('open');
-      if (btn) btn.classList.remove('open');
-    });
-  });
-  restoreFavs();
-  initScrollHighlight();
-});
+window.handleRegister = handleRegister;
+window.handleLogin = handleLogin;
+window.redirectIfLoggedIn = redirectIfLoggedIn;
