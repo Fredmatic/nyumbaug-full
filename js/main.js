@@ -73,13 +73,8 @@ function initNav() {
       showToast('👋 You have been logged out.');
       setTimeout(() => location.reload(), 800);
     });
-  } else {
-    // Show login link next to sign up
-    const loginLi = document.createElement('li');
-    const inPages = location.pathname.includes('/pages/');
-    loginLi.innerHTML = `<a href="${inPages ? 'login.html' : 'pages/login.html'}" style="color:rgba(255,255,255,0.7);">Log In</a>`;
-    navList.insertBefore(loginLi, navList.lastElementChild);
   }
+
 }
 
 // ─────────────────────────────────────────
