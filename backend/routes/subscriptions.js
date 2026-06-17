@@ -172,5 +172,157 @@ router.get('/all', protect, authorize('admin'), async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+// ═══════════════════════════════════════════════════
+// ADD THIS BLOCK TO backend/routes/subscriptions.js
+// Place it ABOVE the line: module.exports = router;
+// ═══════════════════════════════════════════════════
+
+// ── Admin: POST /api/subscriptions/admin/upgrade ──
+// Admin manually activates/changes a landlord's plan after confirming
+// payment via MoMo, Airtel Money, bank transfer, or WhatsApp proof.
+router.post('/admin/upgrade', protect, authorize('admin'), async (req, res) => {
+    const { landlord_id, plan_name, months = 1, payment_reference, notes } = req.body;
+
+    if (!landlord_id || !plan_name) {
+        return res.status(400).json({
+            success: false,
+            message: 'landlord_id and plan_name are required.'
+        });
+    }
+
+    try {
+        // 1. Confirm the target user exists and is a landlord
+        const userResult = await pool.query(
+            'SELECT id, name, email, role FROM users WHERE id = $1',
+            [landlord_id]
+        );
+        if (!userResult.rows.length) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+        const targetUser = userResult.rows[0];
+        if (targetUser.role !== 'landlord') {
+            return res.status(400).json({ success: false, message: 'This user is not a landlord.' });
+        }
+
+        // 2. Confirm the plan exists
+        const planResult = await pool.query(
+            'SELECT * FROM subscription_plans WHERE name = $1',
+            [plan_name]
+        );
+        if (!planResult.rows.length) {
+            return res.status(404).json({ success: false, message: 'Plan not found.' });
+        }
+        const plan = planResult.rows[0];
+
+        // 3. Calculate expiry (free plan never expires)
+        const expiresAt = plan.price_ugx === 0 ? null : new Date();
+        if (expiresAt) expiresAt.setMonth(expiresAt.getMonth() + parseInt(months));
+
+        // 4. Deactivate any existing active subscription for this landlord
+        await pool.query(
+            "UPDATE landlord_subscriptions SET status = 'cancelled', updated_at = NOW() WHERE landlord_id = $1 AND status = 'active'",
+            [landlord_id]
+        );
+
+        // 5. Insert the new active subscription
+        const sub = await pool.query(`
+            INSERT INTO landlord_subscriptions (landlord_id, plan_id, status, expires_at)
+            VALUES ($1, $2, 'active', $3)
+            RETURNING *
+        `, [landlord_id, plan.id, expiresAt]);
+
+        // 6. Log the payment record (manual admin-confirmed payment)
+        await pool.query(`
+            INSERT INTO subscription_payments
+                (landlord_id, subscription_id, plan_id, amount_ugx, payment_reference, status, paid_at, notes, confirmed_by_admin_id)
+            VALUES ($1, $2, $3, $4, $5, 'completed', NOW(), $6, $7)
+        `, [
+            landlord_id,
+            sub.rows[0].id,
+            plan.id,
+            plan.price_ugx * months,
+            payment_reference || `MANUAL-${Date.now()}`,
+            notes || 'Manually activated by admin',
+            req.user.id
+        ]).catch(() => { /* table/columns may not exist yet — non-blocking */ });
+
+        // 7. Reactivate any paused listings for this landlord
+        await pool.query(
+            "UPDATE listings SET status = 'active', updated_at = NOW() WHERE landlord_id = $1 AND status = 'inactive'",
+            [landlord_id]
+        ).catch(() => { });
+
+        // 8. Notify the landlord
+        await pool.query(`
+            INSERT INTO notifications (user_id, type, message)
+            VALUES ($1, 'subscription', $2)
+        `, [
+            landlord_id,
+            `🎉 Your subscription has been activated on the ${plan.display_name} plan${expiresAt ? ` until ${expiresAt.toLocaleDateString('en-UG')}` : ''}. Thank you for your payment!`
+        ]).catch(() => { });
+
+        res.json({
+            success: true,
+            message: `${targetUser.name} upgraded to ${plan.display_name} plan successfully.`,
+            subscription: {
+                ...sub.rows[0],
+                plan_name: plan.name,
+                display_name: plan.display_name,
+                expires_at: expiresAt
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ── Admin: GET /api/subscriptions/admin/landlords ──
+// Returns every landlord with their current plan, for the admin Subscriptions tab
+router.get('/admin/landlords', protect, authorize('admin'), async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                u.id, u.name, u.email, u.phone, u.created_at,
+                ls.status AS sub_status,
+                ls.expires_at,
+                sp.name AS plan_name,
+                sp.display_name AS plan_display,
+                sp.price_ugx
+            FROM users u
+            LEFT JOIN landlord_subscriptions ls
+                ON ls.landlord_id = u.id AND ls.status = 'active'
+            LEFT JOIN subscription_plans sp
+                ON sp.id = ls.plan_id
+            WHERE u.role = 'landlord'
+            ORDER BY u.created_at DESC
+        `);
+        res.json({ success: true, landlords: result.rows });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ── Admin: GET /api/subscriptions/admin/payments ──
+// Returns recent manually-confirmed payments for an audit trail
+router.get('/admin/payments', protect, authorize('admin'), async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                sp_pay.id, sp_pay.amount_ugx, sp_pay.payment_reference,
+                sp_pay.status, sp_pay.paid_at, sp_pay.notes,
+                u.name AS landlord_name, u.email AS landlord_email,
+                plan.display_name AS plan_display
+            FROM subscription_payments sp_pay
+            JOIN users u ON u.id = sp_pay.landlord_id
+            JOIN subscription_plans plan ON plan.id = sp_pay.plan_id
+            ORDER BY sp_pay.paid_at DESC
+            LIMIT 50
+        `);
+        res.json({ success: true, payments: result.rows });
+    } catch (err) {
+        // Table may not exist yet if no payments logged — return empty instead of crashing
+        res.json({ success: true, payments: [] });
+    }
+});
 
 module.exports = router;
