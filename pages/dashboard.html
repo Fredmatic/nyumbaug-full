@@ -2,36 +2,56 @@
 <html lang="en">
 
 <head>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
-    rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
-      rel="stylesheet" />
-  </noscript>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Dashboard — Nyumba UG</title>
+  <title>Dashboard — NyumbaUG</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/png" href="/icons/icon-192.png" />
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js');
-      });
-    }
-  </script>
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
   <style>
     body {
       background: #f4f6f5;
     }
 
-    /* ── HAMBURGER BUTTON ── */
+    /* ── SPLASH ── */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: #0a3622;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      transition: opacity .5s;
+    }
+
+    .splash-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #d4a843;
+      animation: spl .8s ease-in-out infinite alternate;
+    }
+
+    @keyframes spl {
+      from {
+        opacity: .3;
+        transform: scale(.8)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1.2)
+      }
+    }
+
+    /* ── HAMBURGER ── */
     .dash-hamburger {
       position: fixed;
       top: 14px;
@@ -48,12 +68,7 @@
       justify-content: center;
       gap: 5px;
       cursor: pointer;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
-      transition: background 0.2s;
-    }
-
-    .dash-hamburger:hover {
-      background: var(--green-light);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, .25);
     }
 
     .dash-hamburger span {
@@ -62,7 +77,7 @@
       height: 2px;
       background: var(--gold);
       border-radius: 2px;
-      transition: all 0.3s;
+      transition: all .3s;
     }
 
     .dash-hamburger.open span:nth-child(1) {
@@ -77,12 +92,11 @@
       transform: rotate(-45deg) translate(5px, -5px);
     }
 
-    /* ── OVERLAY ── */
     .sidebar-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, .5);
       z-index: 1050;
       backdrop-filter: blur(2px);
     }
@@ -91,7 +105,7 @@
       display: block;
     }
 
-    /* ── SLIDE-IN SIDEBAR ── */
+    /* ── SIDEBAR ── */
     .dash-sidebar {
       position: fixed !important;
       top: 0;
@@ -101,9 +115,10 @@
       z-index: 1060;
       overflow-y: auto;
       transform: translateX(-100%);
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
-      padding-top: 0 !important;
+      transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+      box-shadow: 4px 0 24px rgba(0, 0, 0, .3);
+      background: var(--green-dark);
+      padding: 0;
     }
 
     .dash-sidebar.open {
@@ -114,60 +129,26 @@
       width: 0;
     }
 
-    /* ── SIDEBAR CLOSE BUTTON ── */
     .sidebar-close {
       position: absolute;
       top: 14px;
       right: 14px;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, .1);
       border: none;
       border-radius: 8px;
       width: 32px;
       height: 32px;
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(255, 255, 255, .8);
       font-size: 1.1rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s;
-    }
-
-    .sidebar-close:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    /* Push user info down to clear close button */
-    .dash-user {
-      padding-top: 56px !important;
-    }
-
-    /* ── DASHBOARD LAYOUT — full width now ── */
-    .dashboard-layout {
-      display: block !important;
-      grid-template-columns: unset !important;
-    }
-
-    .dashboard-layout {
-      display: grid;
-      grid-template-columns: 240px 1fr;
-      min-height: 100vh;
-      padding-top: var(--nav-h);
-    }
-
-    /* ── SIDEBAR ── */
-    .dash-sidebar {
-      background: var(--green-dark);
-      padding: 32px 0;
-      position: sticky;
-      top: var(--nav-h);
-      height: calc(100vh - var(--nav-h));
-      overflow-y: auto;
     }
 
     .dash-user {
-      padding: 0 20px 28px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 56px 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
       margin-bottom: 16px;
     }
 
@@ -175,7 +156,7 @@
       width: 52px;
       height: 52px;
       border-radius: 50%;
-      background: rgba(212, 168, 67, 0.2);
+      background: rgba(212, 168, 67, .2);
       border: 2px solid var(--gold);
       display: flex;
       align-items: center;
@@ -185,17 +166,18 @@
       font-weight: 700;
       color: var(--gold);
       margin-bottom: 12px;
+      overflow: hidden;
     }
 
     .dash-user-name {
       font-weight: 600;
-      color: var(--white);
-      font-size: 0.95rem;
+      color: #fff;
+      font-size: .95rem;
     }
 
     .dash-user-role {
-      font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.5);
+      font-size: .75rem;
+      color: rgba(255, 255, 255, .5);
       text-transform: uppercase;
       letter-spacing: 1px;
       margin-top: 2px;
@@ -210,38 +192,50 @@
       align-items: center;
       gap: 12px;
       padding: 12px 20px;
-      color: rgba(255, 255, 255, 0.65);
-      font-size: 0.9rem;
+      color: rgba(255, 255, 255, .65);
+      font-size: .9rem;
       font-weight: 500;
-      transition: all 0.2s;
+      transition: all .2s;
       border-left: 3px solid transparent;
     }
 
     .dash-nav li a:hover,
     .dash-nav li a.active {
-      color: var(--white);
-      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+      background: rgba(255, 255, 255, .06);
       border-left-color: var(--gold);
     }
 
-    .dash-nav li a .icon {
+    .dash-nav .icon {
       font-size: 1.1rem;
       width: 20px;
       text-align: center;
     }
 
     .dash-nav .section-label {
-      font-size: 0.7rem;
+      font-size: .7rem;
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, .3);
       padding: 20px 20px 8px;
+      display: block;
+    }
+
+    .notif-badge {
+      background: #ef4444;
+      color: #fff;
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 50px;
+      margin-left: 4px;
     }
 
     /* ── MAIN ── */
     .dash-main {
-      padding: 32px;
+      padding: 32px 32px 32px 32px;
+      min-height: 100vh;
     }
 
     .dash-header {
@@ -249,6 +243,8 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     .dash-header h1 {
@@ -258,11 +254,11 @@
 
     .dash-header p {
       color: var(--text-muted);
-      font-size: 0.9rem;
+      font-size: .9rem;
       margin-top: 2px;
     }
 
-    /* ── STAT CARDS ── */
+    /* ── STATS ── */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -271,7 +267,7 @@
     }
 
     .stat-card {
-      background: var(--white);
+      background: #fff;
       border-radius: var(--radius-lg);
       padding: 22px;
       border: 1px solid var(--border);
@@ -302,7 +298,7 @@
     }
 
     .stat-label {
-      font-size: 0.78rem;
+      font-size: .78rem;
       font-weight: 600;
       letter-spacing: 1px;
       text-transform: uppercase;
@@ -318,14 +314,14 @@
     }
 
     .stat-sub {
-      font-size: 0.8rem;
+      font-size: .8rem;
       color: var(--text-muted);
       margin-top: 4px;
     }
 
     /* ── PANEL ── */
     .panel {
-      background: var(--white);
+      background: #fff;
       border-radius: var(--radius-lg);
       border: 1px solid var(--border);
       margin-bottom: 24px;
@@ -337,6 +333,8 @@
       align-items: center;
       padding: 20px 24px;
       border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .panel-header h2 {
@@ -348,7 +346,7 @@
       padding: 0;
     }
 
-    /* ── LISTINGS TABLE ── */
+    /* ── TABLE ── */
     .listings-table {
       width: 100%;
       border-collapse: collapse;
@@ -357,7 +355,7 @@
     .listings-table th {
       text-align: left;
       padding: 12px 20px;
-      font-size: 0.75rem;
+      font-size: .75rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -369,7 +367,7 @@
     .listings-table td {
       padding: 14px 20px;
       border-bottom: 1px solid var(--border);
-      font-size: 0.9rem;
+      font-size: .9rem;
       color: var(--text-mid);
       vertical-align: middle;
     }
@@ -391,16 +389,17 @@
       display: block;
       font-weight: 400;
       color: var(--text-muted);
-      font-size: 0.8rem;
+      font-size: .8rem;
     }
 
+    /* ── BADGES ── */
     .status-badge {
       display: inline-flex;
       align-items: center;
       gap: 5px;
       padding: 3px 10px;
       border-radius: 50px;
-      font-size: 0.75rem;
+      font-size: .75rem;
       font-weight: 600;
     }
 
@@ -424,34 +423,36 @@
       color: #1e40af;
     }
 
-    .action-btns {
-      display: flex;
-      gap: 6px;
-    }
-
+    /* ── BUTTONS ── */
     .btn-sm {
       padding: 5px 12px;
-      font-size: 0.8rem;
+      font-size: .8rem;
       border-radius: 6px;
       border: 1.5px solid var(--border);
       background: transparent;
       color: var(--text-mid);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all .2s;
       font-family: 'DM Sans', sans-serif;
       font-weight: 500;
     }
 
     .btn-sm:hover {
       background: var(--green-dark);
-      color: var(--white);
+      color: #fff;
       border-color: var(--green-dark);
     }
 
     .btn-sm.danger:hover {
       background: #ef4444;
       border-color: #ef4444;
-      color: var(--white);
+      color: #fff;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     /* ── ENQUIRIES ── */
@@ -475,29 +476,29 @@
     .enquiry-name {
       font-weight: 600;
       color: var(--text-dark);
-      font-size: 0.92rem;
+      font-size: .92rem;
     }
 
     .enquiry-listing {
-      font-size: 0.8rem;
+      font-size: .8rem;
       color: var(--green-light);
       margin: 2px 0;
     }
 
     .enquiry-msg {
-      font-size: 0.87rem;
+      font-size: .87rem;
       color: var(--text-mid);
       line-height: 1.5;
       margin-top: 4px;
     }
 
     .enquiry-time {
-      font-size: 0.78rem;
+      font-size: .78rem;
       color: var(--text-muted);
     }
 
     .enquiry-contact {
-      font-size: 0.82rem;
+      font-size: .82rem;
       color: var(--text-mid);
       margin-top: 6px;
     }
@@ -506,12 +507,39 @@
       color: var(--green-light);
     }
 
+    /* ── TABS ── */
+    .dash-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--cream);
+      padding: 4px;
+      border-radius: 8px;
+    }
+
+    .dash-tab {
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-size: .85rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all .2s;
+    }
+
+    .dash-tab.active {
+      background: #fff;
+      color: var(--green-dark);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+    }
+
     /* ── MODAL ── */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, .5);
       z-index: 200;
       align-items: center;
       justify-content: center;
@@ -522,7 +550,7 @@
     }
 
     .modal {
-      background: var(--white);
+      background: #fff;
       border-radius: var(--radius-lg);
       padding: 36px;
       width: 90%;
@@ -544,7 +572,7 @@
       margin-top: 24px;
     }
 
-    /* ── EMPTY STATE ── */
+    /* ── EMPTY ── */
     .empty-state {
       text-align: center;
       padding: 48px 24px;
@@ -557,37 +585,44 @@
     }
 
     .empty-state p {
-      font-size: 0.9rem;
+      font-size: .9rem;
     }
 
-    /* ── TABS ── */
-    .dash-tabs {
-      display: flex;
-      gap: 4px;
-      background: var(--cream);
-      padding: 4px;
-      border-radius: 8px;
+    /* ── PAYMENT BANNER ── */
+    #payment-banner {
+      display: none;
+      background: #fef9c3;
+      border: 1px solid #fbbf24;
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
     }
 
-    .dash-tab {
-      padding: 7px 16px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      cursor: pointer;
+    /* ── BACK TO TOP ── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 28px;
+      right: 24px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--green-dark);
+      color: var(--gold);
       border: none;
-      background: transparent;
-      color: var(--text-muted);
-      transition: all 0.2s;
+      cursor: pointer;
+      font-size: 1.3rem;
+      z-index: 999;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
+      align-items: center;
+      justify-content: center;
+      transition: all .3s;
     }
 
-    .dash-tab.active {
-      background: var(--white);
-      color: var(--green-dark);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-    }
-
-    @media (max-width: 768px) {
+    @media(max-width:768px) {
       .stats-grid {
         grid-template-columns: 1fr 1fr;
         gap: 10px;
@@ -597,14 +632,9 @@
         padding: 16px;
       }
 
-      .panel {
-        border-radius: 10px;
-      }
-
       .dash-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
       }
 
       .dash-header h1 {
@@ -612,110 +642,40 @@
       }
 
       table {
-        font-size: 0.78rem;
+        font-size: .78rem;
       }
 
       .action-btns {
         flex-direction: column;
       }
-
-      /* Admin panel table — stack on mobile */
-      #admin-listings-body>div {
-        grid-template-columns: 1fr !important;
-      }
-
-      /* Reviews table — hide last column on mobile */
-      .listings-table th:last-child,
-      .listings-table td:last-child {
-        display: none;
-      }
-    }
-
-    #section-admin .panel {
-      width: 100%;
-      max-width: none;
     }
   </style>
 </head>
 
 <body>
-  <!-- SPLASH SCREEN -->
-  <div id="splash-screen" style="
-    position: fixed;
-    inset: 0;
-    background: #0a3622;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    transition: opacity 0.5s ease;
-  ">
-    <!-- Your logo -->
-    <div style="
-      font-family: 'Fraunces', serif;
-      font-size: 2.8rem;
-      font-weight: 700;
-      color: #ffffff;
-      letter-spacing: -1px;
-    ">Nyumba<span style="color:#d4a843;">UG</span></div>
 
-    <!-- Tagline -->
-    <p style="
-      color: rgba(255,255,255,0.6);
-      font-size: 0.9rem;
-      letter-spacing: 1px;
-    ">Find Your Home in Uganda</p>
-
-    <!-- Loading dots -->
+  <!-- SPLASH -->
+  <div id="splash">
+    <div style="font-family:'Fraunces',serif;font-size:2.8rem;font-weight:700;color:#fff;">Nyumba<span
+        style="color:#d4a843;">UG</span></div>
+    <p style="color:rgba(255,255,255,.6);font-size:.9rem;letter-spacing:1px;">Find Your Home in Uganda</p>
     <div style="display:flex;gap:8px;margin-top:12px;">
       <div class="splash-dot"></div>
-      <div class="splash-dot" style="animation-delay:0.2s"></div>
-      <div class="splash-dot" style="animation-delay:0.4s"></div>
+      <div class="splash-dot" style="animation-delay:.2s"></div>
+      <div class="splash-dot" style="animation-delay:.4s"></div>
     </div>
   </div>
 
-  <style>
-    .splash-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #d4a843;
-      animation: splashPulse 0.8s ease-in-out infinite alternate;
-    }
-
-    @keyframes splashPulse {
-      from {
-        opacity: 0.3;
-        transform: scale(0.8);
-      }
-
-      to {
-        opacity: 1;
-        transform: scale(1.2);
-      }
-    }
-  </style>
-
-
-  <!-- Hamburger button -->
+  <!-- HAMBURGER -->
   <button class="dash-hamburger" id="dash-hamburger" onclick="toggleDashSidebar()" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
-
-  <!-- Overlay -->
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeDashSidebar()"></div>
 
-
-
+  <!-- NAV -->
   <nav>
-    <div class="nav-logo"><a href="../index.html">Nyumba<span>UG</span></a></div>
-    <button class="nav-toggle" onclick="toggleNav()" aria-label="Menu" style="display:none;">
-      <span></span><span></span><span></span>
-    </button>
+    <div class="nav-logo" style="padding-left:60px;"><a href="../index.html">Nyumba<span>UG</span></a></div>
     <ul class="nav-links" id="nav-links">
-
       <li><a href="../index.html">Home</a></li>
       <li><a href="listings.html">Browse</a></li>
       <li><a href="dashboard.html" class="active">Dashboard</a></li>
@@ -723,83 +683,83 @@
     </ul>
   </nav>
 
-  <div class="dashboard-layout">
+  <aside class="dash-sidebar" id="dash-sidebar">
+    <button class="sidebar-close" onclick="closeDashSidebar()">✕</button>
+    <div class="dash-user">
+      <div class="dash-avatar" id="sidebar-avatar">?</div>
+      <div class="dash-user-name" id="sidebar-name">Loading...</div>
+      <div class="dash-user-role" id="sidebar-role">—</div>
+    </div>
 
-    <aside class="dash-sidebar" id="dash-sidebar">
-      <button class="sidebar-close" onclick="closeDashSidebar()">✕</button>
-      <div class="dash-user">
-        <div class="dash-avatar" id="sidebar-avatar">?</div>
-        <div class="dash-user-name" id="sidebar-name">Loading...</div>
-        <div class="dash-user-role" id="sidebar-role">landlord</div>
-      </div>
+    <!-- LANDLORD NAV -->
+    <ul class="dash-nav" id="landlord-nav" style="display:none;">
+      <span class="section-label">Overview</span>
+      <li><a href="#" onclick="showSection('overview',this)"><span class="icon">📊</span> Dashboard</a></li>
+      <span class="section-label">Properties</span>
+      <li><a href="#" onclick="showSection('listings',this)"><span class="icon">🏠</span> My Listings</a></li>
+      <li><a href="/pages/list-property.html"><span class="icon">➕</span> List a Property</a></li>
+      <span class="section-label">Subscription</span>
+      <li><a href="#" onclick="showSection('subscription',this)"><span class="icon">💳</span> My Subscription</a></li>
+      <span class="section-label">Communication</span>
+      <li><a href="#" onclick="showSection('enquiries',this)"><span class="icon">📩</span> Enquiries <span
+            id="enquiry-badge"
+            style="background:var(--gold);color:var(--green-dark);padding:1px 7px;border-radius:50px;font-size:.7rem;margin-left:4px;display:none;"></span></a>
+      </li>
+      <li><a href="#" onclick="showSection('applications',this)"><span class="icon">📋</span> Applications <span
+            id="app-badge"
+            style="background:var(--gold);color:var(--green-dark);padding:1px 7px;border-radius:50px;font-size:.7rem;margin-left:4px;display:none;"></span></a>
+      </li>
+      <li><a href="chat.html"><span class="icon">💬</span> Messages <span id="msg-badge" class="notif-badge"
+            style="display:none;"></span></a></li>
+      <span class="section-label">Alerts</span>
+      <li><a href="#" onclick="showSection('notifications',this)"><span class="icon">🔔</span> Notifications <span
+            id="notif-badge" class="notif-badge" style="display:none;"></span></a></li>
+      <span class="section-label">Account</span>
+      <li><a href="#" onclick="showSection('settings',this)"><span class="icon">⚙️</span> Settings</a></li>
+      <li><a href="#" onclick="api.auth.logout()"><span class="icon">🚪</span> Logout</a></li>
+    </ul>
 
-      <ul class="dash-nav" id="landlord-nav" style="display:none;">
-        <div class="section-label">Overview</div>
-        <li><a href="#" class="active" onclick="showSection('overview', this)"><span class="icon">📊</span>
-            Dashboard</a></li>
+    <!-- ADMIN NAV -->
+    <ul class="dash-nav" id="admin-nav" style="display:none;">
+      <span class="section-label">Admin</span>
+      <li><a href="#" onclick="showSection('admin',this)"><span class="icon">🛡️</span> Admin Panel <span
+            id="admin-badge"
+            style="background:#ef4444;color:#fff;font-size:.7rem;padding:1px 7px;border-radius:50px;margin-left:4px;display:none;"></span></a>
+      </li>
+      <span class="section-label">Properties</span>
+      <li><a href="#" onclick="showSection('listings',this)"><span class="icon">🏠</span> My Listings</a></li>
+      <li><a href="/pages/list-property.html"><span class="icon">➕</span> List a Property</a></li>
+      <span class="section-label">Communication</span>
+      <li><a href="#" onclick="showSection('enquiries',this)"><span class="icon">📩</span> My Enquiries</a></li>
+      <li><a href="#" onclick="showSection('contact-messages',this)"><span class="icon">✉️</span> Contact Messages <span
+            id="contact-badge"
+            style="background:#ef4444;color:#fff;padding:1px 7px;border-radius:50px;font-size:.7rem;margin-left:4px;display:none;"></span></a>
+      </li>
+      <li><a href="chat.html"><span class="icon">💬</span> Messages</a></li>
+      <span class="section-label">Account</span>
+      <li><a href="#" onclick="showSection('settings',this)"><span class="icon">⚙️</span> Settings</a></li>
+      <li><a href="#" onclick="api.auth.logout()"><span class="icon">🚪</span> Logout</a></li>
+    </ul>
+  </aside>
 
-        <div class="section-label">My Properties</div>
-        <li><a href="#" onclick="showSection('listings', this)"><span class="icon">🏠</span> My Listings</a></li>
-        <li><a href="/pages/list-property.html"><span class="icon">➕</span> List a property</a></li>
-        <div class="section-label">Subscription</div>
-        <li><a href="#" onclick="showSection('subscription', this)"><span class="icon">💳</span> Manage Subscription</a>
-        </li>
-        <div class="section-label">Applications</div>
-        <li><a href="#" onclick="showSection('applications', this)"><span class="icon">📋</span> Applications
-            <span id="app-badge"
-              style="background:var(--gold);color:var(--green-dark);padding:1px 7px;border-radius:50px;font-size:0.7rem;margin-left:4px;display:none;"></span>
-          </a></li>
-
-        <div class="section-label">Enquiries</div>
-        <li><a href="#" onclick="showSection('enquiries', this)"><span class="icon">📩</span> Enquiries <span
-              id="enquiry-badge"
-              style="background:var(--gold);color:var(--green-dark);padding:1px 7px;border-radius:50px;font-size:0.7rem;margin-left:4px;display:none;"></span></a>
-        </li>
-
-        <div class="section-label">Alerts</div>
-        <li><a href="#" onclick="showSection('notifications', this)"><span class="icon">🔔</span> Notifications
-            <span id="notif-badge" class="notif-badge" style="display:none;"></span></a>
-        </li>
-        <li><a href="chat.html"><span class="icon">💬</span> Messages
-            <span id="msg-badge" class="notif-badge" style="display:none;"></span></a>
-        </li>
-
-        <div class="section-label">Account</div>
-        <li><a href="#" onclick="showSection('settings', this)"><span class="icon">⚙️</span> Settings</a></li>
-        <li><a href="#" onclick="showSection('subscription', this)"><span class="icon">💳</span> Subscription</a></li>
-        <li><a href="#" onclick="api.auth.logout()"><span class="icon">🚪</span> Logout</a></li>
-      </ul>
-
-      <ul class="dash-nav" id="admin-nav" style="display:none;">
-        <div class="section-label">Admin</div>
-        <li><a href="#" class="active" onclick="showSection('admin', this)"><span class="icon">🛡️</span> Admin Panel
-            <span
-              style="background:#ef4444;color:white;font-size:0.7rem;padding:1px 7px;border-radius:50px;margin-left:4px;"
-              id="admin-badge"></span></a></li>
-
-        <div class="section-label">My Properties</div>
-        <li><a href="#" onclick="showSection('listings', this)"><span class="icon">🏠</span> My Listings</a></li>
-        <li><a href="/pages/list-property.html"><span class="icon">➕</span> List a property</a></li>
-
-        <div class="section-label">Enquiries</div>
-        <li><a href="#" onclick="showSection('enquiries', this)"><span class="icon">📩</span> My Enquiries</a></li>
-        <li><a href="#" onclick="showSection('contact-messages', this)"><span class="icon">✉️</span> Contact Messages
-            <span id="contact-badge"
-              style="background:#ef4444;color:white;padding:1px 7px;border-radius:50px;font-size:0.7rem;margin-left:4px;display:none;"></span>
-          </a></li>
-
-        <div class="section-label">Account</div>
-        <li><a href="#" onclick="showSection('settings', this)"><span class="icon">⚙️</span> Settings</a></li>
-        <li><a href="chat.html"><span class="icon">💬</span> Messages
-            <span id="msg-badge" class="notif-badge" style="display:none;"></span></a>
-        </li>
-        <li><a href="#" onclick="api.auth.logout()"><span class="icon">🚪</span> Logout</a></li>
-      </ul>
-    </aside>
-
+  <div style="padding-top:var(--nav-h);">
     <main class="dash-main">
 
-      <div id="section-overview" style="display: none;">
+      <!-- PAYMENT BANNER -->
+      <div id="payment-banner">
+        <span style="font-size:1.2rem;">⚠️</span>
+        <div style="flex:1;"><strong style="color:#92400e;">Subscription required</strong>
+          <p style="font-size:.85rem;color:#78350f;margin-top:2px;">Activate your subscription to keep your listings
+            visible to tenants.</p>
+        </div>
+        <a href="payment.html" class="btn btn-green"
+          style="white-space:nowrap;font-size:.85rem;padding:8px 18px;text-decoration:none;">Pay Now — UGX 100,000</a>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+       OVERVIEW
+  ══════════════════════════════════════════════ -->
+      <div id="section-overview" style="display:none;">
         <div class="dash-header">
           <div>
             <h1>Good day, <span id="header-name">...</span> 👋</h1>
@@ -807,7 +767,6 @@
           </div>
           <a href="list-property.html" class="btn btn-primary">+ Add Listing</a>
         </div>
-
         <div class="stats-grid">
           <div class="stat-card green">
             <div class="stat-label">Active Listings</div>
@@ -830,11 +789,9 @@
             <div class="stat-sub">Awaiting approval</div>
           </div>
         </div>
-
         <div class="panel">
           <div class="panel-header">
-            <h2>Recent Listings</h2>
-            <button class="btn-sm" onclick="showSection('listings', null)">View All →</button>
+            <h2>Recent Listings</h2><button class="btn-sm" onclick="showSection('listings',null)">View All →</button>
           </div>
           <div class="panel-body">
             <table class="listings-table">
@@ -854,11 +811,9 @@
             </table>
           </div>
         </div>
-
         <div class="panel">
           <div class="panel-header">
-            <h2>Recent Enquiries</h2>
-            <button class="btn-sm" onclick="showSection('enquiries', null)">View All →</button>
+            <h2>Recent Enquiries</h2><button class="btn-sm" onclick="showSection('enquiries',null)">View All →</button>
           </div>
           <div class="panel-body" id="overview-enquiries">
             <div style="text-align:center;padding:24px;color:var(--text-muted);">Loading...</div>
@@ -866,6 +821,9 @@
         </div>
       </div>
 
+      <!-- ══════════════════════════════════════════════
+       MY LISTINGS
+  ══════════════════════════════════════════════ -->
       <div id="section-listings" style="display:none;">
         <div class="dash-header">
           <div>
@@ -874,15 +832,14 @@
           </div>
           <a href="list-property.html" class="btn btn-primary">+ Add New</a>
         </div>
-
         <div class="panel">
           <div class="panel-header">
             <h2>All Properties</h2>
             <div class="dash-tabs">
-              <button class="dash-tab active" onclick="filterMyListings('all', this)">All</button>
-              <button class="dash-tab" onclick="filterMyListings('active', this)">Active</button>
-              <button class="dash-tab" onclick="filterMyListings('pending', this)">Pending</button>
-              <button class="dash-tab" onclick="filterMyListings('rented', this)">Rented</button>
+              <button class="dash-tab active" onclick="filterMyListings('all',this)">All</button>
+              <button class="dash-tab" onclick="filterMyListings('active',this)">Active</button>
+              <button class="dash-tab" onclick="filterMyListings('pending',this)">Pending</button>
+              <button class="dash-tab" onclick="filterMyListings('rented',this)">Rented</button>
             </div>
           </div>
           <div class="panel-body">
@@ -891,7 +848,7 @@
                 <tr>
                   <th>Property</th>
                   <th>Type</th>
-                  <th>Price/month</th>
+                  <th>Price/mo</th>
                   <th>Status</th>
                   <th>Views</th>
                   <th>Actions</th>
@@ -907,22 +864,85 @@
         </div>
       </div>
 
-      <!-- NOTIFICATIONS SECTION -->
-      <div id="section-notifications" style="display:none;">
+      <!-- ══════════════════════════════════════════════
+       SUBSCRIPTION (LANDLORD)
+  ══════════════════════════════════════════════ -->
+      <div id="section-subscription" style="display:none;">
         <div class="dash-header">
           <div>
-            <h1>🔔 Notifications</h1>
-            <p>Alerts when tenants save or enquire about your properties.</p>
+            <h1>💳 My Subscription</h1>
+            <p>Manage your plan and unlock more features.</p>
           </div>
-          <button class="btn btn-green" onclick="markAllNotifsRead()" style="font-size:0.85rem;">Mark All Read</button>
         </div>
+
+        <div class="panel" style="margin-bottom:20px;">
+          <div class="panel-header">
+            <h2>Current Plan</h2>
+          </div>
+          <div style="padding:24px;">
+            <div id="current-plan-info"
+              style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:20px;">
+              <div
+                style="background:var(--green-dark);color:var(--gold);padding:12px 24px;border-radius:12px;font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;"
+                id="plan-badge">Free</div>
+              <div>
+                <p id="plan-desc" style="color:#555;margin:0 0 4px;">Get started with 1 listing at no cost</p>
+                <p id="plan-expiry" style="color:#888;font-size:.85rem;margin:0;"></p>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                <span style="font-size:.85rem;color:#555;">Listings used</span>
+                <span style="font-size:.85rem;color:var(--green-dark);font-weight:600;" id="usage-text">0 / 1</span>
+              </div>
+              <div style="background:#e5e7eb;border-radius:99px;height:8px;">
+                <div id="usage-bar"
+                  style="background:var(--green-dark);height:8px;border-radius:99px;width:0%;transition:width .4s;">
+                </div>
+              </div>
+            </div>
+            <div id="plan-features" style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;"></div>
+          </div>
+        </div>
+
         <div class="panel">
-          <div id="notifications-list" style="min-height:120px;">
-            <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading notifications...</div>
+          <div class="panel-header">
+            <h2>Available Plans</h2>
+          </div>
+          <div style="padding:24px;">
+            <div id="plan-cards"
+              style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;"></div>
+          </div>
+        </div>
+
+        <!-- Upgrade modal -->
+        <div id="upgrade-modal"
+          style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+          <div
+            style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+            <h3 style="color:var(--green-dark);margin:0 0 8px;" id="modal-plan-name">Upgrade</h3>
+            <p style="color:#888;margin:0 0 24px;font-size:.9rem;" id="modal-plan-desc"></p>
+            <div style="background:#f4f6f5;border-radius:10px;padding:16px;margin-bottom:24px;">
+              <p style="margin:0;font-size:1.5rem;font-weight:700;color:var(--green-dark);" id="modal-plan-price">UGX 0
+              </p>
+              <p style="margin:4px 0 0;color:#888;font-size:.8rem;">per month</p>
+            </div>
+            <p style="color:#555;font-size:.9rem;margin-bottom:20px;">Contact us via WhatsApp to activate your plan
+              after payment.</p>
+            <div style="display:flex;gap:12px;">
+              <button onclick="document.getElementById('upgrade-modal').style.display='none'"
+                style="flex:1;padding:12px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">Cancel</button>
+              <a id="modal-whatsapp-link" href="#" target="_blank"
+                style="flex:2;padding:12px;background:var(--green-dark);color:var(--gold);border-radius:8px;text-align:center;text-decoration:none;font-weight:600;display:block;">📲
+                WhatsApp Us</a>
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- ══════════════════════════════════════════════
+       ENQUIRIES
+  ══════════════════════════════════════════════ -->
       <div id="section-enquiries" style="display:none;">
         <div class="dash-header">
           <div>
@@ -930,15 +950,14 @@
             <p>Tenants interested in your properties.</p>
           </div>
         </div>
-
         <div class="panel">
           <div class="panel-header">
             <h2>All Enquiries</h2>
             <div class="dash-tabs">
-              <button class="dash-tab active" onclick="filterEnquiries('all', this)">All</button>
-              <button class="dash-tab" onclick="filterEnquiries('new', this)">New</button>
-              <button class="dash-tab" onclick="filterEnquiries('read', this)">Read</button>
-              <button class="dash-tab" onclick="filterEnquiries('replied', this)">Replied</button>
+              <button class="dash-tab active" onclick="filterEnquiries('all',this)">All</button>
+              <button class="dash-tab" onclick="filterEnquiries('new',this)">New</button>
+              <button class="dash-tab" onclick="filterEnquiries('read',this)">Read</button>
+              <button class="dash-tab" onclick="filterEnquiries('replied',this)">Replied</button>
             </div>
           </div>
           <div class="panel-body" id="enquiries-list">
@@ -947,14 +966,17 @@
         </div>
       </div>
 
+      <!-- ══════════════════════════════════════════════
+       APPLICATIONS
+  ══════════════════════════════════════════════ -->
       <div id="section-applications" style="display:none;">
         <div class="dash-header">
           <div>
             <h1>📋 Tenant Applications</h1>
-            <p>Review and respond to tenant applications for your properties.</p>
+            <p>Review applications for your properties.</p>
           </div>
           <select id="app-status-filter" onchange="loadApplications()"
-            style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;background:var(--white);">
+            style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;">
             <option value="">All</option>
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
@@ -963,57 +985,32 @@
         </div>
         <div class="panel">
           <div id="applications-list">
-            <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading applications...</div>
+            <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading...</div>
           </div>
         </div>
       </div>
 
-      <div id="section-messages" style="display:none;">
+      <!-- ══════════════════════════════════════════════
+       NOTIFICATIONS
+  ══════════════════════════════════════════════ -->
+      <div id="section-notifications" style="display:none;">
         <div class="dash-header">
           <div>
-            <h1>💬 Messages</h1>
-            <p>Chat directly with landlords or tenants about properties.</p>
+            <h1>🔔 Notifications</h1>
+            <p>Alerts when tenants save or enquire about your properties.</p>
           </div>
-          <a href="chat.html" class="btn btn-green">Open Full Chat →</a>
-        </div>
-        <div class="panel" style="margin-bottom:16px;">
-          <div class="panel-body" style="text-align:center;padding:36px;">
-            <div style="font-size:2.8rem;margin-bottom:12px;">💬</div>
-            <p style="font-weight:600;color:var(--text-dark);margin-bottom:6px;">Full-featured messaging</p>
-            <p style="font-size:0.87rem;color:var(--text-muted);margin-bottom:20px;">Real-time chat with landlords and
-              tenants, linked to property listings.</p>
-            <a href="chat.html" class="btn btn-green"
-              style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;padding:11px 28px;">
-              ✉️ Open Messages
-            </a>
-          </div>
+          <button class="btn btn-green" onclick="markAllNotifsRead()" style="font-size:.85rem;">Mark All Read</button>
         </div>
         <div class="panel">
-          <div class="panel-header">
-            <h2>Recent Conversations</h2>
-            <a href="chat.html" class="btn-sm">View All →</a>
-          </div>
-          <div class="panel-body" id="messages-list">
-            <div style="text-align:center;padding:24px;color:var(--text-muted);">Loading…</div>
+          <div id="notifications-list" style="min-height:120px;">
+            <div style="text-align:center;padding:40px;color:var(--text-muted);">Loading...</div>
           </div>
         </div>
-      </div>
-      <div id="payment-banner" style="display:none; background:#fef9c3; border:1px solid #fbbf24;
-            border-radius:10px; padding:14px 20px; margin-bottom:20px; align-items:center;
-            gap:14px; flex-wrap:wrap;">
-        <span style="font-size:1.2rem;">⚠️</span>
-        <div style="flex:1;">
-          <strong style="color:#92400e;">Subscription required</strong>
-          <p style="font-size:0.85rem;color:#78350f;margin-top:2px;">
-            Activate your subscription to keep your listings visible to tenants.
-          </p>
-        </div>
-        <a href="payment.html" class="btn btn-green"
-          style="white-space:nowrap;font-size:0.85rem;padding:8px 18px;text-decoration:none;">
-          Pay Now — UGX 100,000
-        </a>
       </div>
 
+      <!-- ══════════════════════════════════════════════
+       SETTINGS
+  ══════════════════════════════════════════════ -->
       <div id="section-settings" style="display:none;">
         <div class="dash-header">
           <div>
@@ -1027,7 +1024,6 @@
           </div>
           <div class="panel-body" style="padding:28px;">
             <form onsubmit="updateProfile(event)" id="profile-form">
-
               <div
                 style="display:flex;align-items:center;gap:24px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border);">
                 <div style="position:relative;">
@@ -1037,14 +1033,13 @@
                     <img id="avatar-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;" />
                   </div>
                   <label for="avatar-upload"
-                    style="position:absolute;bottom:0;right:0;width:28px;height:28px;border-radius:50%;background:var(--green-dark);border:2px solid var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.75rem;">📷</label>
+                    style="position:absolute;bottom:0;right:0;width:28px;height:28px;border-radius:50%;background:var(--green-dark);border:2px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.75rem;">📷</label>
                   <input type="file" id="avatar-upload" accept="image/*" style="display:none"
                     onchange="previewAvatar(this)" />
                 </div>
                 <div>
                   <div style="font-weight:600;color:var(--text-dark);margin-bottom:4px;">Profile Picture</div>
-                  <div style="font-size:0.83rem;color:var(--text-muted);margin-bottom:10px;">JPG or PNG · Max 5MB ·
-                    Square image recommended</div>
+                  <div style="font-size:.83rem;color:var(--text-muted);margin-bottom:10px;">JPG or PNG · Max 5MB</div>
                   <div style="display:flex;gap:8px;">
                     <label for="avatar-upload" class="btn-sm" style="cursor:pointer;padding:6px 14px;">Upload
                       Photo</label>
@@ -1053,45 +1048,29 @@
                   </div>
                 </div>
               </div>
-
               <div class="form-grid">
-                <div class="form-group">
-                  <label>Full Name</label>
-                  <input type="text" id="settings-name" />
-                </div>
-                <div class="form-group">
-                  <label>Phone Number</label>
-                  <input type="tel" id="settings-phone" />
-                </div>
+                <div class="form-group"><label>Full Name</label><input type="text" id="settings-name" /></div>
+                <div class="form-group"><label>Phone Number</label><input type="tel" id="settings-phone" /></div>
               </div>
-              <div class="form-group">
-                <label>Email Address</label>
-                <input type="email" id="settings-email" disabled style="opacity:0.6;" />
-              </div>
+              <div class="form-group"><label>Email Address</label><input type="email" id="settings-email" disabled
+                  style="opacity:.6;" /></div>
               <button type="submit" class="btn btn-green">Save Changes</button>
             </form>
           </div>
         </div>
-
         <div class="panel">
           <div class="panel-header">
             <h2>Change Password</h2>
           </div>
           <div class="panel-body" style="padding:28px;">
             <form onsubmit="changePassword(event)">
-              <div class="form-group">
-                <label>Current Password</label>
-                <input type="password" id="current-pass" required />
-              </div>
+              <div class="form-group"><label>Current Password</label><input type="password" id="current-pass"
+                  required /></div>
               <div class="form-grid">
-                <div class="form-group">
-                  <label>New Password</label>
-                  <input type="password" id="new-pass" required minlength="6" />
-                </div>
-                <div class="form-group">
-                  <label>Confirm New Password</label>
-                  <input type="password" id="confirm-pass" required />
-                </div>
+                <div class="form-group"><label>New Password</label><input type="password" id="new-pass" required
+                    minlength="6" /></div>
+                <div class="form-group"><label>Confirm New Password</label><input type="password" id="confirm-pass"
+                    required /></div>
               </div>
               <button type="submit" class="btn btn-green">Update Password</button>
             </form>
@@ -1099,78 +1078,9 @@
         </div>
       </div>
 
-      <div id="section-subscription" style="display:none;">
-        <div class="dash-header">
-          <div>
-            <h1>Subscription</h1>
-            <p>Manage your plan and unlock more features.</p>
-          </div>
-        </div>
-
-        <!-- Current Plan Card -->
-        <div class="panel" style="margin-bottom:20px;">
-          <h3 style="color:var(--green-dark);margin-bottom:16px;">Current Plan</h3>
-          <div id="current-plan-info" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-            <div
-              style="background:var(--green-dark);color:var(--gold);padding:12px 24px;border-radius:12px;font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;"
-              id="plan-badge">Free</div>
-            <div>
-              <p id="plan-desc" style="color:#555;margin:0 0 4px;">Get started with 1 listing at no cost</p>
-              <p id="plan-expiry" style="color:#888;font-size:0.85rem;margin:0;"></p>
-            </div>
-          </div>
-
-          <!-- Usage bar -->
-          <div style="margin-top:20px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-              <span style="font-size:0.85rem;color:#555;">Listings used</span>
-              <span style="font-size:0.85rem;color:var(--green-dark);font-weight:600;" id="usage-text">0 / 1</span>
-            </div>
-            <div style="background:#e5e7eb;border-radius:99px;height:8px;">
-              <div id="usage-bar"
-                style="background:var(--green-dark);height:8px;border-radius:99px;width:0%;transition:width 0.4s;">
-              </div>
-            </div>
-          </div>
-
-          <!-- Plan features -->
-          <div id="plan-features" style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;"></div>
-        </div>
-
-        <!-- Plan Cards -->
-        <div class="panel">
-          <h3 style="color:var(--green-dark);margin-bottom:20px;">Available Plans</h3>
-          <div id="plan-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
-          </div>
-        </div>
-
-        <!-- Upgrade Modal -->
-        <div id="upgrade-modal"
-          style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
-          <div
-            style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-            <h3 style="color:var(--green-dark);margin:0 0 8px;" id="modal-plan-name">Upgrade to Basic</h3>
-            <p style="color:#888;margin:0 0 24px;font-size:0.9rem;" id="modal-plan-desc"></p>
-            <div style="background:#f4f6f5;border-radius:10px;padding:16px;margin-bottom:24px;">
-              <p style="margin:0;font-size:1.5rem;font-weight:700;color:var(--green-dark);" id="modal-plan-price">UGX
-                25,000</p>
-              <p style="margin:4px 0 0;color:#888;font-size:0.8rem;">per month</p>
-            </div>
-            <p style="color:#555;font-size:0.9rem;margin-bottom:20px;">
-              Payment via MTN Mobile Money will be available soon. For now, contact us to manually activate your plan.
-            </p>
-            <div style="display:flex;gap:12px;">
-              <button onclick="document.getElementById('upgrade-modal').style.display='none'"
-                style="flex:1;padding:12px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">Cancel</button>
-              <a id="modal-whatsapp-link" href="#" target="_blank"
-                style="flex:2;padding:12px;background:var(--green-dark);color:var(--gold);border-radius:8px;text-align:center;text-decoration:none;font-weight:600;display:block;">
-                📲 Contact via WhatsApp
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <!-- ══════════════════════════════════════════════
+       ADMIN PANEL
+  ══════════════════════════════════════════════ -->
       <div id="section-admin" style="display:none;">
         <div class="dash-header">
           <div>
@@ -1179,273 +1089,221 @@
           </div>
         </div>
 
+        <!-- Admin Stats -->
         <div class="stats-grid" style="margin-bottom:28px;">
           <div class="stat-card">
             <div class="stat-label">Pending Listings</div>
-            <!-- ═══════════════════════════════════════════════════
-     ADD THIS HTML BLOCK inside <div id="section-admin">,
-     right after the "Pending Listings" panel and before
-     the "All Users" panel closes.
-
-     This adds a full Subscription Management section.
-═══════════════════════════════════════════════════ -->
-
-            <div class="panel" style="margin-bottom:24px;">
-              <div class="panel-header">
-                <h2>💳 Subscription Management</h2>
-                <input type="text" id="sub-search" placeholder="Search landlords..." oninput="filterSubLandlords()"
-                  style="padding:7px 14px;border:1.5px solid var(--border);border-radius:50px;font-size:0.85rem;outline:none;width:220px;" />
-              </div>
-
-              <div style="padding:20px 24px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
-                <div style="padding:16px;background:var(--cream);border-radius:10px;text-align:center;">
-                  <div style="font-family:'Fraunces',serif;font-size:1.4rem;color:var(--green-dark);"
-                    id="sub-count-free">0</div>
-                  <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">Free Plan</div>
-                </div>
-                <div style="padding:16px;background:#e8f4fd;border-radius:10px;text-align:center;">
-                  <div style="font-family:'Fraunces',serif;font-size:1.4rem;color:#1a6fa8;" id="sub-count-basic">0</div>
-                  <div style="font-size:0.78rem;color:#1a6fa8;margin-top:2px;">Basic Plan</div>
-                </div>
-                <div style="padding:16px;background:#fef9e7;border-radius:10px;text-align:center;">
-                  <div style="font-family:'Fraunces',serif;font-size:1.4rem;color:#b7860b;" id="sub-count-premium">0
-                  </div>
-                  <div style="font-size:0.78rem;color:#b7860b;margin-top:2px;">Premium Plan</div>
-                </div>
-              </div>
-
-              <div class="panel-body" style="padding:20px 24px;">
-                <div id="sub-landlords-list">
-                  <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading landlords...</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="panel">
-              <div class="panel-header">
-                <h2>🧾 Recent Manual Payments</h2>
-                <button class="btn-sm" onclick="loadSubPayments()">Refresh</button>
-              </div>
-              <div class="panel-body">
-                <table class="listings-table">
-                  <thead>
-                    <tr>
-                      <th>Landlord</th>
-                      <th>Plan</th>
-                      <th>Amount</th>
-                      <th>Reference</th>
-                      <th>Date</th>
-                      <th>Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody id="sub-payments-body">
-                    <tr>
-                      <td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">Loading...</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- ═══════════════════════════════════════════════════
-     UPGRADE MODAL — admin picks plan + duration, confirms
-═══════════════════════════════════════════════════ -->
-            <div class="modal-overlay" id="admin-upgrade-modal">
-              <div class="modal" style="max-width:460px;">
-                <h2>Activate / Change Plan</h2>
-                <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;" id="admin-upgrade-target">
-                  Updating plan for <strong></strong>
-                </p>
-
-                <div class="form-group">
-                  <label>Select Plan</label>
-                  <select id="admin-upgrade-plan"
-                    style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.9rem;">
-                    <option value="free">Free — UGX 0</option>
-                    <option value="basic">Basic — UGX 50,000/mo</option>
-                    <option value="premium">Premium — UGX 100,000/mo</option>
-                  </select>
-                </div>
-
-                <div class="form-grid">
-                  <div class="form-group">
-                    <label>Duration (months)</label>
-                    <input type="number" id="admin-upgrade-months" value="1" min="1" max="24"
-                      style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.9rem;" />
-                  </div>
-                  <div class="form-group">
-                    <label>Payment Reference</label>
-                    <input type="text" id="admin-upgrade-ref" placeholder="e.g. MoMo TXN ID"
-                      style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.9rem;" />
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label>Notes (optional)</label>
-                  <textarea id="admin-upgrade-notes" rows="2"
-                    placeholder="e.g. Paid via MTN MoMo, screenshot received on WhatsApp"
-                    style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.9rem;resize:vertical;"></textarea>
-                </div>
-
-                <div class="modal-actions">
-                  <button class="btn-sm" onclick="closeAdminUpgradeModal()">Cancel</button>
-                  <button class="btn btn-green" onclick="confirmAdminUpgrade()">✅ Confirm & Activate</button>
-                </div>
-              </div>
-            </div>
             <div class="stat-value" id="admin-stat-pending" style="color:#f59e0b;">—</div>
             <div class="stat-sub">Awaiting approval</div>
           </div>
+          <div class="stat-card green">
+            <div class="stat-label">Active Listings</div>
+            <div class="stat-value" id="admin-stat-active">—</div>
+            <div class="stat-sub">Live on platform</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">Total Landlords</div>
+            <div class="stat-value" id="admin-stat-landlords">—</div>
+            <div class="stat-sub">Registered accounts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Tenants</div>
+            <div class="stat-value" id="admin-stat-tenants">—</div>
+            <div class="stat-sub">Registered accounts</div>
+          </div>
         </div>
 
+        <!-- ── SUBSCRIPTION MANAGEMENT (full width) ── -->
+        <div class="panel" style="margin-bottom:24px;">
+          <div class="panel-header">
+            <h2>💳 Subscription Management</h2>
+            <input type="text" id="sub-search" placeholder="Search landlords..." oninput="filterSubLandlords()"
+              style="padding:7px 14px;border:1.5px solid var(--border);border-radius:50px;font-size:.85rem;outline:none;width:220px;" />
+          </div>
+          <!-- Plan summary counts -->
+          <div
+            style="padding:20px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;border-bottom:1px solid var(--border);">
+            <div style="padding:16px;background:var(--cream);border-radius:10px;text-align:center;">
+              <div style="font-family:'Fraunces',serif;font-size:1.4rem;color:var(--green-dark);" id="sub-count-free">0
+              </div>
+              <div style="font-size:.78rem;color:var(--text-muted);margin-top:2px;">Free Plan</div>
+            </div>
+            <div style="padding:16px;background:#e8f4fd;border-radius:10px;text-align:center;">
+              <div style="font-family:'Fraunces',serif;font-size:1.4rem;color:#1a6fa8;" id="sub-count-basic">0</div>
+              <div style="font-size:.78rem;color:#1a6fa8;margin-top:2px;">Basic — UGX 100,000</div>
+            </div>
+            <div style="padding:16px;background:#fef9e7;border-radius:10px;text-align:center;">
+              <div style="font-family:'Fraunces',serif;font-size:1.4rem;color:#b7860b;" id="sub-count-premium">0</div>
+              <div style="font-size:.78rem;color:#b7860b;margin-top:2px;">Premium — UGX 150,000</div>
+            </div>
+          </div>
+          <div class="panel-body" style="padding:24px;">
+            <div id="sub-landlords-list">
+              <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading landlords...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Manual Payments -->
+        <div class="panel" style="margin-bottom:24px;">
+          <div class="panel-header">
+            <h2>🧾 Recent Manual Payments</h2><button class="btn-sm" onclick="loadSubPayments()">Refresh</button>
+          </div>
+          <div class="panel-body">
+            <table class="listings-table">
+              <thead>
+                <tr>
+                  <th>Landlord</th>
+                  <th>Plan</th>
+                  <th>Amount</th>
+                  <th>Reference</th>
+                  <th>Date</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody id="sub-payments-body">
+                <tr>
+                  <td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pending Listings -->
+        <div class="panel" style="margin-bottom:24px;">
+          <div class="panel-header">
+            <h2>⏳ Listings — Needs Your Approval</h2>
+            <div class="dash-tabs">
+              <button class="dash-tab active" onclick="loadAdminListings('pending',this)">Pending</button>
+              <button class="dash-tab" onclick="loadAdminListings('active',this)">Active</button>
+              <button class="dash-tab" onclick="loadAdminListings('inactive',this)">Inactive</button>
+              <button class="dash-tab" onclick="loadAdminListings('rented',this)">Rented</button>
+            </div>
+          </div>
+          <div class="panel-body" id="admin-listings-body">
+            <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Platform Reviews -->
         <div class="panel" style="margin-bottom:24px;">
           <div class="panel-header">
             <h2>📢 Platform Review Moderation</h2>
           </div>
           <div class="panel-body">
-            <div class="table-responsive" style="overflow-x: auto;">
-              <table class="listings-table" style="width: 100%; border-collapse: collapse;">
-                <thead>
-                  <tr style="background: var(--cream);">
-                    <th style="padding: 12px 20px;">Tenant Info</th>
-                    <th style="padding: 12px 20px;">Property Details</th>
-                    <th style="padding: 12px 20px;">Review Content</th>
-                    <th style="padding: 12px 20px;">Visibility Action</th>
-                  </tr>
-                </thead>
-                <tbody id="admin-reviews-table-body">
-                  <tr>
-                    <td colspan="4" style="text-align: center; padding: 32px; color: var(--text-muted);">Loading system
-                      reviews...</td>
-                  </tr>
-                </tbody>
-              </table>
+            <table class="listings-table">
+              <thead>
+                <tr>
+                  <th>Tenant</th>
+                  <th>Property</th>
+                  <th>Review</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="admin-reviews-table-body">
+                <tr>
+                  <td colspan="4" style="text-align:center;padding:32px;color:var(--text-muted);">Loading reviews...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- All Users -->
+        <div class="panel" style="margin-bottom:24px;">
+          <div class="panel-header">
+            <h2>👥 All Users</h2>
+            <input type="text" id="user-search" placeholder="Search by name or email..." oninput="filterUsers()"
+              style="padding:7px 14px;border:1.5px solid var(--border);border-radius:50px;font-size:.85rem;outline:none;width:220px;" />
+          </div>
+          <div class="panel-body">
+            <table class="listings-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Role</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-body">
+                <tr>
+                  <td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Contact Messages (Admin) -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2>✉️ Contact Form Messages</h2>
+            <div class="dash-tabs">
+              <button class="dash-tab active" onclick="filterContactMsgs('all',this)">All</button>
+              <button class="dash-tab" onclick="filterContactMsgs('new',this)">Unread</button>
+              <button class="dash-tab" onclick="filterContactMsgs('read',this)">Read</button>
             </div>
+          </div>
+          <div class="panel-body" id="contact-messages-list">
+            <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTACT MESSAGES section (sidebar nav item) -->
+      <div id="section-contact-messages" style="display:none;">
+        <div class="dash-header">
+          <div>
+            <h1>✉️ Contact Form Messages</h1>
+            <p>Messages sent via the public contact page.</p>
+          </div>
+        </div>
+        <div class="stats-grid" style="margin-bottom:24px;">
+          <div class="stat-card">
+            <div class="stat-label">Total</div>
+            <div class="stat-value" id="cm-total">—</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-label">Unread</div>
+            <div class="stat-value" id="cm-unread">—</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Today</div>
+            <div class="stat-value" id="cm-today">—</div>
           </div>
         </div>
         <div class="panel">
           <div class="panel-header">
-            <h2>👥 All Users</h2>
-            <div class="stat-card green">
-              <div class="stat-label">Active Listings</div>
-              <div class="stat-value" id="admin-stat-active">—</div>
-              <div class="stat-sub">Live on platform</div>
-            </div>
-            <div class="stat-card red">
-              <div class="stat-label">Rented Out</div>
-              <div class="stat-value" id="admin-stat-rented">—</div>
-              <div class="stat-sub">Currently occupied</div>
-            </div>
-            <div class="stat-card blue">
-              <div class="stat-label">Total Landlords</div>
-              <div class="stat-value" id="admin-stat-landlords">—</div>
-              <div class="stat-sub">Registered accounts</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">Total Tenants</div>
-              <div class="stat-value" id="admin-stat-tenants">—</div>
-              <div class="stat-sub">Registered accounts</div>
+            <h2>All Messages</h2>
+            <div class="dash-tabs">
+              <button class="dash-tab active" onclick="filterContactMsgs('all',this)">All</button>
+              <button class="dash-tab" onclick="filterContactMsgs('new',this)">Unread</button>
+              <button class="dash-tab" onclick="filterContactMsgs('read',this)">Read</button>
             </div>
           </div>
-
-          <div class="panel" style="margin-bottom:24px;">
-            <div class="panel-header">
-              <h2>⏳ Pending Listings — Needs Your Approval</h2>
-              <div class="dash-tabs">
-                <button class="dash-tab active" onclick="loadAdminListings('pending', this)">Pending</button>
-                <button class="dash-tab" onclick="loadAdminListings('active', this)">Active</button>
-                <button class="dash-tab" onclick="loadAdminListings('inactive', this)">Inactive</button>
-                <button class="dash-tab" onclick="loadAdminListings('rented', this)">Rented</button>
-              </div>
-            </div>
-            <div class="panel-body" id="admin-listings-body">
-              <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-header">
-              <h2>👥 All Users</h2>
-              <input type="text" id="user-search" placeholder="Search by name or email..." oninput="filterUsers()"
-                style="padding:7px 14px;border:1.5px solid var(--border);border-radius:50px;font-size:0.85rem;outline:none;width:220px;" />
-            </div>
-            <div class="panel-body">
-              <table class="listings-table" id="users-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Role</th>
-                    <th>Joined</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="admin-users-body">
-                  <tr>
-                    <td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">Loading...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <div class="panel-body" id="contact-messages-list2">
+            <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
           </div>
         </div>
-        <div id="section-contact-messages" style="display:none;">
-          <div class="dash-header">
-            <div>
-              <h1>✉️ Contact Form Messages</h1>
-              <p>Messages sent via the public contact page.</p>
-            </div>
-          </div>
-
-          <div class="stats-grid" style="margin-bottom:24px;">
-            <div class="stat-card">
-              <div class="stat-label">Total Messages</div>
-              <div class="stat-value" id="cm-total">—</div>
-            </div>
-            <div class="stat-card red">
-              <div class="stat-label">Unread</div>
-              <div class="stat-value" id="cm-unread">—</div>
-            </div>
-            <div class="stat-card green">
-              <div class="stat-label">Today</div>
-              <div class="stat-value" id="cm-today">—</div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-header">
-              <h2>All Messages</h2>
-              <div class="dash-tabs">
-                <button class="dash-tab active" onclick="filterContactMsgs('all', this)">All</button>
-                <button class="dash-tab" onclick="filterContactMsgs('new', this)">Unread</button>
-                <button class="dash-tab" onclick="filterContactMsgs('read', this)">Read</button>
-              </div>
-            </div>
-            <div class="panel-body" id="contact-messages-list">
-              <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
-            </div>
-          </div>
-        </div>
+      </div>
 
     </main>
   </div>
 
+  <!-- EDIT LISTING MODAL -->
   <div class="modal-overlay" id="edit-modal">
     <div class="modal">
       <h2>Edit Listing</h2>
       <input type="hidden" id="edit-listing-id" />
-      <div class="form-group">
-        <label>Title</label>
-        <input type="text" id="edit-title" />
-      </div>
+      <div class="form-group"><label>Title</label><input type="text" id="edit-title" /></div>
       <div class="form-grid">
-        <div class="form-group">
-          <label>Price (UGX/month)</label>
-          <input type="number" id="edit-price" />
-        </div>
-        <div class="form-group">
-          <label>Status</label>
+        <div class="form-group"><label>Price (UGX/month)</label><input type="number" id="edit-price" /></div>
+        <div class="form-group"><label>Status</label>
           <select id="edit-status">
             <option value="active">Active</option>
             <option value="rented">Rented</option>
@@ -1453,9 +1311,7 @@
           </select>
         </div>
       </div>
-      <div class="form-group">
-        <label>Description</label>
-        <textarea id="edit-desc" rows="4"
+      <div class="form-group"><label>Description</label><textarea id="edit-desc" rows="4"
           style="resize:vertical;width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;"></textarea>
       </div>
       <div class="modal-actions">
@@ -1465,1386 +1321,422 @@
     </div>
   </div>
 
-  <script src="../js/api.js"></script>
-  <script>
-    // ── STATE ──
-    let myListings = [];
-    let myEnquiries = [];
-    let currentFilter = 'all';
-    let currentEnqFilter = 'all';
-
-    // ── CONTACT MESSAGES (admin) ──
-    let allContactMsgs = [];
-    let contactMsgFilter = 'all';
-
-    async function loadContactMessages() {
-      const container = document.getElementById('contact-messages-list');
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/enquiries', {
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
-        });
-        const data = await res.json();
-        allContactMsgs = data.enquiries || [];
-
-        const today = new Date().toDateString();
-        const unread = allContactMsgs.filter(e => e.status === 'new' || !e.status).length;
-        const todayCount = allContactMsgs.filter(e => new Date(e.created_at).toDateString() === today).length;
-
-        document.getElementById('cm-total').textContent = allContactMsgs.length;
-        document.getElementById('cm-unread').textContent = unread;
-        document.getElementById('cm-today').textContent = todayCount;
-
-        // Badge
-        const badge = document.getElementById('contact-badge');
-        if (unread > 0) { badge.textContent = unread; badge.style.display = 'inline'; }
-
-        renderContactMessages();
-      } catch (e) {
-        container.innerHTML = '<div class="empty-state"><p>❌ Could not load messages. Make sure the /api/admin/enquiries endpoint exists.</p></div>';
-      }
-    }
-
-    function filterContactMsgs(filter, btn) {
-      contactMsgFilter = filter;
-      document.querySelectorAll('#section-contact-messages .dash-tab').forEach(t => t.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      renderContactMessages();
-    }
-
-    function renderContactMessages() {
-      const container = document.getElementById('contact-messages-list');
-      const filtered = contactMsgFilter === 'all'
-        ? allContactMsgs
-        : allContactMsgs.filter(e => e.status === contactMsgFilter || (!e.status && contactMsgFilter === 'new'));
-
-      if (!filtered.length) {
-        container.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><p>No messages found.</p></div>';
-        return;
-      }
-
-      container.innerHTML = filtered.map((e, i) => `
-    <div class="enquiry-item ${e.status === 'new' || !e.status ? 'unread' : ''}" id="cmsg-${e.id}">
-      <div>
-        <div class="enquiry-name">
-          ${e.name || 'Unknown'}
-          ${e.status === 'new' || !e.status ? '<span style="background:var(--gold);color:var(--green-dark);font-size:0.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">NEW</span>' : ''}
+  <!-- ADMIN UPGRADE MODAL -->
+  <div class="modal-overlay" id="admin-upgrade-modal">
+    <div class="modal" style="max-width:460px;">
+      <h2>Activate / Change Plan</h2>
+      <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:20px;" id="admin-upgrade-target">Updating plan
+        for <strong></strong></p>
+      <div class="form-group">
+        <label>Select Plan</label>
+        <select id="admin-upgrade-plan"
+          style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;">
+          <option value="free">Free — UGX 0</option>
+          <option value="basic">Basic — UGX 100,000/mo</option>
+          <option value="premium">Premium — UGX 150,000/mo</option>
+        </select>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Duration (months)</label><input type="number" id="admin-upgrade-months" value="1"
+            min="1" max="24"
+            style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;" />
         </div>
-        <div class="enquiry-msg" style="margin-top:6px;">${e.message || '—'}</div>
-        <div class="enquiry-contact" style="margin-top:8px;">
-          ${e.email ? `✉️ <a href="mailto:${e.email}">${e.email}</a>` : ''}
-          ${e.phone ? `&nbsp;·&nbsp; 📞 <a href="tel:${e.phone}">${e.phone}</a>` : ''}
-          ${e.phone ? `&nbsp;·&nbsp; <a href="https://wa.me/${e.phone.replace(/[\s+]/g, '')}" target="_blank" style="color:#25D366;">💬 WhatsApp</a>` : ''}
+        <div class="form-group"><label>Payment Reference</label><input type="text" id="admin-upgrade-ref"
+            placeholder="e.g. MoMo TXN ID"
+            style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;" />
         </div>
       </div>
-      <div style="text-align:right;min-width:100px;">
-        <div class="enquiry-time">${timeAgo(e.created_at)}</div>
-        <button class="btn-sm" style="margin-top:8px;" onclick="markContactRead('${e.id}')">Mark Read</button>
+      <div class="form-group"><label>Notes (optional)</label><textarea id="admin-upgrade-notes" rows="2"
+          placeholder="e.g. Paid via MTN MoMo"
+          style="width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;resize:vertical;"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sm" onclick="closeAdminUpgradeModal()">Cancel</button>
+        <button class="btn btn-green" onclick="confirmAdminUpgrade()">✅ Confirm & Activate</button>
       </div>
     </div>
-  `).join('');
-    }
+  </div>
 
-    async function markContactRead(id) {
-      try {
-        await api.enquiries.updateStatus(id, 'read');
-        const msg = allContactMsgs.find(e => e.id === id);
-        if (msg) msg.status = 'read';
-        renderContactMessages();
-        // Update badge
-        const unread = allContactMsgs.filter(e => e.status === 'new' || !e.status).length;
-        const badge = document.getElementById('contact-badge');
-        badge.textContent = unread > 0 ? unread : '';
-        badge.style.display = unread > 0 ? 'inline' : 'none';
-        document.getElementById('cm-unread').textContent = unread;
-        showToast('✅ Marked as read');
-      } catch (e) { showToast('❌ Could not update'); }
-    }
+  <!-- BACK TO TOP -->
+  <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <script src="../js/api.js"></script>
+  <script>
+    const RENDER = 'https://nyumbaug-full.onrender.com/api';
+    const tok = () => localStorage.getItem('nyumba_token');
+    const authH = () => ({ 'Authorization': 'Bearer ' + tok(), 'Content-Type': 'application/json' });
+
+    // ── STATE ──
+    let myListings = [], myEnquiries = [], currentFilter = 'all', currentEnqFilter = 'all';
+    let allUsers = [], allContactMsgs = [], allSubLandlords = [];
+    let targetLandlordId = null, targetLandlordName = '';
+    let notifications = [], currentAdminFilter = 'pending';
+    let newAvatarFile = null;
+
+    const PLAN_LABELS = { free: 'Free', basic: 'Basic', premium: 'Premium' };
+    const PLAN_PRICES = { free: 0, basic: 100000, premium: 150000 };
 
     // ── INIT ──
     async function init() {
-      // 1. Check if logged in
-      if (!api.auth.isLoggedIn()) {
-        window.location.href = 'login.html';
-        return;
-      }
+      if (!api.auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
 
-      // --- ADD THIS BLOCK ---
-      const currentUser = api.auth.currentUser();
-      if (currentUser && currentUser.role === 'tenant') {
-        // Tenants should not be on the landlord/admin dashboard
-        alert("Access Denied: You are not authorized to view the dashboard.");
-        window.location.href = '../index.html'; // Redirect to home
-        return;
-      }
-
-      // block unpaid landlords
-      const token1 = localStorage.getItem('nyumba_token');
-      const sub = localStorage.getItem('nyumba_sub_expiry_' + token1?.slice(-10));
-      const paid = sub && new Date(sub) > new Date();
       const u0 = api.auth.currentUser();
-      if (u0.role === 'landlord' && !paid) {
-        // Show a soft reminder banner instead of forcing redirect
-        const banner = document.getElementById('payment-banner');
-        if (banner) banner.style.display = 'flex';
+      if (u0?.role === 'tenant') { alert('Access Denied'); window.location.href = '../index.html'; return; }
+
+      // Show payment banner for unpaid landlords
+      if (u0?.role === 'landlord') {
+        const sub = localStorage.getItem('nyumba_sub_expiry_' + tok()?.slice(-10));
+        if (!sub || new Date(sub) < new Date()) document.getElementById('payment-banner').style.display = 'flex';
       }
-      // 1. load profile/authentication details safely
-      let userRole = u0?.role || 'landlord'; // fallback data
+
       try {
         const { user } = await api.auth.getMe();
-        userRole = user.role; // update with live backend data
-
-        const initials = user.name.split('').map(n => n[0]).slice(0, 2).join('');
-        document.getElementById('sidebar-avatar').textContent = initials;
+        const ini = user.name.split(' ').map(n => n[0]).slice(0, 2).join('');
+        document.getElementById('sidebar-avatar').textContent = ini;
         document.getElementById('sidebar-name').textContent = user.name;
         document.getElementById('sidebar-role').textContent = user.role;
         document.getElementById('header-name').textContent = user.name.split(' ')[0];
-
-        if (user.role === 'admin') {
-          showSection('admin', null);
-          document.getElementById('header-sub').textContent = 'Welcome to your admin panel. Manage listings and its users.';
-        }
         document.getElementById('settings-name').value = user.name;
         document.getElementById('settings-phone').value = user.phone || '';
         document.getElementById('settings-email').value = user.email || '';
         loadAvatar(user);
-      } catch (profileError) {
-        console.error("Failed to load user profile details:", profileError);
-      }
-      //2. set up Nav and Layout structure safely using  our fallback if needed
-      try {
-        if (userRole === 'admin') {
+
+        if (user.role === 'admin') {
           document.getElementById('admin-nav').style.display = 'block';
           document.getElementById('landlord-nav').style.display = 'none';
+          document.getElementById('header-sub').textContent = 'Welcome to your admin panel.';
           showSection('admin', document.querySelector('#admin-nav a'));
         } else {
           document.getElementById('landlord-nav').style.display = 'block';
           document.getElementById('admin-nav').style.display = 'none';
           showSection('overview', document.querySelector('#landlord-nav a'));
         }
-      } catch (layoutError) {
-        console.error("UI layout setting failed:", layoutError);
-      }
+      } catch (e) { console.error(e); }
 
-      // 3. load dynamic listings data individually so failures dont block the entire screen
-      try {
-        await loadMyListings();
-
-      } catch (listingsError) {
-        console.error("Property data failed to load:", listingsError);
-      }
-      //4. load dynamic enquiries safely
-      try {
-        await loadEnquiries();
-      } catch (enquiriesError) {
-        console.error("Enquiries data failed to load:", enquiriesError);
-      }
-
-      // 5. Explicity strip away any global CSS loading blocks
-      try {
-        const globalLoader = document.getElementById('global-loader');
-        if (globalLoader) globalLoader.style.display = 'none';
-
-        const loadingText = document.querySelector('.loading');
-        if (loadingText && loadingText.textContent.includes('Loading...')) {
-          loadingText.style.display = 'none';
-        }
-      } catch (loaderError) {
-        console.error("Loader removal error:", loaderError);
-      }
+      await Promise.all([loadMyListings(), loadEnquiries()]);
+      setTimeout(loadNotifications, 800);
+      setTimeout(loadMessages, 1200);
+      if (api.auth.currentUser()?.role === 'admin') setTimeout(loadAdminData, 600);
     }
 
-    // ── LOAD DATA ──
+    // ── LOAD LISTINGS ──
     async function loadMyListings() {
       try {
         const data = await api.listings.getMy();
-        myListings = data.listings;
-
+        myListings = data.listings || [];
         const active = myListings.filter(l => l.status === 'active').length;
         const pending = myListings.filter(l => l.status === 'pending').length;
         const views = myListings.reduce((s, l) => s + (l.views || 0), 0);
-
         document.getElementById('stat-active').textContent = active;
         document.getElementById('stat-pending').textContent = pending;
         document.getElementById('stat-views').textContent = views;
-
-        renderOverviewListings();
-        renderMyListings();
-      } catch (e) {
-        console.error(e);
-      }
+        renderOverviewListings(); renderMyListings();
+      } catch (e) { console.error(e); }
     }
 
     async function loadEnquiries() {
       try {
         const data = await api.enquiries.getMy();
-        myEnquiries = data.enquiries;
-
-        const newCount = myEnquiries.filter(e => e.status === 'new').length;
-        document.getElementById('stat-enquiries').textContent = newCount;
-
-        if (newCount > 0) {
-          const badge = document.getElementById('enquiry-badge');
-          badge.textContent = newCount;
-          badge.style.display = 'inline';
-        }
-
-        renderOverviewEnquiries();
-        renderEnquiries();
+        myEnquiries = data.enquiries || [];
+        const nc = myEnquiries.filter(e => e.status === 'new').length;
+        document.getElementById('stat-enquiries').textContent = nc;
+        const b = document.getElementById('enquiry-badge');
+        if (nc > 0) { b.textContent = nc; b.style.display = 'inline'; }
+        renderOverviewEnquiries(); renderEnquiries();
       } catch (e) { }
     }
 
     // ── RENDER OVERVIEW ──
     function renderOverviewListings() {
       const tbody = document.getElementById('overview-listings-body');
-      const recent = myListings.slice(0, 5);
-
-      if (!recent.length) {
-        tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="emoji">🏠</div><p>No listings yet. <a href="list-property.html" style="color:var(--green-light);">Add your first property →</a></p></div></td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = recent.map(l => `
-        <tr>
-          <td class="listing-title-cell">${l.title}<small>${l.neighbourhood}, ${l.district}</small></td>
-          <td>UGX ${l.price.toLocaleString()}</td>
-          <td><span class="status-badge status-${l.status}">${l.status}</span></td>
-          <td>${l.views || 0}</td>
-        </tr>
-      `).join('');
+      const r = myListings.slice(0, 5);
+      if (!r.length) { tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="emoji">🏠</div><p>No listings yet. <a href="list-property.html" style="color:var(--green-light);">Add your first →</a></p></div></td></tr>`; return; }
+      tbody.innerHTML = r.map(l => `<tr><td class="listing-title-cell">${l.title}<small>${l.neighbourhood}, ${l.district}</small></td><td>UGX ${l.price.toLocaleString()}</td><td><span class="status-badge status-${l.status}">${l.status}</span></td><td>${l.views || 0}</td></tr>`).join('');
     }
 
     function renderOverviewEnquiries() {
-      const container = document.getElementById('overview-enquiries');
-      const recent = myEnquiries.slice(0, 3);
-
-      if (!recent.length) {
-        container.innerHTML = `<div class="empty-state"><div class="emoji">📩</div><p>No enquiries yet.</p></div>`;
-        return;
-      }
-
-      container.innerHTML = recent.map(e => `
-        <div class="enquiry-item ${e.status === 'new' ? 'unread' : ''}">
-          <div>
-            <div class="enquiry-name">${e.name} ${e.status === 'new' ? '<span style="background:var(--gold);color:var(--green-dark);font-size:0.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">NEW</span>' : ''}</div>
-            <div class="enquiry-listing">Re: ${e.listing_title}</div>
-            <div class="enquiry-msg">${e.message}</div>
-            <div class="enquiry-contact">📞 <a href="tel:${e.phone}">${e.phone}</a>${e.email ? ` · ✉️ <a href="mailto:${e.email}">${e.email}</a>` : ''}</div>
-          </div>
-          <div class="enquiry-time">${timeAgo(e.created_at)}</div>
-        </div>
-      `).join('');
+      const c = document.getElementById('overview-enquiries');
+      const r = myEnquiries.slice(0, 3);
+      if (!r.length) { c.innerHTML = `<div class="empty-state"><div class="emoji">📩</div><p>No enquiries yet.</p></div>`; return; }
+      c.innerHTML = r.map(e => `<div class="enquiry-item ${e.status === 'new' ? 'unread' : ''}"><div><div class="enquiry-name">${e.name}${e.status === 'new' ? '<span style="background:var(--gold);color:var(--green-dark);font-size:.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">NEW</span>' : ''}</div><div class="enquiry-listing">Re: ${e.listing_title}</div><div class="enquiry-msg">${e.message}</div><div class="enquiry-contact">📞 <a href="tel:${e.phone}">${e.phone}</a></div></div><div class="enquiry-time">${timeAgo(e.created_at)}</div></div>`).join('');
     }
 
     // ── RENDER MY LISTINGS ──
     function renderMyListings() {
       const tbody = document.getElementById('my-listings-body');
-      const filtered = currentFilter === 'all' ? myListings : myListings.filter(l => l.status === currentFilter);
-
-      if (!filtered.length) {
-        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="emoji">🏠</div><p>No listings found.</p></div></td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = filtered.map(l => `
-        <tr>
-          <td class="listing-title-cell">${l.title}<small>${l.neighbourhood} · ${l.bedrooms} bed · ${l.bathrooms} bath</small></td>
-          <td>${l.type}</td>
-          <td>UGX ${l.price.toLocaleString()}</td>
-          <td><span class="status-badge status-${l.status}">${l.status}</span></td>
-          <td>${l.views || 0}</td>
-          <td>
-            <div class="action-btns">
-              <button class="btn-sm" onclick="openEditModal('${l.id}')">Edit</button>
-              <a href="listing-detail.html?id=${l.id}" class="btn-sm">View</a>
-              ${l.status !== 'rented' ? `<button class="btn-sm" style="background:#fef3c7;color:#92400e;border:1px solid #fbbf24;" onclick="markAsRented('${l.id}', '${l.title.replace(/'/g, "\\'")}')">🔑 Rented</button>` : '<span class="status-badge status-rented" style="font-size:0.72rem;">Rented</span>'}
-              <button class="btn-sm danger" onclick="deleteListing('${l.id}', '${l.title.replace(/'/g, "\\'")}')">Delete</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
+      const f = currentFilter === 'all' ? myListings : myListings.filter(l => l.status === currentFilter);
+      if (!f.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="emoji">🏠</div><p>No listings found.</p></div></td></tr>`; return; }
+      tbody.innerHTML = f.map(l => `<tr><td class="listing-title-cell">${l.title}<small>${l.neighbourhood} · ${l.bedrooms} bed · ${l.bathrooms} bath</small></td><td>${l.type}</td><td>UGX ${l.price.toLocaleString()}</td><td><span class="status-badge status-${l.status}">${l.status}</span></td><td>${l.views || 0}</td><td><div class="action-btns"><button class="btn-sm" onclick="openEditModal('${l.id}')">Edit</button><a href="listing-detail.html?id=${l.id}" class="btn-sm">View</a>${l.status !== 'rented' ? `<button class="btn-sm" style="background:#fef3c7;color:#92400e;border:1px solid #fbbf24;" onclick="markAsRented('${l.id}','${l.title.replace(/'/g, "\\'")}')">🔑 Rented</button>` : '<span class="status-badge status-rented">Rented</span>'}<button class="btn-sm danger" onclick="deleteListing('${l.id}','${l.title.replace(/'/g, "\\'")}')">Delete</button></div></td></tr>`).join('');
     }
-
-    function filterMyListings(filter, btn) {
-      currentFilter = filter;
-      document.querySelectorAll('#section-listings .dash-tab').forEach(t => t.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      renderMyListings();
-    }
+    function filterMyListings(f, btn) { currentFilter = f; document.querySelectorAll('#section-listings .dash-tab').forEach(t => t.classList.remove('active')); if (btn) btn.classList.add('active'); renderMyListings(); }
 
     // ── RENDER ENQUIRIES ──
     function renderEnquiries() {
-      const container = document.getElementById('enquiries-list');
-      const filtered = currentEnqFilter === 'all' ? myEnquiries : myEnquiries.filter(e => e.status === currentEnqFilter);
-
-      if (!filtered.length) {
-        container.innerHTML = `<div class="empty-state"><div class="emoji">📩</div><p>No enquiries found.</p></div>`;
-        return;
-      }
-
-      container.innerHTML = filtered.map(e => `
-        <div class="enquiry-item ${e.status === 'new' ? 'unread' : ''}">
-          <div>
-            <div class="enquiry-name">${e.name} ${e.status === 'new' ? '<span style="background:var(--gold);color:var(--green-dark);font-size:0.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">NEW</span>' : ''}</div>
-            <div class="enquiry-listing">Re: ${e.listing_title} · ${e.neighbourhood}</div>
-            <div class="enquiry-msg">${e.message}</div>
-            <div class="enquiry-contact" style="margin-top:8px;">
-              📞 <a href="tel:${e.phone}">${e.phone}</a>
-              ${e.email ? `· ✉️ <a href="mailto:${e.email}">${e.email}</a>` : ''}
-              &nbsp;·&nbsp;
-              <a href="https://wa.me/${e.phone.replace(/[\s+]/g, '')}" target="_blank" style="color:#25D366;">💬 WhatsApp</a>
-            </div>
-          </div>
-          <div style="text-align:right;">
-            <div class="enquiry-time">${timeAgo(e.created_at)}</div>
-            <div style="margin-top:8px;">
-              <select class="btn-sm" onchange="updateEnquiryStatus('${e.id}', this.value)" style="padding:4px 8px;">
-                <option value="new"     ${e.status === 'new' ? 'selected' : ''}>New</option>
-                <option value="read"    ${e.status === 'read' ? 'selected' : ''}>Read</option>
-                <option value="replied" ${e.status === 'replied' ? 'selected' : ''}>Replied</option>
-                <option value="closed"  ${e.status === 'closed' ? 'selected' : ''}>Closed</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      `).join('');
+      const c = document.getElementById('enquiries-list');
+      const f = currentEnqFilter === 'all' ? myEnquiries : myEnquiries.filter(e => e.status === currentEnqFilter);
+      if (!f.length) { c.innerHTML = `<div class="empty-state"><div class="emoji">📩</div><p>No enquiries found.</p></div>`; return; }
+      c.innerHTML = f.map(e => `<div class="enquiry-item ${e.status === 'new' ? 'unread' : ''}"><div><div class="enquiry-name">${e.name}${e.status === 'new' ? '<span style="background:var(--gold);color:var(--green-dark);font-size:.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">NEW</span>' : ''}</div><div class="enquiry-listing">Re: ${e.listing_title} · ${e.neighbourhood}</div><div class="enquiry-msg">${e.message}</div><div class="enquiry-contact" style="margin-top:8px;">📞 <a href="tel:${e.phone}">${e.phone}</a>${e.email ? `· ✉️ <a href="mailto:${e.email}">${e.email}</a>` : ''} &nbsp;·&nbsp; <a href="https://wa.me/${e.phone.replace(/[\s+]/g, '')}" target="_blank" style="color:#25D366;">💬 WhatsApp</a></div></div><div style="text-align:right;"><div class="enquiry-time">${timeAgo(e.created_at)}</div><div style="margin-top:8px;"><select class="btn-sm" onchange="updateEnquiryStatus('${e.id}',this.value)" style="padding:4px 8px;"><option value="new"${e.status === 'new' ? ' selected' : ''}>New</option><option value="read"${e.status === 'read' ? ' selected' : ''}>Read</option><option value="replied"${e.status === 'replied' ? ' selected' : ''}>Replied</option><option value="closed"${e.status === 'closed' ? ' selected' : ''}>Closed</option></select></div></div></div>`).join('');
     }
-
-    function filterEnquiries(filter, btn) {
-      currentEnqFilter = filter;
-      document.querySelectorAll('#section-enquiries .dash-tab').forEach(t => t.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      renderEnquiries();
-    }
-
-    async function updateEnquiryStatus(id, status) {
-      try {
-        await api.enquiries.updateStatus(id, status);
-        const enq = myEnquiries.find(e => e.id === id);
-        if (enq) enq.status = status;
-        showToast('✅ Status updated');
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
+    function filterEnquiries(f, btn) { currentEnqFilter = f; document.querySelectorAll('#section-enquiries .dash-tab').forEach(t => t.classList.remove('active')); if (btn) btn.classList.add('active'); renderEnquiries(); }
+    async function updateEnquiryStatus(id, status) { try { await api.enquiries.updateStatus(id, status); const e = myEnquiries.find(e => e.id === id); if (e) e.status = status; showToast('✅ Status updated'); } catch (e) { showToast('❌ ' + e.message); } }
 
     // ── MESSAGES ──
     async function loadMessages() {
       try {
         const data = await api.messages.getAll();
         const threads = data.threads || [];
-        const container = document.getElementById('messages-list');
-        if (!container) return;
-
-        if (!threads.length) {
-          container.innerHTML = `<div class="empty-state"><div class="emoji">💬</div>
-            <p>No conversations yet.<br><a href="listings.html" style="color:var(--green-light);">Browse listings</a> to message a landlord.</p></div>`;
-        } else {
-          const inits = name => { const p = (name || '?').trim().split(' '); return (p[0][0] + (p[1]?.[0] || '')).toUpperCase(); };
-          container.innerHTML = threads.slice(0, 6).map(t => `
-            <a href="chat.html?with=${t.partner_id}" style="text-decoration:none;display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);transition:background 0.15s;color:inherit;"
-               onmouseover="this.style.background='#f0f7f4'" onmouseout="this.style.background=''">
-              <div style="width:38px;height:38px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">
-                ${inits(t.partner_name)}
-              </div>
-              <div style="flex:1;min-width:0;">
-                <div style="font-weight:${t.unread_count > 0 ? '700' : '500'};color:var(--text-dark);font-size:0.88rem;">${t.partner_name}
-                  <span style="font-size:0.7rem;color:var(--text-muted);font-weight:400;margin-left:4px;text-transform:capitalize;">${t.partner_role || ''}</span>
-                </div>
-                <div style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.last_message || '—'}</div>
-              </div>
-              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
-                <span style="font-size:0.69rem;color:var(--text-muted);">${timeAgo(t.last_at)}</span>
-                ${t.unread_count > 0 ? `<span style="background:var(--green-light);color:#fff;border-radius:50px;font-size:0.62rem;font-weight:700;padding:1px 7px;">${t.unread_count}</span>` : ''}
-              </div>
-            </a>`).join('') +
-            (threads.length > 6 ? `<div style="text-align:center;padding:12px;">
-              <a href="chat.html" style="color:var(--green-light);font-size:0.83rem;text-decoration:none;">See all ${threads.length} conversations →</a>
-            </div>` : '');
-        }
-
-        // Update nav badge
         const unread = threads.reduce((s, t) => s + (t.unread_count || 0), 0);
-        const badge = document.getElementById('msg-badge');
-        if (badge) { badge.textContent = unread || ''; badge.style.display = unread > 0 ? 'inline' : 'none'; }
+        const b = document.getElementById('msg-badge');
+        if (b) { b.textContent = unread || ''; b.style.display = unread > 0 ? 'inline' : 'none'; }
       } catch (e) { }
     }
 
-    // ── EDIT MODAL ──
-    function openEditModal(id) {
-      const l = myListings.find(l => l.id === id);
-      if (!l) return;
-      document.getElementById('edit-listing-id').value = l.id;
-      document.getElementById('edit-title').value = l.title;
-      document.getElementById('edit-price').value = l.price;
-      document.getElementById('edit-status').value = l.status;
-      document.getElementById('edit-desc').value = l.description || '';
-      document.getElementById('edit-modal').classList.add('show');
-    }
-
-    // ── MODAL CLOSE ──
-    function closeModal() {
-      document.getElementById('edit-modal').classList.remove('show');
-    }
-
-    async function saveListing() {
-      const id = document.getElementById('edit-listing-id').value;
-      try {
-        await api.listings.update(id, {
-          title: document.getElementById('edit-title').value,
-          price: document.getElementById('edit-price').value,
-          status: document.getElementById('edit-status').value,
-          description: document.getElementById('edit-desc').value,
-        });
-        closeModal();
-        showToast('✅ Listing updated!');
-        await loadMyListings();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
-    async function deleteListing(id, title) {
-      if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
-      try {
-        await api.listings.delete(id);
-        showToast('🗑️ Listing deleted');
-        await loadMyListings();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
-    async function markAsRented(id, title) {
-      if (!confirm(`Mark "${title}" as RENTED? Tenants will see it as unavailable.`)) return;
-      try {
-        await api.listings.markRented(id);
-        showToast('🔑 Listing marked as rented!');
-        await loadMyListings();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
     // ── NOTIFICATIONS ──
-    let notifications = [];
-
     async function loadNotifications() {
       try {
         const data = await api.notifications.getMy();
         notifications = data.notifications || [];
         renderNotifications();
-        // Update badge
         const unread = notifications.filter(n => !n.is_read).length;
-        const badge = document.getElementById('notif-badge');
-        if (badge) {
-          badge.textContent = unread > 0 ? unread : '';
-          badge.style.display = unread > 0 ? 'inline' : 'none';
-        }
-      } catch (e) {
-        notifications = [];
-      }
-    }
-
-    function renderNotifications() {
-      const container = document.getElementById('notifications-list');
-      if (!container) return;
-
-      if (!notifications.length) {
-        container.innerHTML = `<div class="empty-state"><div class="emoji">🔔</div><p>No notifications yet.</p><p style="color:var(--text-muted);font-size:0.85rem;margin-top:8px;">When tenants save or enquire about your listings, you'll be notified here.</p></div>`;
-        return;
-      }
-
-      container.innerHTML = notifications.map(n => `
-        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:start;background:${n.is_read ? 'transparent' : 'rgba(212,168,67,0.06)'};">
-          <div style="font-size:1.4rem;">${n.type === 'like' ? '❤️' : n.type === 'rented' ? '🔑' : '🔔'}</div>
-          <div style="flex:1;">
-            <div style="font-size:0.92rem;color:var(--text-dark);font-weight:${n.is_read ? '400' : '600'};">${n.message}</div>
-            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">${timeAgo(n.created_at)}</div>
-          </div>
-          ${!n.is_read ? `<button onclick="markNotifRead('${n.id}', this)" style="font-size:0.75rem;color:var(--green-light);background:none;border:none;cursor:pointer;white-space:nowrap;">Mark read</button>` : ''}
-        </div>
-      `).join('');
-    }
-
-    async function markNotifRead(id, btn) {
-      try {
-        await api.notifications.markRead(id);
-        const n = notifications.find(n => n.id === id);
-        if (n) n.is_read = true;
-        renderNotifications();
-        // Update badge
-        const unread = notifications.filter(n => !n.is_read).length;
-        const badge = document.getElementById('notif-badge');
-        if (badge) { badge.textContent = unread > 0 ? unread : ''; badge.style.display = unread > 0 ? 'inline' : 'none'; }
+        const b = document.getElementById('notif-badge');
+        if (b) { b.textContent = unread > 0 ? unread : ''; b.style.display = unread > 0 ? 'inline' : 'none'; }
       } catch (e) { }
     }
+    function renderNotifications() {
+      const c = document.getElementById('notifications-list');
+      if (!c) return;
+      if (!notifications.length) { c.innerHTML = `<div class="empty-state"><div class="emoji">🔔</div><p>No notifications yet.</p></div>`; return; }
+      c.innerHTML = notifications.map(n => `<div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:start;background:${n.is_read ? 'transparent' : 'rgba(212,168,67,.06)'}"><div style="font-size:1.4rem;">${n.type === 'like' ? '❤️' : n.type === 'rented' ? '🔑' : '🔔'}</div><div style="flex:1;"><div style="font-size:.92rem;color:var(--text-dark);font-weight:${n.is_read ? '400' : '600'};">${n.message}</div><div style="font-size:.78rem;color:var(--text-muted);margin-top:4px;">${timeAgo(n.created_at)}</div></div>${!n.is_read ? `<button onclick="markNotifRead('${n.id}')" style="font-size:.75rem;color:var(--green-light);background:none;border:none;cursor:pointer;white-space:nowrap;">Mark read</button>` : ''}</div>`).join('');
+    }
+    async function markNotifRead(id) { try { await api.notifications.markRead(id); const n = notifications.find(n => n.id === id); if (n) n.is_read = true; renderNotifications(); const unread = notifications.filter(n => !n.is_read).length; const b = document.getElementById('notif-badge'); if (b) { b.textContent = unread > 0 ? unread : ''; b.style.display = unread > 0 ? 'inline' : 'none'; } } catch (e) { } }
+    async function markAllNotifsRead() { try { await api.notifications.markRead('all'); notifications.forEach(n => n.is_read = true); renderNotifications(); const b = document.getElementById('notif-badge'); if (b) { b.textContent = ''; b.style.display = 'none'; } showToast('✅ All marked read'); } catch (e) { showToast('❌ ' + e.message); } }
 
     // ── AVATAR ──
-    let newAvatarFile = null;
-
     function previewAvatar(input) {
-      const file = input.files[0];
-      if (!file) return;
-
-      if (file.size > 5 * 1024 * 1024) {
-        showToast('❌ Image too large. Max 5MB.');
-        input.value = '';
-        return;
-      }
-
+      const file = input.files[0]; if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { showToast('❌ Max 5MB'); input.value = ''; return; }
       newAvatarFile = file;
-      const reader = new FileReader();
-      reader.onload = e => {
-        document.getElementById('avatar-initials').style.display = 'none';
-        const img = document.getElementById('avatar-img');
-        img.src = e.target.result;
-        img.style.display = 'block';
-        document.getElementById('remove-avatar-btn').style.display = 'inline-flex';
-        // Update sidebar avatar too
-        document.getElementById('sidebar-avatar').innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />';
-      };
-      reader.readAsDataURL(file);
+      const r = new FileReader();
+      r.onload = e => { document.getElementById('avatar-initials').style.display = 'none'; const img = document.getElementById('avatar-img'); img.src = e.target.result; img.style.display = 'block'; document.getElementById('remove-avatar-btn').style.display = 'inline-flex'; document.getElementById('sidebar-avatar').innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />'; };
+      r.readAsDataURL(file);
     }
-
-    function removeAvatar() {
-      newAvatarFile = null;
-      document.getElementById('avatar-upload').value = '';
-      document.getElementById('avatar-img').style.display = 'none';
-      document.getElementById('avatar-img').src = '';
-      document.getElementById('avatar-initials').style.display = 'block';
-      document.getElementById('remove-avatar-btn').style.display = 'none';
-    }
-
-    function loadAvatar(user) {
-      if (user.avatar_url) {
-        document.getElementById('avatar-initials').style.display = 'none';
-        const img = document.getElementById('avatar-img');
-        img.src = user.avatar_url;
-        img.style.display = 'block';
-        document.getElementById('remove-avatar-btn').style.display = 'inline-flex';
-        // Update sidebar
-        document.getElementById('sidebar-avatar').innerHTML = '<img src="' + user.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />';
-      } else {
-        const initials = user.name.split(' ').map(n => n[0]).slice(0, 2).join('');
-        document.getElementById('avatar-initials').textContent = initials;
-      }
-    }
+    function removeAvatar() { newAvatarFile = null; document.getElementById('avatar-upload').value = ''; document.getElementById('avatar-img').style.display = 'none'; document.getElementById('avatar-img').src = ''; document.getElementById('avatar-initials').style.display = 'block'; document.getElementById('remove-avatar-btn').style.display = 'none'; }
+    function loadAvatar(user) { if (user.avatar_url) { document.getElementById('avatar-initials').style.display = 'none'; const img = document.getElementById('avatar-img'); img.src = user.avatar_url; img.style.display = 'block'; document.getElementById('remove-avatar-btn').style.display = 'inline-flex'; document.getElementById('sidebar-avatar').innerHTML = '<img src="' + user.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />'; } else { document.getElementById('avatar-initials').textContent = user.name.split(' ').map(n => n[0]).slice(0, 2).join(''); } }
 
     // ── SETTINGS ──
     async function updateProfile(e) {
-      e.preventDefault();
-      const btn = e.target.querySelector('button[type=submit]');
-      btn.textContent = 'Saving...'; btn.disabled = true;
-
+      e.preventDefault(); const btn = e.target.querySelector('button[type=submit]'); btn.textContent = 'Saving...'; btn.disabled = true;
       try {
-        const formData = new FormData();
-        formData.append('name', document.getElementById('settings-name').value);
-        formData.append('phone', document.getElementById('settings-phone').value);
-        if (newAvatarFile) formData.append('avatar', newAvatarFile);
-
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/auth/update-profile', {
-          method: 'PATCH',
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
-          body: formData,
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-
-        // Update stored user
-        const stored = JSON.parse(localStorage.getItem('nyumba_user') || '{}');
-        stored.name = data.user.name;
-        stored.phone = data.user.phone;
-        if (data.user.avatar_url) stored.avatar_url = data.user.avatar_url;
-        localStorage.setItem('nyumba_user', JSON.stringify(stored));
-
-        newAvatarFile = null;
-        showToast('✅ Profile updated!');
-      } catch (err) {
-        showToast('❌ ' + err.message);
-      } finally {
-        btn.textContent = 'Save Changes'; btn.disabled = false;
-      }
+        const fd = new FormData(); fd.append('name', document.getElementById('settings-name').value); fd.append('phone', document.getElementById('settings-phone').value); if (newAvatarFile) fd.append('avatar', newAvatarFile);
+        const res = await fetch(RENDER + '/auth/update-profile', { method: 'PATCH', headers: { 'Authorization': 'Bearer ' + tok() }, body: fd });
+        const data = await res.json(); if (!data.success) throw new Error(data.message);
+        const stored = JSON.parse(localStorage.getItem('nyumba_user') || '{}'); stored.name = data.user.name; stored.phone = data.user.phone; if (data.user.avatar_url) stored.avatar_url = data.user.avatar_url; localStorage.setItem('nyumba_user', JSON.stringify(stored));
+        newAvatarFile = null; showToast('✅ Profile updated!');
+      } catch (err) { showToast('❌ ' + err.message); } finally { btn.textContent = 'Save Changes'; btn.disabled = false; }
     }
-
     async function changePassword(e) {
-      e.preventDefault();
-      const np = document.getElementById('new-pass').value;
-      const cp = document.getElementById('confirm-pass').value;
+      e.preventDefault(); const np = document.getElementById('new-pass').value; const cp = document.getElementById('confirm-pass').value;
       if (np !== cp) { showToast('❌ Passwords do not match'); return; }
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/auth/change-password', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` },
-          body: JSON.stringify({ currentPassword: document.getElementById('current-pass').value, newPassword: np }),
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('✅ Password changed!');
-        e.target.reset();
-      } catch (err) { showToast('❌ ' + err.message); }
+      try { const res = await fetch(RENDER + '/auth/change-password', { method: 'PATCH', headers: authH(), body: JSON.stringify({ currentPassword: document.getElementById('current-pass').value, newPassword: np }) }); const data = await res.json(); if (!data.success) throw new Error(data.message); showToast('✅ Password changed!'); e.target.reset(); } catch (err) { showToast('❌ ' + err.message); }
     }
 
-    // ── SECTION SWITCHING ──
-    function showSection(name, clickedLink) {
-      document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
-      document.getElementById('section-' + name).style.display = 'block';
-      document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
-      if (clickedLink) clickedLink.classList.add('active');
-      if (name === 'enquiries') loadEnquiries();
-      if (name === 'messages') loadMessages();
-      closeDashSidebar(); // close sidebar after selecting a section
-    }
-
-    function toggleDashSidebar() {
-      const sidebar = document.getElementById('dash-sidebar');
-      const overlay = document.getElementById('sidebar-overlay');
-      const btn = document.getElementById('dash-hamburger');
-      sidebar.classList.toggle('open');
-      overlay.classList.toggle('show');
-      btn.classList.toggle('open');
-    }
-
-    function closeDashSidebar() {
-      document.getElementById('dash-sidebar').classList.remove('open');
-      document.getElementById('sidebar-overlay').classList.remove('show');
-      document.getElementById('dash-hamburger').classList.remove('open');
-    }
-
-    function openDashSidebar() {
-      document.getElementById('dash-sidebar').classList.add('open');
-      document.getElementById('sidebar-overlay').classList.add('show');
-      document.getElementById('dash-hamburger').classList.add('open');
-    }
-
-    // ── UTILS ──
-    function timeAgo(dateStr) {
-      const diff = Date.now() - new Date(dateStr);
-      const m = Math.floor(diff / 60000);
-      if (m < 1) return 'just now';
-      if (m < 60) return `${m}m ago`;
-      const h = Math.floor(m / 60);
-      if (h < 24) return `${h}h ago`;
-      return `${Math.floor(h / 24)}d ago`;
-    }
-
-    function showToast(msg) {
-      let t = document.getElementById('toast');
-      if (!t) { t = document.createElement('div'); t.className = 'toast'; t.id = 'toast'; document.body.appendChild(t); }
-      t.textContent = msg;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3000);
-    }
+    // ── EDIT / DELETE LISTINGS ──
+    function openEditModal(id) { const l = myListings.find(l => l.id === id); if (!l) return; document.getElementById('edit-listing-id').value = l.id; document.getElementById('edit-title').value = l.title; document.getElementById('edit-price').value = l.price; document.getElementById('edit-status').value = l.status; document.getElementById('edit-desc').value = l.description || ''; document.getElementById('edit-modal').classList.add('show'); }
+    function closeModal() { document.getElementById('edit-modal').classList.remove('show'); }
+    async function saveListing() { const id = document.getElementById('edit-listing-id').value; try { await api.listings.update(id, { title: document.getElementById('edit-title').value, price: document.getElementById('edit-price').value, status: document.getElementById('edit-status').value, description: document.getElementById('edit-desc').value }); closeModal(); showToast('✅ Listing updated!'); await loadMyListings(); } catch (e) { showToast('❌ ' + e.message); } }
+    async function deleteListing(id, title) { if (!confirm(`Delete "${title}"?`)) return; try { await api.listings.delete(id); showToast('🗑️ Deleted'); await loadMyListings(); } catch (e) { showToast('❌ ' + e.message); } }
+    async function markAsRented(id, title) { if (!confirm(`Mark "${title}" as RENTED?`)) return; try { await api.listings.update(id, { status: 'rented' }); showToast('🔑 Marked as rented!'); await loadMyListings(); } catch (e) { showToast('❌ ' + e.message); } }
 
     // ── ADMIN ──
-    let allUsers = [];
-    let currentAdminFilter = 'pending';
+    async function loadAdminData() { await Promise.all([loadAdminListings('pending'), loadAdminUsers(), loadAdminStats(), loadAdminReviewsPanel(), loadSubLandlords(), loadSubPayments(), loadContactMessages()]); }
 
-    async function loadAdminData() {
-      await Promise.all([loadAdminListings('pending'), loadAdminUsers(), loadAdminStats(), loadAdminReviewsPanel(), loadSubPayments(), loadSubLandlords()]);
-    }
-    // ═══════════════════════════════════════════════════
-    // ADD THIS BLOCK inside the <script> tag in dashboard.html
-    // Best placed right after the existing loadAdminData()
-    // function, or anywhere in the admin section of the script.
-    //
-    // Also UPDATE loadAdminData() to call loadSubLandlords()
-    // and loadSubPayments() — see note at the bottom.
-    // ═══════════════════════════════════════════════════
-
-    let allSubLandlords = [];
-    let targetLandlordId = null;
-    let targetLandlordName = '';
-
-    // ── PLAN PRICING (keep in sync with subscription_plans table) ──
-    const PLAN_PRICES = {
-      free: 0,
-      basic: 50000,
-      premium: 100000
-    };
-    const PLAN_LABELS = {
-      free: 'Free',
-      basic: 'Basic',
-      premium: 'Premium'
-    };
-
-    // ── LOAD ALL LANDLORDS WITH THEIR CURRENT PLAN ──
-    async function loadSubLandlords() {
-      const container = document.getElementById('sub-landlords-list');
-      if (!container) return;
-
+    async function loadAdminStats() {
       try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/subscriptions/admin/landlords', {
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
-        });
-        const data = await res.json();
-        allSubLandlords = data.landlords || [];
+        const res = await fetch(RENDER + '/admin/stats', { headers: authH() }); const data = await res.json(); if (!data.success) return;
+        const ls = data.stats.listings || [];
+        const setV = (id, arr, key) => { const f = arr.find(x => x[key] === id) || {}; document.getElementById('admin-stat-' + id.replace(/ /g, '_')).textContent = f.count || 0; };
+        const pending = ls.find(l => l.status === 'pending'); const active = ls.find(l => l.status === 'active');
+        document.getElementById('admin-stat-pending').textContent = pending?.count || 0;
+        document.getElementById('admin-stat-active').textContent = active?.count || 0;
+        const us = data.stats.users || [];
+        document.getElementById('admin-stat-landlords').textContent = us.find(u => u.role === 'landlord')?.count || 0;
+        document.getElementById('admin-stat-tenants').textContent = us.find(u => u.role === 'tenant')?.count || 0;
+        const pc = parseInt(pending?.count || 0); const ab = document.getElementById('admin-badge'); if (ab) { ab.textContent = pc > 0 ? pc : ''; ab.style.display = pc > 0 ? 'inline' : 'none'; }
+      } catch (e) { console.error(e); }
+    }
 
-        // Update counts
-        const free = allSubLandlords.filter(l => !l.plan_name || l.plan_name === 'free').length;
-        const basic = allSubLandlords.filter(l => l.plan_name === 'basic').length;
-        const premium = allSubLandlords.filter(l => l.plan_name === 'premium').length;
-        document.getElementById('sub-count-free').textContent = free;
-        document.getElementById('sub-count-basic').textContent = basic;
-        document.getElementById('sub-count-premium').textContent = premium;
+    async function loadAdminListings(status, btn) {
+      currentAdminFilter = status;
+      if (btn) { document.querySelectorAll('#section-admin .dash-tab').forEach(t => t.classList.remove('active')); btn.classList.add('active'); }
+      const c = document.getElementById('admin-listings-body');
+      c.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>';
+      try {
+        const res = await fetch(RENDER + '/admin/listings?status=' + status, { headers: authH() });
+        const data = await res.json(); const listings = data.listings || [];
+        if (!listings.length) { c.innerHTML = '<div class="empty-state"><div class="emoji">✅</div><p>No ' + status + ' listings.</p></div>'; return; }
+        c.innerHTML = listings.map(l => `<div style="padding:20px 24px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start;">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;"><span style="font-weight:700;color:var(--text-dark);font-size:1rem;">${l.title}</span><span class="status-badge status-${l.status}">${l.status}</span></div>
+        <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:4px;">📍 ${l.neighbourhood}, ${l.district} · 🛏 ${l.bedrooms} bed · 💰 UGX ${l.price.toLocaleString()}/mo</div>
+        <div style="font-size:.83rem;color:var(--green-light);margin-bottom:4px;">👤 ${l.landlord_name} · 📞 ${l.landlord_phone}</div>
+        <div style="font-size:.8rem;color:var(--text-muted);">Submitted: ${new Date(l.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:140px;">
+        ${l.status === 'pending' ? `<button class="btn btn-primary" style="padding:8px 16px;font-size:.85rem;border-radius:8px;" onclick="approveListing('${l.id}','${l.title.replace(/'/g, "\\'")}')">✅ Approve</button><button class="btn-sm danger" onclick="rejectListing('${l.id}','${l.title.replace(/'/g, "\\'")}')">❌ Reject</button>` : `<button class="btn-sm" onclick="changeListingStatus('${l.id}','active')">Activate</button><button class="btn-sm danger" onclick="changeListingStatus('${l.id}','inactive')">Deactivate</button>`}
+        <a href="listing-detail.html?id=${l.id}" class="btn-sm" style="text-align:center;">View →</a>
+      </div>
+    </div>`).join('');
+      } catch (e) { c.innerHTML = '<div class="empty-state"><p>Failed to load.</p></div>'; }
+    }
 
+    async function approveListing(id, title) { if (!confirm('Approve "' + title + '"?')) return; try { const res = await fetch(RENDER + '/admin/listings/' + id + '/approve', { method: 'PATCH', headers: authH() }); const data = await res.json(); if (!data.success) throw new Error(data.message); showToast('✅ Listing approved!'); await loadAdminListings(currentAdminFilter); await loadAdminStats(); } catch (e) { showToast('❌ ' + e.message); } }
+    async function rejectListing(id, title) { if (!confirm('Reject and delete "' + title + '"?')) return; try { const res = await fetch(RENDER + '/listings/' + id, { method: 'DELETE', headers: authH() }); const data = await res.json(); if (!data.success) throw new Error(data.message); showToast('🗑️ Rejected and removed.'); await loadAdminListings(currentAdminFilter); await loadAdminStats(); } catch (e) { showToast('❌ ' + e.message); } }
+    async function changeListingStatus(id, status) { try { const res = await fetch(RENDER + '/listings/' + id, { method: 'PATCH', headers: authH(), body: JSON.stringify({ status }) }); const data = await res.json(); if (!data.success) throw new Error(data.message); showToast('✅ Status updated to ' + status); await loadAdminListings(currentAdminFilter); } catch (e) { showToast('❌ ' + e.message); } }
+
+    async function loadAdminUsers() {
+      try { const res = await fetch(RENDER + '/admin/users', { headers: authH() }); const data = await res.json(); allUsers = data.users || []; renderUsers(allUsers); } catch (e) { }
+    }
+    function renderUsers(users) {
+      const tbody = document.getElementById('admin-users-body');
+      if (!users.length) { tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>No users found.</p></div></td></tr>'; return; }
+      tbody.innerHTML = users.map(u => `<tr><td style="font-weight:600;color:var(--text-dark);"><div style="display:flex;align-items:center;gap:10px;"><div style="width:34px;height:34px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;">${u.name.split(' ').map(n => n[0]).slice(0, 2).join('')}</div>${u.name}</div></td><td>${u.email}</td><td>${u.phone || '—'}</td><td><span class="status-badge ${u.role === 'landlord' ? 'status-active' : u.role === 'admin' ? 'status-rented' : 'status-pending'}">${u.role}</span></td><td>${new Date(u.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</td><td><div class="action-btns">${u.role !== 'admin' ? `<button class="btn-sm" onclick="makeAdmin('${u.id}','${u.name}')">Make Admin</button>` : '<span style="color:var(--text-muted);font-size:.8rem;">Admin</span>'}${u.role === 'landlord' ? `<button class="btn-sm" onclick="managePlan('${u.id}','${u.name}','free')">💳 Plan</button>` : ''} ${u.is_active ? `<button class="btn-sm danger" onclick="toggleUser('${u.id}',false,'${u.name}')">Suspend</button>` : `<button class="btn-sm" onclick="toggleUser('${u.id}',true,'${u.name}')">Restore</button>`}</div></td></tr>`).join('');
+    }
+    function filterUsers() { const q = document.getElementById('user-search').value.toLowerCase(); renderUsers(allUsers.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))); }
+    async function makeAdmin(id, name) { if (!confirm('Give admin to ' + name + '?')) return; try { const res = await fetch(RENDER + '/admin/users/' + id + '/role', { method: 'PATCH', headers: authH(), body: JSON.stringify({ role: 'admin' }) }); const data = await res.json(); if (!data.success) throw new Error(data.message); showToast('✅ ' + name + ' is now admin'); await loadAdminUsers(); } catch (e) { showToast('❌ ' + e.message); } }
+    async function toggleUser(id, active, name) { if (!confirm((active ? 'Restore' : 'Suspend') + ' ' + name + '?')) return; try { const res = await fetch(RENDER + '/admin/users/' + id + '/toggle', { method: 'PATCH', headers: authH(), body: JSON.stringify({ is_active: active }) }); const data = await res.json(); if (!data.success) throw new Error(data.message); showToast('✅ ' + (active ? 'Restored' : 'Suspended')); await loadAdminUsers(); } catch (e) { showToast('❌ ' + e.message); } }
+    function managePlan(id, name, plan) { openAdminUpgradeModal(id, name, plan); }
+
+    // ── ADMIN REVIEWS ──
+    async function loadAdminReviewsPanel() {
+      const tbody = document.getElementById('admin-reviews-table-body'); if (!tbody) return;
+      try {
+        const data = await api.reviews.getAdminDashboardReviews();
+        if (!data.reviews?.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text-muted);">No reviews yet.</td></tr>'; return; }
+        tbody.innerHTML = data.reviews.map(r => `<tr><td style="padding:16px 20px;font-weight:600;">${r.tenant_name}</td><td style="padding:16px 20px;color:var(--green-light);">${r.property_title || '—'}</td><td style="padding:16px 20px;max-width:300px;"><div style="color:#f59e0b;">${'★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)}</div><p style="margin:4px 0;font-size:.85rem;color:var(--text-mid);">${r.comment || '<em>No comment</em>'}</p><small style="color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short' })}</small></td><td style="padding:16px 20px;"><select class="btn-sm" onchange="updateReviewStatus('${r.id}',this.value)" style="padding:6px 10px;"><option value="active"${r.status === 'active' ? ' selected' : ''}>🟢 Active</option><option value="hidden"${r.status === 'hidden' ? ' selected' : ''}>🛑 Hidden</option><option value="flagged"${r.status === 'flagged' ? ' selected' : ''}>⚠️ Flagged</option></select></td></tr>`).join('');
+      } catch (e) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:#ef4444;">Failed to load reviews.</td></tr>'; }
+    }
+    async function updateReviewStatus(id, status) { try { const data = await api.reviews.updateStatus(id, status); if (data.success) showToast('✅ Review ' + status); } catch (e) { showToast('❌ Failed'); } }
+
+    // ── SUBSCRIPTION MANAGEMENT ──
+    async function loadSubLandlords() {
+      const c = document.getElementById('sub-landlords-list'); if (!c) return;
+      try {
+        const res = await fetch(RENDER + '/subscriptions/admin/landlords', { headers: authH() });
+        const data = await res.json(); allSubLandlords = data.landlords || [];
+        document.getElementById('sub-count-free').textContent = allSubLandlords.filter(l => !l.plan_name || l.plan_name === 'free').length;
+        document.getElementById('sub-count-basic').textContent = allSubLandlords.filter(l => l.plan_name === 'basic').length;
+        document.getElementById('sub-count-premium').textContent = allSubLandlords.filter(l => l.plan_name === 'premium').length;
         renderSubLandlords(allSubLandlords);
-      } catch (e) {
-        container.innerHTML = '<div class="empty-state"><p>❌ Could not load landlords. Check that /api/subscriptions/admin/landlords exists.</p></div>';
-      }
+      } catch (e) { c.innerHTML = '<div class="empty-state"><p>❌ Could not load landlords.</p></div>'; }
     }
 
     function renderSubLandlords(landlords) {
-      const container = document.getElementById('sub-landlords-list');
-      if (!landlords.length) {
-        container.innerHTML = '<div class="empty-state"><div class="emoji">🔑</div><p>No landlords found.</p></div>';
-        return;
-      }
-
-      const planBadgeStyle = {
-        free: 'background:#f0f0f0;color:#666;',
-        basic: 'background:#e8f4fd;color:#1a6fa8;',
-        premium: 'background:#fef9e7;color:#b7860b;border:1px solid #f0c96a;'
-      };
-
-      container.innerHTML = landlords.map(l => {
+      const c = document.getElementById('sub-landlords-list');
+      if (!landlords.length) { c.innerHTML = '<div class="empty-state"><div class="emoji">🔑</div><p>No landlords found.</p></div>'; return; }
+      const ps = { free: 'background:#f0f0f0;color:#666;', basic: 'background:#e8f4fd;color:#1a6fa8;', premium: 'background:#fef9e7;color:#b7860b;border:1px solid #f0c96a;' };
+      c.innerHTML = landlords.map(l => {
         const plan = l.plan_name || 'free';
-        const planLabel = l.plan_display || PLAN_LABELS[plan] || 'Free';
-        const expiry = l.expires_at
-          ? `Expires ${new Date(l.expires_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}`
-          : (plan === 'free' ? 'No expiry' : '—');
-        const isExpired = l.expires_at && new Date(l.expires_at) < new Date();
-
-        return `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px;">
-          <div style="display:flex;align-items:center;gap:14px;">
-            <div style="width:42px;height:42px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:0.95rem;flex-shrink:0;">
-              ${l.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
-            </div>
-            <div>
-              <div style="font-weight:600;color:var(--text-dark);font-size:0.92rem;">${l.name}</div>
-              <div style="font-size:0.8rem;color:var(--text-muted);">${l.email} · ${l.phone || '—'}</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-            <div style="text-align:right;">
-              <span class="badge" style="${planBadgeStyle[plan]}padding:3px 12px;border-radius:50px;font-size:0.78rem;font-weight:600;">${planLabel}</span>
-              <div style="font-size:0.74rem;color:${isExpired ? '#c0392b' : 'var(--text-muted)'};margin-top:3px;">${isExpired ? '⚠️ Expired' : expiry}</div>
-            </div>
-            <button class="btn-sm" style="background:#fef9e7;color:#b7860b;border:1px solid #f0c96a;"
-              onclick="openAdminUpgradeModal('${l.id}', '${l.name.replace(/'/g, "\\'")}', '${plan}')">
-              💳 Manage Plan
-            </button>
-          </div>
-        </div>`;
+        const expiry = l.expires_at ? `Expires ${new Date(l.expires_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}` : (plan === 'free' ? 'No expiry' : '—');
+        const expired = l.expires_at && new Date(l.expires_at) < new Date();
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="width:42px;height:42px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:.95rem;">${l.name.split(' ').map(n => n[0]).slice(0, 2).join('')}</div>
+        <div><div style="font-weight:600;color:var(--text-dark);font-size:.92rem;">${l.name}</div><div style="font-size:.8rem;color:var(--text-muted);">${l.email} · ${l.phone || '—'}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="text-align:right;"><span style="${ps[plan]}padding:3px 12px;border-radius:50px;font-size:.78rem;font-weight:600;">${PLAN_LABELS[plan]}</span><div style="font-size:.74rem;color:${expired ? '#c0392b' : 'var(--text-muted)'};margin-top:3px;">${expired ? '⚠️ Expired' : expiry}</div></div>
+        <button class="btn-sm" style="background:#fef9e7;color:#b7860b;border:1px solid #f0c96a;" onclick="openAdminUpgradeModal('${l.id}','${l.name.replace(/'/g, "\\'")}','${plan}')">💳 Manage Plan</button>
+      </div>
+    </div>`;
       }).join('');
     }
+    function filterSubLandlords() { const q = document.getElementById('sub-search').value.toLowerCase(); renderSubLandlords(allSubLandlords.filter(l => l.name.toLowerCase().includes(q) || l.email.toLowerCase().includes(q))); }
 
-    function filterSubLandlords() {
-      const q = document.getElementById('sub-search').value.toLowerCase();
-      const filtered = allSubLandlords.filter(l =>
-        l.name.toLowerCase().includes(q) || l.email.toLowerCase().includes(q)
-      );
-      renderSubLandlords(filtered);
-    }
-
-    // ── UPGRADE MODAL ──
-    function openAdminUpgradeModal(landlordId, landlordName, currentPlan) {
-      targetLandlordId = landlordId;
-      targetLandlordName = landlordName;
-      document.getElementById('admin-upgrade-target').innerHTML =
-        `Updating plan for <strong>${landlordName}</strong>`;
-      document.getElementById('admin-upgrade-plan').value = currentPlan || 'free';
+    function openAdminUpgradeModal(id, name, plan) {
+      targetLandlordId = id; targetLandlordName = name;
+      document.getElementById('admin-upgrade-target').innerHTML = 'Updating plan for <strong>' + name + '</strong>';
+      document.getElementById('admin-upgrade-plan').value = plan || 'free';
       document.getElementById('admin-upgrade-months').value = 1;
       document.getElementById('admin-upgrade-ref').value = '';
       document.getElementById('admin-upgrade-notes').value = '';
       document.getElementById('admin-upgrade-modal').classList.add('show');
     }
-
-    function closeAdminUpgradeModal() {
-      document.getElementById('admin-upgrade-modal').classList.remove('show');
-      targetLandlordId = null;
-    }
+    function closeAdminUpgradeModal() { document.getElementById('admin-upgrade-modal').classList.remove('show'); targetLandlordId = null; }
 
     async function confirmAdminUpgrade() {
       if (!targetLandlordId) return;
-
       const plan_name = document.getElementById('admin-upgrade-plan').value;
       const months = parseInt(document.getElementById('admin-upgrade-months').value) || 1;
       const payment_reference = document.getElementById('admin-upgrade-ref').value.trim();
       const notes = document.getElementById('admin-upgrade-notes').value.trim();
-
       try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/subscriptions/admin/upgrade', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token')
-          },
-          body: JSON.stringify({
-            landlord_id: targetLandlordId,
-            plan_name,
-            months,
-            payment_reference,
-            notes
-          })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-
-        showToast(`👑 ${targetLandlordName} upgraded to ${PLAN_LABELS[plan_name]}`);
-        closeAdminUpgradeModal();
-        await loadSubLandlords();
-        await loadSubPayments();
-      } catch (e) {
-        showToast('❌ ' + e.message);
-      }
+        const res = await fetch(RENDER + '/subscriptions/admin/upgrade', { method: 'POST', headers: authH(), body: JSON.stringify({ landlord_id: targetLandlordId, plan_name, months, payment_reference, notes }) });
+        const data = await res.json(); if (!data.success) throw new Error(data.message);
+        showToast('👑 ' + targetLandlordName + ' upgraded to ' + PLAN_LABELS[plan_name]);
+        closeAdminUpgradeModal(); await loadSubLandlords(); await loadSubPayments();
+      } catch (e) { showToast('❌ ' + e.message); }
     }
 
-    // ── LOAD RECENT MANUAL PAYMENTS ──
     async function loadSubPayments() {
-      const tbody = document.getElementById('sub-payments-body');
-      if (!tbody) return;
-
+      const tbody = document.getElementById('sub-payments-body'); if (!tbody) return;
       try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/subscriptions/admin/payments', {
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
-        });
-        const data = await res.json();
-        const payments = data.payments || [];
-
-        if (!payments.length) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">No manual payments recorded yet.</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = payments.map(p => `
-          <tr>
-            <td><strong>${p.landlord_name}</strong><br><small style="color:var(--text-muted);">${p.landlord_email}</small></td>
-            <td>${p.plan_display}</td>
-            <td style="font-family:'Fraunces',serif;color:var(--green-dark);">UGX ${parseInt(p.amount_ugx).toLocaleString()}</td>
-            <td style="font-size:0.82rem;">${p.payment_reference || '—'}</td>
-            <td style="font-size:0.8rem;color:var(--text-muted);">${new Date(p.paid_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-            <td style="font-size:0.8rem;color:var(--text-muted);">${p.notes || '—'}</td>
-          </tr>
-        `).join('');
-      } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:#c0392b;">Failed to load payments.</td></tr>';
-      }
+        const res = await fetch(RENDER + '/subscriptions/admin/payments', { headers: authH() });
+        const data = await res.json(); const payments = data.payments || [];
+        if (!payments.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">No manual payments yet.</td></tr>'; return; }
+        tbody.innerHTML = payments.map(p => `<tr><td><strong>${p.landlord_name}</strong><br><small style="color:var(--text-muted);">${p.landlord_email}</small></td><td>${p.plan_display}</td><td style="font-family:'Fraunces',serif;color:var(--green-dark);">UGX ${parseInt(p.amount_ugx).toLocaleString()}</td><td style="font-size:.82rem;">${p.payment_reference || '—'}</td><td style="font-size:.8rem;color:var(--text-muted);">${new Date(p.paid_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</td><td style="font-size:.8rem;color:var(--text-muted);">${p.notes || '—'}</td></tr>`).join('');
+      } catch (e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:#c0392b;">Failed to load.</td></tr>'; }
     }
 
-    // ═══════════════════════════════════════════════════
-    // IMPORTANT: Update your existing loadAdminData() function
-    // to also call these two new functions. Find this in your
-    // dashboard.html script and change it to:
-    //
-    // async function loadAdminData() {
-    //   await Promise.all([
-    //     loadAdminListings('pending'),
-    //     loadAdminUsers(),
-    //     loadAdminStats(),
-    //     loadAdminReviewsPanel(),
-    //     loadSubLandlords(),      // ← ADD THIS
-    //     loadSubPayments()         // ← ADD THIS
-    //   ]);
-    // }
-    // ═══════════════════════════════════════════════════
-    // ── 📢 REVIEWS MODERATION PANEL SYSTEM LOGIC ──
-    async function loadAdminReviewsPanel() {
-      const tbody = document.getElementById('admin-reviews-table-body');
-      if (!tbody) return;
-
+    // ── CONTACT MESSAGES ──
+    let contactMsgFilter = 'all';
+    async function loadContactMessages() {
+      const c = document.getElementById('contact-messages-list'); if (!c) return;
       try {
-        // Safe execution using your newly extended global api object branch
-        const data = await api.reviews.getAdminDashboardReviews();
-        tbody.innerHTML = '';
-
-        if (!data.reviews || data.reviews.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 32px; color: var(--text-muted);">No reviews written on NyumbaUG yet.</td></tr>`;
-          return;
-        }
-
-        data.reviews.forEach(review => {
-          const starDisplay = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-          const formattedDate = new Date(review.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short' });
-
-          tbody.innerHTML += `
-  <tr style="border-bottom: 1px solid var(--border); vertical-align: top;">
-    <td style="padding: 16px 20px;">
-      <div style="font-weight: 600; color: var(--text-dark);">${review.tenant_name}</div>
-    </td>
-    <td style="padding: 16px 20px;">
-      <div style="font-weight: 600; color: var(--green-light);">${review.property_title || 'Unknown property'}</div>
-    </td>
-    <td style="padding: 16px 20px; max-width: 320px; white-space: normal; word-break: break-word;">
-      <div style="color: #f59e0b; font-size: 0.9rem; margin-bottom: 4px;">${starDisplay}</div>
-      <p style="margin: 4px 0; font-size: 0.85rem; color: var(--text-mid); line-height: 1.4;">${review.comment || '<em style="color:var(--text-muted)">No comment</em>'}</p>
-      <small style="color: var(--text-muted); font-size: 0.75rem; display:block; margin-top:4px;">Date: ${formattedDate}</small>
-    </td>
-              <td style="padding: 16px 20px;">
-                <select class="btn-sm" onchange="updateReviewStatus('${review.id}', this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--white); outline: none; cursor: pointer; font-size:0.83rem;">
-                  <option value="active" ${review.status === 'active' ? 'selected' : ''}>🟢 Active</option>
-                  <option value="hidden" ${review.status === 'hidden' ? 'selected' : ''}>🛑 Hidden</option>
-                  <option value="flagged" ${review.status === 'flagged' ? 'selected' : ''}>⚠️ Flagged</option>
-                </select>
-              </td>
-            </tr>
-          `;
-        });
-      } catch (err) {
-        console.error('Dashboard table construction error:', err);
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 24px; color: #ef4444; font-size:0.88rem;">❌ Failed to load system reviews from Render.</td></tr>`;
-      }
+        const res = await fetch(RENDER + '/admin/enquiries', { headers: authH() });
+        const data = await res.json(); allContactMsgs = data.enquiries || [];
+        const today = new Date().toDateString();
+        const unread = allContactMsgs.filter(e => e.status === 'new' || !e.status).length;
+        const todayC = allContactMsgs.filter(e => new Date(e.created_at).toDateString() === today).length;
+        const ct = document.getElementById('cm-total'); const cu = document.getElementById('cm-unread'); const ctd = document.getElementById('cm-today');
+        if (ct) ct.textContent = allContactMsgs.length; if (cu) cu.textContent = unread; if (ctd) ctd.textContent = todayC;
+        const b = document.getElementById('contact-badge'); if (b) { b.textContent = unread > 0 ? unread : ''; b.style.display = unread > 0 ? 'inline' : 'none'; }
+        renderContactMessages();
+      } catch (e) { if (c) c.innerHTML = '<div class="empty-state"><p>❌ Could not load messages.</p></div>'; }
     }
-
-    async function updateReviewStatus(reviewId, newStatus) {
-      try {
-        const data = await api.reviews.updateStatus(reviewId, newStatus);
-        if (data.success) {
-          showToast(`✅ Review visibility marked ${newStatus}`);
-        } else {
-          showToast(data.message || '❌ Error updating visibility status.');
-        }
-      } catch (err) {
-        console.error(err);
-        showToast('❌ Failed to update review state.');
-      }
+    function filterContactMsgs(f, btn) { contactMsgFilter = f; document.querySelectorAll('.contact-tab').forEach(t => t.classList.remove('active')); if (btn) btn.classList.add('active'); renderContactMessages(); }
+    function renderContactMessages() {
+      const c = document.getElementById('contact-messages-list'); if (!c) return;
+      const f = contactMsgFilter === 'all' ? allContactMsgs : allContactMsgs.filter(e => e.status === contactMsgFilter || (!e.status && contactMsgFilter === 'new'));
+      if (!f.length) { c.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><p>No messages found.</p></div>'; return; }
+      c.innerHTML = f.map(e => `<div class="enquiry-item ${e.status === 'new' || !e.status ? 'unread' : ''}"><div><div class="enquiry-name">${e.name || 'Unknown'}${e.status === 'new' || !e.status ? '<span style="background:var(--gold);color:var(--green-dark);font-size:.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">NEW</span>' : ''}</div><div class="enquiry-msg" style="margin-top:6px;">${e.message || '—'}</div><div class="enquiry-contact" style="margin-top:8px;">${e.email ? `✉️ <a href="mailto:${e.email}">${e.email}</a>` : ''} ${e.phone ? `· 📞 <a href="tel:${e.phone}">${e.phone}</a>` : ''} ${e.phone ? `· <a href="https://wa.me/${e.phone.replace(/[\s+]/g, '')}" target="_blank" style="color:#25D366;">💬 WhatsApp</a>` : ''}</div></div><div style="text-align:right;min-width:100px;"><div class="enquiry-time">${timeAgo(e.created_at)}</div><button class="btn-sm" style="margin-top:8px;" onclick="markContactRead('${e.id}')">Mark Read</button></div></div>`).join('');
     }
+    async function markContactRead(id) { try { await api.enquiries.updateStatus(id, 'read'); const m = allContactMsgs.find(e => e.id === id); if (m) m.status = 'read'; renderContactMessages(); showToast('✅ Marked as read'); } catch (e) { showToast('❌ Could not update'); } }
 
-    async function loadAdminStats() {
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/stats', {
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
-        });
-        const data = await res.json();
-        if (!data.success) return;
-
-        const listingStats = data.stats.listings || [];
-        const pending = listingStats.find(l => l.status === 'pending');
-        const active = listingStats.find(l => l.status === 'active');
-
-        document.getElementById('admin-stat-pending').textContent = pending?.count || 0;
-        document.getElementById('admin-stat-active').textContent = active?.count || 0;
-
-        const rented = listingStats.find(l => l.status === 'rented');
-        const rentedEl = document.getElementById('admin-stat-rented');
-        if (rentedEl) rentedEl.textContent = rented?.count || 0;
-
-        const overviewActiveCard = document.getElementById('stat-active');
-        if (overviewActiveCard) {
-          overviewActiveCard.textContent = active?.count || 0;
-        }
-
-        const userStats = data.stats.users || [];
-        const landlords = userStats.find(u => u.role === 'landlord');
-        const tenants = userStats.find(u => u.role === 'tenant');
-        document.getElementById('admin-stat-landlords').textContent = landlords?.count || 0;
-        document.getElementById('admin-stat-tenants').textContent = tenants?.count || 0;
-
-        // Update badge
-        const pendingCount = parseInt(pending?.count || 0);
-        const adminBadge = document.getElementById('admin-badge');
-        if (adminBadge) {
-          adminBadge.textContent = pendingCount > 0 ? pendingCount : '';
-          adminBadge.style.display = pendingCount > 0 ? 'inline' : 'none';
-        }
-      } catch (e) {
-        console.error("Dashboard calculation error:", e);
-      }
-    }
-
-    async function loadAdminListings(status, btn) {
-      currentAdminFilter = status;
-      if (btn) {
-        document.querySelectorAll('#section-admin .dash-tab').forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-      }
-
-      const container = document.getElementById('admin-listings-body');
-      container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>';
-
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/listings?status=' + status, {
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
-        });
-        const data = await res.json();
-        const listings = data.listings || [];
-
-        if (!listings.length) {
-          container.innerHTML = '<div class="empty-state"><div class="emoji">✅</div><p>No ' + status + ' listings.</p></div>';
-          return;
-        }
-
-        container.innerHTML = listings.map(l => `
-          <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:${l.cover_image ? '72px ' : ''}1fr auto;gap:16px;align-items:start;${l.status === 'rented' ? 'background:rgba(220,38,38,0.03);' : ''}">
-            ${l.cover_image ? `
-            <div style="position:relative;width:72px;height:60px;border-radius:8px;overflow:hidden;flex-shrink:0;">
-              <img src="${l.cover_image}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'" />
-              ${l.status === 'rented' ? '<div style="position:absolute;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;"><span style="color:#fff;font-size:0.6rem;font-weight:700;letter-spacing:2px;border:1.5px solid #fff;padding:2px 5px;border-radius:3px;">RENTED</span></div>' : ''}
-            </div>` : ''}
-            <div>
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
-                <span style="font-weight:700;color:var(--text-dark);font-size:1rem;">${l.title}</span>
-                <span class="status-badge status-${l.status}">${l.status}</span>
-                ${l.review_count > 0 ? `<span style="font-size:0.75rem;color:#f59e0b;">★ ${l.review_count} review${l.review_count != 1 ? 's' : ''}</span>` : ''}
-              </div>
-              <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">
-                📍 ${l.neighbourhood}, ${l.district} &nbsp;·&nbsp; 
-                🛏 ${l.bedrooms} bed &nbsp;·&nbsp; 
-                💰 UGX ${l.price.toLocaleString()}/mo
-              </div>
-              <div style="font-size:0.83rem;color:var(--green-light);margin-bottom:6px;">
-                👤 Landlord: ${l.landlord_name} &nbsp;·&nbsp; 📞 ${l.landlord_phone}
-              </div>
-              <div style="font-size:0.8rem;color:var(--text-muted);">
-                Submitted: ${new Date(l.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </div>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:8px;min-width:140px;">
-              ${l.status === 'pending' ? `
-                <button class="btn btn-primary" style="padding:8px 16px;font-size:0.85rem;border-radius:8px;" onclick="approveListing('${l.id}', '${l.title.replace(/'/g, "\\'")}')">
-                  ✅ Approve
-                </button>
-                <button class="btn-sm danger" onclick="rejectListing('${l.id}', '${l.title.replace(/'/g, "\\'")}')">
-                  ❌ Reject
-                </button>
-              ` : l.status === 'rented' ? `
-                <span style="font-size:0.8rem;color:#dc2626;font-weight:600;text-align:center;">🔑 This property<br>is rented</span>
-                <button class="btn-sm" onclick="changeListingStatus('${l.id}', 'active')">Re-activate</button>
-              ` : `
-                <button class="btn-sm" onclick="changeListingStatus('${l.id}', 'pending')">Set Pending</button>
-                <button class="btn-sm danger" onclick="changeListingStatus('${l.id}', 'inactive')">Deactivate</button>
-              `}
-              <a href="listing-detail.html?id=${l.id}" class="btn-sm" style="text-align:center;">View →</a>
-            </div>
-          </div>
-        `).join('');
-      } catch (e) {
-        container.innerHTML = '<div class="empty-state"><p>Failed to load listings.</p></div>';
-      }
-    }
-
-    async function approveListing(id, title) {
-      if (!confirm('Approve "' + title + '"? It will go live immediately.')) return;
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/listings/' + id + '/approve', {
-          method: 'PATCH',
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('✅ Listing approved and now live!');
-        await loadAdminListings(currentAdminFilter);
-        await loadAdminStats();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
-    async function rejectListing(id, title) {
-      if (!confirm('Reject and delete "' + title + '"? This cannot be undone.')) return;
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/listings/' + id, {
-          method: 'DELETE',
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('🗑️ Listing rejected and removed.');
-        await loadAdminListings(currentAdminFilter);
-        await loadAdminStats();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
-    async function changeListingStatus(id, status) {
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/listings/' + id, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
-          body: JSON.stringify({ status })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('✅ Status updated to ' + status);
-        await loadAdminListings(currentAdminFilter);
-        await loadAdminStats();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
-    async function loadAdminUsers() {
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users', {
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
-        });
-        const data = await res.json();
-        allUsers = data.users || [];
-        renderUsers(allUsers);
-      } catch (e) { }
-    }
-
-    function renderUsers(users) {
-      const tbody = document.getElementById('admin-users-body');
-      if (!users.length) {
-        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>No users found.</p></div></td></tr>';
-        return;
-      }
-      tbody.innerHTML = users.map(u => `
-        <tr>
-          <td style="font-weight:600;color:var(--text-dark);display:flex;align-items:center;gap:10px;">
-            <div style="width:34px;height:34px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">
-              ${u.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
-            </div>
-            ${u.name}
-          </td>
-          <td>${u.email}</td>
-          <td>${u.phone || '—'}</td>
-          <td><span class="status-badge ${u.role === 'landlord' ? 'status-active' : u.role === 'admin' ? 'status-rented' : 'status-pending'}">${u.role}</span></td>
-          <td>${new Date(u.created_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-          <td>
-            <div class="action-btns">
-             ${u.role !== 'admin' ? `<button class="btn-sm" onclick="makeAdmin('${u.id}', '${u.name}')">Make Admin</button>` : '<span style="color:var(--text-muted);font-size:0.8rem;">Admin</span>'}
-${u.role === 'landlord' ? `<button class="btn-sm" style="${u.is_verified_landlord ? 'background:#dcfce7;color:#166534;border:1px solid #86efac;' : ''}" onclick="toggleVerifyLandlord('${u.id}', '${u.name}', ${u.is_verified_landlord})">${u.is_verified_landlord ? '✅ Verified' : '☑ Verify'}</button>` : ''}
-${u.is_active ? `<button class="btn-sm danger" onclick="toggleUser('${u.id}', false, '${u.name}')">Suspend</button>` : `<button class="btn-sm" onclick="toggleUser('${u.id}', true, '${u.name}')">Restore</button>`}
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function filterUsers() {
-      const q = document.getElementById('user-search').value.toLowerCase();
-      const filtered = allUsers.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
-      renderUsers(filtered);
-    }
-
-    async function makeAdmin(id, name) {
-      if (!confirm('Give admin access to ' + name + '?')) return;
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users/' + id + '/role', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
-          body: JSON.stringify({ role: 'admin' })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('✅ ' + name + ' is now an admin');
-        await loadAdminUsers();
-        await loadAdminStats();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
-    async function toggleVerifyLandlord(id, name, currentStatus) {
-      const action = currentStatus ? 'Remove verification from' : 'Verify';
-      if (!confirm(action + ' landlord "' + name + '"?')) return;
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users/' + id + '/verify', {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token')
-          },
-          body: JSON.stringify({ is_verified_landlord: !currentStatus })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast(currentStatus ? '❌ Verification removed' : '✅ Landlord verified!');
-        await loadAdminUsers();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
-    async function toggleUser(id, active, name) {
-      const action = active ? 'Restore' : 'Suspend';
-      if (!confirm(action + ' account for ' + name + '?')) return;
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/admin/users/' + id + '/toggle', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') },
-          body: JSON.stringify({ is_active: active })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-        showToast('✅ Account ' + (active ? 'restored' : 'suspended'));
-        await loadAdminUsers();
-        await loadAdminStats();
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
-    // Override showSection to load admin data when tab opens
-    const _origShowSection = showSection;
-    showSection = function (name, link) {
-      _origShowSection(name, link);
-      if (name === 'admin') loadAdminData();
-      if (name === 'contact-messages') loadContactMessages();
-      if (name === 'notifications') loadNotifications();
-      if (name === 'applications') loadApplications();
-    };
-
-    async function markAllNotifsRead() {
-      try {
-        await api.notifications.markRead('all'); // backend handles 'all' as special
-        notifications.forEach(n => n.is_read = true);
-        renderNotifications();
-        const badge = document.getElementById('notif-badge');
-        if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
-        showToast('✅ All notifications marked read');
-      } catch (e) { showToast('❌ ' + e.message); }
-    }
-
-    // ── APPLICATIONS ──
-    async function loadApplications() {
-      const status = document.getElementById('app-status-filter')?.value || '';
-      const url = `https://nyumbaug-full.onrender.com/api/applications${status ? '?status=' + status : ''}`;
-      const list = document.getElementById('applications-list');
-      if (!list) return;
-      try {
-        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}` } });
-        const data = await res.json();
-        const apps = data.applications || [];
-
-        // Update badge
-        const pending = apps.filter(a => a.status === 'pending').length;
-        const badge = document.getElementById('app-badge');
-        if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? 'inline' : 'none'; }
-
-        if (!apps.length) {
-          list.innerHTML = '<div class="empty-state"><div class="emoji">📋</div><p>No applications yet.</p></div>';
-          return;
-        }
-        const statusStyle = {
-          pending: 'background:#fef3c7;color:#92400e',
-          approved: 'background:#dcfce7;color:#16a34a',
-          rejected: 'background:#fef2f2;color:#dc2626'
-        };
-        list.innerHTML = apps.map(a => `
-          <div style="padding:20px 24px;border-bottom:1px solid var(--border);">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-              <div>
-                <div style="font-weight:700;font-size:0.95rem;color:var(--text-dark);">${a.full_name}</div>
-                <div style="font-size:0.82rem;color:var(--text-muted);">${a.tenant_email} · ${a.phone}</div>
-                <div style="font-size:0.82rem;color:var(--green-light);margin-top:2px;">🏠 ${a.listing_title}</div>
-              </div>
-              <span style="padding:4px 12px;border-radius:50px;font-size:0.75rem;font-weight:700;${statusStyle[a.status]}">${a.status.toUpperCase()}</span>
-            </div>
-            <div style="display:flex;gap:20px;font-size:0.82rem;color:var(--text-mid);flex-wrap:wrap;margin-bottom:8px;">
-              <span>📅 Move-in: ${new Date(a.move_in_date).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-              ${a.viewing_date ? `<span>👁️ Viewing: ${new Date(a.viewing_date).toLocaleDateString('en-UG', { day: 'numeric', month: 'short' })} ${a.viewing_time || ''}</span>` : ''}
-              ${a.occupation ? `<span>💼 ${a.occupation}</span>` : ''}
-              ${a.monthly_income ? `<span>💰 UGX ${parseInt(a.monthly_income).toLocaleString()}/mo</span>` : ''}
-            </div>
-            ${a.message ? `<div style="padding:8px 12px;background:var(--cream);border-radius:8px;font-size:0.82rem;color:var(--text-mid);margin-bottom:10px;">"${a.message}"</div>` : ''}
-            ${a.rejection_reason ? `<div style="font-size:0.8rem;color:#dc2626;margin-bottom:8px;">Reason: ${a.rejection_reason}</div>` : ''}
-            ${a.status === 'pending' ? `
-            <div style="display:flex;gap:8px;">
-              <button onclick="reviewApplication('${a.id}','approved')"
-                style="flex:1;padding:9px;background:var(--green-dark);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem;">
-                ✅ Approve
-              </button>
-              <button onclick="rejectApplication('${a.id}')"
-                style="flex:1;padding:9px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem;">
-                ❌ Reject
-              </button>
-            </div>` : ''}
-          </div>
-        `).join('');
-      } catch (e) {
-        list.innerHTML = '<div class="empty-state"><p>Failed to load applications.</p></div>';
-      }
-    }
-
-    async function reviewApplication(id, status) {
-      try {
-        await fetch(`https://nyumbaug-full.onrender.com/api/applications/${id}`, {
-          method: 'PATCH',
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status })
-        });
-        showToast(status === 'approved' ? '✅ Application approved!' : '❌ Application rejected');
-        loadApplications();
-      } catch (e) { showToast('❌ Failed. Try again.'); }
-    }
-
-    async function rejectApplication(id) {
-      const reason = prompt('Reason for rejection (optional):') || '';
-      await fetch(`https://nyumbaug-full.onrender.com/api/applications/${id}`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('nyumba_token')}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'rejected', rejection_reason: reason })
-      });
-      showToast('Application rejected');
-      loadApplications();
-    }
-
-    init();
-
-    // Load notifications badge count silently on dashboard open
-    setTimeout(loadNotifications, 800);
-
-    setTimeout(loadApplications, 1200);
-    // Load message unread badge silently
-    setTimeout(loadMessages, 1400);
-    // Load admin data if admin (catches the case where showSection fires before override)
-    setTimeout(() => {
-      const u = api.auth.currentUser();
-      if (u && u.role === 'admin') loadAdminData();
-    }, 600);
-  </script>
-  <!-- BACK TO TOP BUTTON -->
-  <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="display:none;position:fixed;bottom:28px;right:24px;width:46px;height:46px;
-         border-radius:50%;background:var(--green-dark);color:var(--gold);border:none;
-         cursor:pointer;font-size:1.3rem;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,0.2);
-         align-items:center;justify-content:center;transition:all 0.3s;">
-    ↑
-  </button>
-  <script>
-    const backBtn = document.getElementById('back-to-top');
-    window.addEventListener('scroll', () => {
-      backBtn.style.display = window.scrollY > 400 ? 'flex' : 'none';
-    });
-    // ── SPLASH SCREEN ──
-    window.addEventListener('load', () => {
-      const splash = document.getElementById('splash-screen');
-      // Wait 1.5 seconds then fade out
-      setTimeout(() => {
-        splash.style.opacity = '0';
-        setTimeout(() => splash.style.display = 'none', 500);
-      }, 1500);
-    });
-
-    // ── SUBSCRIPTION SECTION ──
-
-
+    // ── SUBSCRIPTION SECTION (landlord) ──
     async function loadSubscriptionSection() {
       try {
-        const token = localStorage.getItem('nyumba_token');
-        const headers = { 'Authorization': `Bearer ${token}` };
-
-        // Fetch current subscription and plans in parallel
+        const headers = { 'Authorization': 'Bearer ' + tok() };
         const [subRes, plansRes, limitRes] = await Promise.all([
-          fetch(`${API_BASE}/subscriptions/my`, { headers }),
-          fetch(`${API_BASE}/subscriptions/plans`),
-          fetch(`${API_BASE}/subscriptions/check-limit`, { headers })
+          fetch(RENDER + '/subscriptions/my', { headers }),
+          fetch(RENDER + '/subscriptions/plans'),
+          fetch(RENDER + '/subscriptions/check-limit', { headers })
         ]);
-
         const { subscription } = await subRes.json();
         const { plans } = await plansRes.json();
         const limitData = await limitRes.json();
 
-        // ── Current plan display ──
         if (subscription) {
           document.getElementById('plan-badge').textContent = subscription.display_name || subscription.plan_name;
           document.getElementById('plan-desc').textContent = subscription.description || '';
-
-          const expiry = subscription.expires_at
-            ? `Expires: ${new Date(subscription.expires_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'long', year: 'numeric' })}`
-            : 'No expiry date (Free plan)';
-          document.getElementById('plan-expiry').textContent = expiry;
-
-          // Features
-          const features = [
-            { key: 'max_listings', label: `${subscription.max_listings} listing(s)`, icon: '🏠' },
-            { key: 'can_chat', label: 'Tenant chat', icon: '💬' },
-            { key: 'can_view_analytics', label: 'Analytics', icon: '📊' },
-            { key: 'verification_badge', label: 'Verified badge', icon: '✅' },
-          ];
-          document.getElementById('plan-features').innerHTML = features.map(f => {
-            const active = f.key === 'max_listings' || subscription[f.key];
-            return `<span style="padding:6px 14px;border-radius:99px;font-size:0.8rem;font-weight:500;
-          background:${active ? '#d1fae5' : '#f3f4f6'};color:${active ? '#065f46' : '#9ca3af'};">
-          ${f.icon} ${f.label}
-        </span>`;
-          }).join('');
+          document.getElementById('plan-expiry').textContent = subscription.expires_at ? 'Expires: ' + new Date(subscription.expires_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'long', year: 'numeric' }) : 'No expiry (Free plan)';
+          document.getElementById('plan-features').innerHTML = [
+            { k: 'max_listings', l: `${subscription.max_listings} listing(s)`, i: '🏠' },
+            { k: 'can_chat', l: 'Tenant chat', i: '💬' },
+            { k: 'can_view_analytics', l: 'Analytics', i: '📊' },
+            { k: 'verification_badge', l: 'Verified badge', i: '✅' },
+          ].map(f => { const a = f.k === 'max_listings' || subscription[f.k]; return `<span style="padding:6px 14px;border-radius:99px;font-size:.8rem;font-weight:500;background:${a ? '#d1fae5' : '#f3f4f6'};color:${a ? '#065f46' : '#9ca3af'};">${f.i} ${f.l}</span>`; }).join('');
         }
 
-        // Usage bar
         if (limitData.success) {
           const pct = Math.min(100, Math.round((limitData.currentCount / limitData.maxListings) * 100));
           document.getElementById('usage-text').textContent = `${limitData.currentCount} / ${limitData.maxListings}`;
@@ -2852,60 +1744,85 @@ ${u.is_active ? `<button class="btn-sm danger" onclick="toggleUser('${u.id}', fa
           document.getElementById('usage-bar').style.background = pct >= 100 ? '#dc2626' : 'var(--green-dark)';
         }
 
-        // ── Plan cards ──
-        const currentPlan = subscription?.plan_name || 'free';
-        document.getElementById('plan-cards').innerHTML = plans.map(plan => {
-          const isCurrent = plan.name === currentPlan;
-          const isUpgrade = plan.price_ugx > (subscription?.price_ugx || 0);
-          return `
-        <div style="border:2px solid ${isCurrent ? 'var(--green-dark)' : '#e5e7eb'};border-radius:14px;padding:24px;
-          background:${isCurrent ? '#f0fdf4' : '#fff'};position:relative;transition:box-shadow 0.2s;"
-          onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'"
-          onmouseout="this.style.boxShadow='none'">
-          ${isCurrent ? '<div style="position:absolute;top:12px;right:12px;background:var(--green-dark);color:var(--gold);font-size:0.7rem;padding:3px 10px;border-radius:99px;font-weight:700;">CURRENT</div>' : ''}
-          <p style="font-family:\'Fraunces\',serif;font-size:1.2rem;font-weight:700;color:var(--green-dark);margin:0 0 4px;">${plan.display_name}</p>
-          <p style="font-size:1.4rem;font-weight:700;color:#111;margin:0 0 12px;">
-            ${plan.price_ugx === 0 ? 'Free' : 'UGX ' + plan.price_ugx.toLocaleString() + '/mo'}
-          </p>
-          <ul style="list-style:none;padding:0;margin:0 0 20px;font-size:0.85rem;color:#555;">
-            <li>🏠 ${plan.max_listings} listing(s)</li>
-            <li>${plan.can_chat ? '✅' : '❌'} Tenant messaging</li>
-            <li>${plan.can_view_analytics ? '✅' : '❌'} Analytics</li>
-            <li>${plan.verification_badge ? '✅' : '❌'} Verified badge</li>
-            ${plan.featured_listings > 0 ? `<li>⭐ ${plan.featured_listings} featured slot(s)</li>` : ''}
-          </ul>
-          ${!isCurrent ? `
-            <button onclick="openUpgradeModal('${plan.name}', '${plan.display_name}', ${plan.price_ugx}, '${plan.description}')"
-              style="width:100%;padding:10px;background:${isUpgrade ? 'var(--green-dark)' : '#6b7280'};color:${isUpgrade ? 'var(--gold)' : '#fff'};
-                border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.9rem;">
-              ${isUpgrade ? '⬆️ Upgrade' : '⬇️ Downgrade'}
-            </button>` : `
-            <button disabled style="width:100%;padding:10px;background:#e5e7eb;color:#9ca3af;border:none;border-radius:8px;font-size:0.9rem;">
-              Current Plan
-            </button>`}
-        </div>`;
+        const cp = subscription?.plan_name || 'free';
+        document.getElementById('plan-cards').innerHTML = (plans || []).map(plan => {
+          const isCurrent = plan.name === cp;
+          const isUp = plan.price_ugx > (subscription?.price_ugx || 0);
+          return `<div style="border:2px solid ${isCurrent ? 'var(--green-dark)' : '#e5e7eb'};border-radius:14px;padding:24px;background:${isCurrent ? '#f0fdf4' : '#fff'};position:relative;">
+        ${isCurrent ? '<div style="position:absolute;top:12px;right:12px;background:var(--green-dark);color:var(--gold);font-size:.7rem;padding:3px 10px;border-radius:99px;font-weight:700;">CURRENT</div>' : ''}
+        <p style="font-family:\'Fraunces\',serif;font-size:1.2rem;font-weight:700;color:var(--green-dark);margin:0 0 4px;">${plan.display_name}</p>
+        <p style="font-size:1.4rem;font-weight:700;color:#111;margin:0 0 12px;">${plan.price_ugx === 0 ? 'Free' : 'UGX ' + plan.price_ugx.toLocaleString() + '/mo'}</p>
+        <ul style="list-style:none;padding:0;margin:0 0 20px;font-size:.85rem;color:#555;">
+          <li>🏠 ${plan.max_listings} listing(s)</li>
+          <li>${plan.can_chat ? '✅' : '❌'} Tenant messaging</li>
+          <li>${plan.can_view_analytics ? '✅' : '❌'} Analytics</li>
+          <li>${plan.verification_badge ? '✅' : '❌'} Verified badge</li>
+        </ul>
+        ${!isCurrent ? `<button onclick="openUpgradeModal('${plan.name}','${plan.display_name}',${plan.price_ugx},'${plan.description || ''}')" style="width:100%;padding:10px;background:${isUp ? 'var(--green-dark)' : '#6b7280'};color:${isUp ? 'var(--gold)' : '#fff'};border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:.9rem;">${isUp ? '⬆️ Upgrade' : '⬇️ Downgrade'}</button>` : `<button disabled style="width:100%;padding:10px;background:#e5e7eb;color:#9ca3af;border:none;border-radius:8px;font-size:.9rem;">Current Plan</button>`}
+      </div>`;
         }).join('');
-
-      } catch (err) {
-        console.error('Subscription load error:', err);
-      }
+      } catch (err) { console.error('Subscription load error:', err); }
     }
 
     function openUpgradeModal(planName, displayName, priceUgx, desc) {
-      document.getElementById('modal-plan-name').textContent = `Upgrade to ${displayName}`;
+      document.getElementById('modal-plan-name').textContent = 'Upgrade to ' + displayName;
       document.getElementById('modal-plan-desc').textContent = desc;
-      document.getElementById('modal-plan-price').textContent = priceUgx === 0 ? 'Free' : `UGX ${priceUgx.toLocaleString()}`;
-      const msg = encodeURIComponent(`Hi, I'd like to upgrade my NyumbaUG subscription to the ${displayName} plan (UGX ${priceUgx.toLocaleString()}/month). Please assist.`);
+      document.getElementById('modal-plan-price').textContent = priceUgx === 0 ? 'Free' : 'UGX ' + priceUgx.toLocaleString();
+      const msg = encodeURIComponent(`Hi, I'd like to upgrade my NyumbaUG subscription to the ${displayName} plan (UGX ${priceUgx.toLocaleString()}/month).`);
       document.getElementById('modal-whatsapp-link').href = `https://wa.me/256740193837?text=${msg}`;
       document.getElementById('upgrade-modal').style.display = 'flex';
     }
 
-    // Hook into showSection to load subscription data
-    const origShowSection = showSection;
-    showSection = function (name, el) {
-      origShowSection(name, el);
+    // ── APPLICATIONS ──
+    async function loadApplications() {
+      const status = document.getElementById('app-status-filter')?.value || '';
+      const list = document.getElementById('applications-list'); if (!list) return;
+      try {
+        const res = await fetch(RENDER + '/applications' + (status ? '?status=' + status : ''), { headers: authH() });
+        const data = await res.json(); const apps = data.applications || [];
+        const pending = apps.filter(a => a.status === 'pending').length;
+        const b = document.getElementById('app-badge'); if (b) { b.textContent = pending; b.style.display = pending > 0 ? 'inline' : 'none'; }
+        if (!apps.length) { list.innerHTML = '<div class="empty-state"><div class="emoji">📋</div><p>No applications yet.</p></div>'; return; }
+        const ss = { pending: 'background:#fef3c7;color:#92400e', approved: 'background:#dcfce7;color:#16a34a', rejected: 'background:#fef2f2;color:#dc2626' };
+        list.innerHTML = apps.map(a => `<div style="padding:20px 24px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <div><div style="font-weight:700;font-size:.95rem;color:var(--text-dark);">${a.full_name}</div><div style="font-size:.82rem;color:var(--text-muted);">${a.tenant_email} · ${a.phone}</div><div style="font-size:.82rem;color:var(--green-light);margin-top:2px;">🏠 ${a.listing_title}</div></div>
+        <span style="padding:4px 12px;border-radius:50px;font-size:.75rem;font-weight:700;${ss[a.status]}">${a.status.toUpperCase()}</span>
+      </div>
+      ${a.status === 'pending' ? `<div style="display:flex;gap:8px;margin-top:8px;"><button onclick="reviewApplication('${a.id}','approved')" style="flex:1;padding:9px;background:var(--green-dark);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:.85rem;">✅ Approve</button><button onclick="rejectApplication('${a.id}')" style="flex:1;padding:9px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;font-weight:600;cursor:pointer;font-size:.85rem;">❌ Reject</button></div>` : ''}
+    </div>`).join('');
+      } catch (e) { list.innerHTML = '<div class="empty-state"><p>Failed to load applications.</p></div>'; }
+    }
+    async function reviewApplication(id, status) { try { await fetch(RENDER + '/applications/' + id, { method: 'PATCH', headers: authH(), body: JSON.stringify({ status }) }); showToast(status === 'approved' ? '✅ Approved!' : '❌ Rejected'); loadApplications(); } catch (e) { showToast('❌ Failed.'); } }
+    async function rejectApplication(id) { const reason = prompt('Reason (optional):') || ''; await fetch(RENDER + '/applications/' + id, { method: 'PATCH', headers: authH(), body: JSON.stringify({ status: 'rejected', rejection_reason: reason }) }); showToast('Application rejected'); loadApplications(); }
+
+    // ── SECTION SWITCHING ──
+    function showSection(name, clickedLink) {
+      document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
+      const sec = document.getElementById('section-' + name); if (sec) sec.style.display = 'block';
+      document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
+      if (clickedLink) clickedLink.classList.add('active');
+      if (name === 'admin') loadAdminData();
+      if (name === 'contact-messages') loadContactMessages();
+      if (name === 'notifications') loadNotifications();
+      if (name === 'applications') loadApplications();
       if (name === 'subscription') loadSubscriptionSection();
-    };
+      if (name === 'enquiries') loadEnquiries();
+      closeDashSidebar();
+    }
+
+    function toggleDashSidebar() { const s = document.getElementById('dash-sidebar'); const o = document.getElementById('sidebar-overlay'); const b = document.getElementById('dash-hamburger'); s.classList.toggle('open'); o.classList.toggle('show'); b.classList.toggle('open'); }
+    function closeDashSidebar() { document.getElementById('dash-sidebar').classList.remove('open'); document.getElementById('sidebar-overlay').classList.remove('show'); document.getElementById('dash-hamburger').classList.remove('open'); }
+
+    // ── UTILS ──
+    function timeAgo(d) { const diff = Date.now() - new Date(d); const m = Math.floor(diff / 60000); if (m < 1) return 'just now'; if (m < 60) return m + 'm ago'; const h = Math.floor(m / 60); if (h < 24) return h + 'h ago'; return Math.floor(h / 24) + 'd ago'; }
+    function showToast(msg) { let t = document.getElementById('toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; t.id = 'toast'; document.body.appendChild(t); } t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+
+    // ── SPLASH ──
+    window.addEventListener('load', () => { const s = document.getElementById('splash'); setTimeout(() => { s.style.opacity = '0'; setTimeout(() => s.style.display = 'none', 500); }, 1500); });
+    window.addEventListener('scroll', () => { const b = document.getElementById('back-to-top'); b.style.display = window.scrollY > 400 ? 'flex' : 'none'; });
+
+    init();
   </script>
 </body>
 
