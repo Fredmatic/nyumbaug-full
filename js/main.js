@@ -105,8 +105,8 @@ const listings = [
     featured: true,
     description: "Spacious modern apartment in the heart of Kololo with stunning city views, fully fitted kitchen, and 24/7 security.",
     amenities: ["WiFi", "Parking", "Generator", "Security", "Water Tank", "Balcony"],
-    landlord: "Mr. Ssemakula James",
-    phone: "+256 772 123 456",
+    landlord: "Mr. Ssempijja Jackson",
+    phone: "+256 700918591",
     available: "Immediately"
   },
   {

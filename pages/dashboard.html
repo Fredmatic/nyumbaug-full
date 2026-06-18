@@ -1548,7 +1548,17 @@
     async function markAsRented(id, title) { if (!confirm(`Mark "${title}" as RENTED?`)) return; try { await api.listings.update(id, { status: 'rented' }); showToast('🔑 Marked as rented!'); await loadMyListings(); } catch (e) { showToast('❌ ' + e.message); } }
 
     // ── ADMIN ──
-    async function loadAdminData() { await Promise.all([loadAdminListings('pending'), loadAdminUsers(), loadAdminStats(), loadAdminReviewsPanel(), loadSubLandlords(), loadSubPayments(), loadContactMessages()]); }
+    async function loadAdminData() {
+      await Promise.all([
+        loadAdminListings('pending'),
+        loadAdminUsers(),
+        loadAdminStats(),
+        loadAdminReviewsPanel(),
+        loadSubLandlords(),
+        loadSubPayments(),
+        loadLivePlans()
+      ]);
+    }
 
     async function loadAdminStats() {
       try {
@@ -1617,6 +1627,122 @@
     }
     async function updateReviewStatus(id, status) { try { const data = await api.reviews.updateStatus(id, status); if (data.success) showToast('✅ Review ' + status); } catch (e) { showToast('❌ Failed'); } }
 
+    // ═══════════════════════════════════════════════════
+    // REPLACE the PLAN_PRICES/PLAN_LABELS constants and the
+    // openAdminUpgradeModal function in admin-subscription-js.js
+    // with this version — it fetches real prices from your
+    // /api/subscriptions/plans endpoint instead of hardcoding
+    // them, so the admin panel never goes stale again.
+    // ═══════════════════════════════════════════════════
+
+    let livePlans = []; // cached real plan data from the database
+
+    // ── FETCH REAL PLANS FROM DATABASE ──
+    async function loadLivePlans() {
+      try {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/subscriptions/plans');
+        const data = await res.json();
+        livePlans = data.plans || [];
+        populatePlanDropdown();
+      } catch (e) {
+        console.warn('Could not load live plans, falling back to defaults.');
+      }
+    }
+
+    // ── BUILD THE DROPDOWN FROM REAL DATA ──
+    function populatePlanDropdown() {
+      const select = document.getElementById('admin-upgrade-plan');
+      if (!select || !livePlans.length) return;
+
+      select.innerHTML = livePlans.map(p => `
+        <option value="${p.name}">${p.display_name} — ${p.price_ugx === 0 ? 'Free' : 'UGX ' + parseInt(p.price_ugx).toLocaleString() + '/mo'}</option>
+    `).join('');
+    }
+
+    // ── HELPER: get a plan's real display name / price by its key ──
+    function getPlanInfo(planName) {
+      const plan = livePlans.find(p => p.name === planName);
+      return plan
+        ? { label: plan.display_name, price: plan.price_ugx }
+        : { label: planName, price: 0 }; // fallback if not found
+    }
+
+    // ── UPDATED UPGRADE MODAL (uses live data) ──
+    function openAdminUpgradeModal(landlordId, landlordName, currentPlan) {
+      targetLandlordId = landlordId;
+      targetLandlordName = landlordName;
+      document.getElementById('admin-upgrade-target').innerHTML =
+        `Updating plan for <strong>${landlordName}</strong>`;
+
+      // Make sure dropdown has the latest live prices before showing
+      if (!livePlans.length) {
+        loadLivePlans().then(() => {
+          document.getElementById('admin-upgrade-plan').value = currentPlan || 'free';
+        });
+      } else {
+        populatePlanDropdown();
+        document.getElementById('admin-upgrade-plan').value = currentPlan || 'free';
+      }
+
+      document.getElementById('admin-upgrade-months').value = 1;
+      document.getElementById('admin-upgrade-ref').value = '';
+      document.getElementById('admin-upgrade-notes').value = '';
+      document.getElementById('admin-upgrade-modal').classList.add('show');
+    }
+
+    // ── UPDATED confirmAdminUpgrade — uses real label for the toast ──
+    async function confirmAdminUpgrade() {
+      if (!targetLandlordId) return;
+
+      const plan_name = document.getElementById('admin-upgrade-plan').value;
+      const months = parseInt(document.getElementById('admin-upgrade-months').value) || 1;
+      const payment_reference = document.getElementById('admin-upgrade-ref').value.trim();
+      const notes = document.getElementById('admin-upgrade-notes').value.trim();
+      const planInfo = getPlanInfo(plan_name);
+
+      try {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/subscriptions/admin/upgrade', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token')
+          },
+          body: JSON.stringify({
+            landlord_id: targetLandlordId,
+            plan_name,
+            months,
+            payment_reference,
+            notes
+          })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+
+        showToast(`👑 ${targetLandlordName} upgraded to ${planInfo.label}`);
+        closeAdminUpgradeModal();
+        await loadSubLandlords();
+        await loadSubPayments();
+      } catch (e) {
+        showToast('❌ ' + e.message);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // Also call loadLivePlans() once when the admin section
+    // first loads. Add it to your loadAdminData() function:
+    //
+    // async function loadAdminData() {
+    //   await Promise.all([
+    //     loadAdminListings('pending'),
+    //     loadAdminUsers(),
+    //     loadAdminStats(),
+    //     loadAdminReviewsPanel(),
+    //     loadSubLandlords(),
+    //     loadSubPayments(),
+    //     loadLivePlans()        // ← ADD THIS
+    //   ]);
+    // }
+    // ═══════════════════════════════════════════════════
     // ── SUBSCRIPTION MANAGEMENT ──
     async function loadSubLandlords() {
       const c = document.getElementById('sub-landlords-list'); if (!c) return;
