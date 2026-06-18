@@ -1376,47 +1376,142 @@
     const PLAN_LABELS = { free: 'Free', basic: 'Basic', premium: 'Premium' };
     const PLAN_PRICES = { free: 0, basic: 100000, premium: 150000 };
 
+    // ═══════════════════════════════════════════════════
+    // SUBSCRIPTION GATE — Add this function anywhere in your
+    // dashboard.html <script> block, then call it inside init()
+    // (see exact placement instructions below).
+    // ═══════════════════════════════════════════════════
+
+    // Returns true if the landlord is allowed to proceed to the dashboard,
+    // false if they were redirected to payment.html
+    async function checkSubscriptionGate(userRole) {
+      // Admins and tenants are never gated — only landlords need an active plan
+      if (userRole !== 'landlord') return true;
+
+      try {
+        const res = await fetch('https://nyumbaug-full.onrender.com/api/subscriptions/my', {
+          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
+        });
+        const data = await res.json();
+        const sub = data.subscription;
+
+        // No subscription row at all → never paid, first time → block
+        if (!sub) {
+          redirectToPayment('welcome');
+          return false;
+        }
+
+        // Free plan with no expiry is allowed through (it's the default starter tier)
+        if (sub.plan_name === 'free' && !sub.expires_at) {
+          return true;
+        }
+
+        // Paid plan but expired → block
+        if (sub.expires_at && new Date(sub.expires_at) < new Date()) {
+          redirectToPayment('expired');
+          return false;
+        }
+
+        // Active and not expired → let them through
+        return true;
+      } catch (err) {
+        console.error('Subscription gate check failed:', err);
+        // Fail safe: if the check itself errors out, don't lock the landlord
+        // out of their own dashboard due to a network hiccup
+        return true;
+      }
+    }
+
+    function redirectToPayment(reason) {
+      const inPages = window.location.pathname.includes('/pages/');
+      const target = (inPages ? '' : 'pages/') + 'payment.html?reason=' + reason;
+      window.location.href = target;
+    }
+
     // ── INIT ──
     async function init() {
-      if (!api.auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
 
-      const u0 = api.auth.currentUser();
-      if (u0?.role === 'tenant') { alert('Access Denied'); window.location.href = '../index.html'; return; }
-
-      // Show payment banner for unpaid landlords
-      if (u0?.role === 'landlord') {
-        const sub = localStorage.getItem('nyumba_sub_expiry_' + tok()?.slice(-10));
-        if (!sub || new Date(sub) < new Date()) document.getElementById('payment-banner').style.display = 'flex';
+      // Check login
+      if (!api.auth.isLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
       }
+
+      // Block tenants
+      const u0 = api.auth.currentUser();
+
+      if (u0?.role === 'tenant') {
+        alert('Access Denied');
+        window.location.href = '../index.html';
+        return;
+      }
+
+      // ===== NEW SUBSCRIPTION GATE =====
+      const passedGate = await checkSubscriptionGate(u0?.role);
+
+      if (!passedGate) {
+        return; // User already redirected to payment.html
+      }
+      // ================================
 
       try {
         const { user } = await api.auth.getMe();
-        const ini = user.name.split(' ').map(n => n[0]).slice(0, 2).join('');
+
+        const ini = user.name
+          .split(' ')
+          .map(n => n[0])
+          .slice(0, 2)
+          .join('');
+
         document.getElementById('sidebar-avatar').textContent = ini;
         document.getElementById('sidebar-name').textContent = user.name;
         document.getElementById('sidebar-role').textContent = user.role;
         document.getElementById('header-name').textContent = user.name.split(' ')[0];
+
         document.getElementById('settings-name').value = user.name;
         document.getElementById('settings-phone').value = user.phone || '';
         document.getElementById('settings-email').value = user.email || '';
+
         loadAvatar(user);
 
         if (user.role === 'admin') {
+
           document.getElementById('admin-nav').style.display = 'block';
           document.getElementById('landlord-nav').style.display = 'none';
-          document.getElementById('header-sub').textContent = 'Welcome to your admin panel.';
-          showSection('admin', document.querySelector('#admin-nav a'));
+          document.getElementById('header-sub').textContent =
+            'Welcome to your admin panel.';
+
+          showSection(
+            'admin',
+            document.querySelector('#admin-nav a')
+          );
+
         } else {
+
           document.getElementById('landlord-nav').style.display = 'block';
           document.getElementById('admin-nav').style.display = 'none';
-          showSection('overview', document.querySelector('#landlord-nav a'));
-        }
-      } catch (e) { console.error(e); }
 
-      await Promise.all([loadMyListings(), loadEnquiries()]);
+          showSection(
+            'overview',
+            document.querySelector('#landlord-nav a')
+          );
+        }
+
+      } catch (e) {
+        console.error(e);
+      }
+
+      await Promise.all([
+        loadMyListings(),
+        loadEnquiries()
+      ]);
+
       setTimeout(loadNotifications, 800);
       setTimeout(loadMessages, 1200);
-      if (api.auth.currentUser()?.role === 'admin') setTimeout(loadAdminData, 600);
+
+      if (api.auth.currentUser()?.role === 'admin') {
+        setTimeout(loadAdminData, 600);
+      }
     }
 
     // ── LOAD LISTINGS ──

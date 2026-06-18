@@ -12,7 +12,7 @@ self.addEventListener("install", (event) => {
                 "/js/api.js",
                 "/js/main.js",
                 "/icons/icon-192.png",
-                "/icons/icon-512.png"
+                // "/icons/icon-512.png"
             ];
             // Cache each file individually so one missing/404 file
             // doesn't break the entire install (unlike cache.addAll

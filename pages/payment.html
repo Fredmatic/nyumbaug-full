@@ -925,6 +925,74 @@
       };
       tick();
     }
+
+    // ═══════════════════════════════════════════════════
+    // ADD THIS to payment.html's <script> tag.
+    // Handles: showing the right message based on WHY they
+    // landed here, and wiring the plan buttons to the real
+    // admin-confirmed upgrade flow (manual for now, ready
+    // for automatic gateway later).
+    // ═══════════════════════════════════════════════════
+
+    // ── Show context message based on redirect reason ──
+    function initPaymentPageContext() {
+      const params = new URLSearchParams(window.location.search);
+      const reason = params.get('reason');
+
+      const banner = document.createElement('div');
+      banner.style.cssText = `
+        max-width: 700px; margin: 0 auto 24px; padding: 14px 20px;
+        border-radius: 10px; text-align: center; font-size: 0.92rem;
+    `;
+
+      if (reason === 'welcome') {
+        banner.style.background = 'rgba(212,168,67,0.15)';
+        banner.style.border = '1px solid rgba(212,168,67,0.4)';
+        banner.style.color = '#f0c96a';
+        banner.innerHTML = '👋 Welcome! Activate a subscription below to start listing your properties.';
+      } else if (reason === 'expired') {
+        banner.style.background = 'rgba(220,38,38,0.15)';
+        banner.style.border = '1px solid rgba(220,38,38,0.4)';
+        banner.style.color = '#fca5a5';
+        banner.innerHTML = '⚠️ Your subscription has expired. Renew now to keep your listings visible to tenants.';
+      } else {
+        return; // No banner needed if they just clicked here manually
+      }
+
+      // Insert banner right after the page header/intro text
+      const heading = document.querySelector('h1, .page-header, body > section');
+      if (heading && heading.parentNode) {
+        heading.parentNode.insertBefore(banner, heading.nextSibling);
+      } else {
+        document.body.insertBefore(banner, document.body.firstChild);
+      }
+    }
+
+    // ── WhatsApp manual payment flow (current method) ──
+    function requestManualActivation(planType) {
+      const u = api.auth.currentUser();
+      const planLabel = planType === 'yearly' ? 'Yearly (UGX 960,000)' : 'Monthly (UGX 100,000)';
+      const msg = encodeURIComponent(
+        `Hi, I'd like to activate my NyumbaUG landlord subscription.\n\n` +
+        `Plan: ${planLabel}\n` +
+        `Name: ${u?.name || ''}\n` +
+        `Email: ${u?.email || ''}\n\n` +
+        `I will send proof of payment (MoMo/Airtel/Bank) here on WhatsApp.`
+      );
+      window.open(`https://wa.me/256740193837?text=${msg}`, '_blank');
+    }
+
+    // ── Placeholder for future automatic gateway payment ──
+    // When you integrate a real payment gateway (MTN MoMo API, Flutterwave, etc.),
+    // replace the body of this function with the actual payment request call.
+    // For now it just shows a message since automatic payments aren't live yet.
+    async function requestAutomaticPayment(planType) {
+      showToast ? showToast('🚧 Automatic payment coming soon. Use WhatsApp activation for now.')
+        : alert('Automatic payment coming soon. Please use WhatsApp activation for now.');
+      requestManualActivation(planType);
+    }
+
+    document.addEventListener('DOMContentLoaded', initPaymentPageContext);
   </script>
 </body>
 
