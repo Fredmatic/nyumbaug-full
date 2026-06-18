@@ -745,7 +745,7 @@
   <div style="padding-top:var(--nav-h);">
     <main class="dash-main">
 
-      <!-- PAYMENT BANNER
+      <!-- PAYMENT BANNER -->
       <div id="payment-banner">
         <span style="font-size:1.2rem;">⚠️</span>
         <div style="flex:1;"><strong style="color:#92400e;">Subscription required</strong>
@@ -754,7 +754,7 @@
         </div>
         <a href="payment.html" class="btn btn-green"
           style="white-space:nowrap;font-size:.85rem;padding:8px 18px;text-decoration:none;">Pay Now — UGX 100,000</a>
-      </div> -->
+      </div>
 
       <!-- ══════════════════════════════════════════════
        OVERVIEW
@@ -1244,12 +1244,12 @@
           <div class="panel-header">
             <h2>✉️ Contact Form Messages</h2>
             <div class="dash-tabs">
-              <button class="dash-tab active" onclick="filterContactMsgs('all',this)">All</button>
-              <button class="dash-tab" onclick="filterContactMsgs('new',this)">Unread</button>
-              <button class="dash-tab" onclick="filterContactMsgs('read',this)">Read</button>
+              <button class="admin-contact-tab dash-tab active" onclick="filterContactMsgs('all',this)">All</button>
+              <button class="admin-contact-tab dash-tab" onclick="filterContactMsgs('new',this)">Unread</button>
+              <button class="admin-contact-tab dash-tab" onclick="filterContactMsgs('read',this)">Read</button>
             </div>
           </div>
-          <div class="panel-body" id="contact-messages-list">
+          <div class="panel-body" id="contact-messages-list-admin">
             <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
           </div>
         </div>
@@ -1281,12 +1281,13 @@
           <div class="panel-header">
             <h2>All Messages</h2>
             <div class="dash-tabs">
-              <button class="dash-tab active" onclick="filterContactMsgs('all',this)">All</button>
-              <button class="dash-tab" onclick="filterContactMsgs('new',this)">Unread</button>
-              <button class="dash-tab" onclick="filterContactMsgs('read',this)">Read</button>
+              <button class="standalone-contact-tab dash-tab active"
+                onclick="filterContactMsgs('all',this)">All</button>
+              <button class="standalone-contact-tab dash-tab" onclick="filterContactMsgs('new',this)">Unread</button>
+              <button class="standalone-contact-tab dash-tab" onclick="filterContactMsgs('read',this)">Read</button>
             </div>
           </div>
-          <div class="panel-body" id="contact-messages-list2">
+          <div class="panel-body" id="contact-messages-list">
             <div style="text-align:center;padding:32px;color:var(--text-muted);">Loading...</div>
           </div>
         </div>
@@ -1376,12 +1377,7 @@
     const PLAN_LABELS = { free: 'Free', basic: 'Basic', premium: 'Premium' };
     const PLAN_PRICES = { free: 0, basic: 100000, premium: 150000 };
 
-    // ═══════════════════════════════════════════════════
-    // SUBSCRIPTION GATE — Add this function anywhere in your
-    // dashboard.html <script> block, then call it inside init()
-    // (see exact placement instructions below).
-    // ═══════════════════════════════════════════════════
-
+    // ── SUBSCRIPTION GATE ──
     // Returns true if the landlord is allowed to proceed to the dashboard,
     // false if they were redirected to payment.html
     async function checkSubscriptionGate(userRole) {
@@ -1389,8 +1385,8 @@
       if (userRole !== 'landlord') return true;
 
       try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/subscriptions/my', {
-          headers: { 'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token') }
+        const res = await fetch(RENDER + '/subscriptions/my', {
+          headers: { 'Authorization': 'Bearer ' + tok() }
         });
         const data = await res.json();
         const sub = data.subscription;
@@ -1430,88 +1426,45 @@
 
     // ── INIT ──
     async function init() {
+      if (!api.auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
 
-      // Check login
-      if (!api.auth.isLoggedIn()) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      // Block tenants
       const u0 = api.auth.currentUser();
+      if (u0?.role === 'tenant') { alert('Access Denied'); window.location.href = '../index.html'; return; }
 
-      if (u0?.role === 'tenant') {
-        alert('Access Denied');
-        window.location.href = '../index.html';
-        return;
-      }
-
-      // ===== NEW SUBSCRIPTION GATE =====
+      // Subscription gate
       const passedGate = await checkSubscriptionGate(u0?.role);
-
       if (!passedGate) {
-        return; // User already redirected to payment.html
+        return; // checkSubscriptionGate already redirected
       }
-      // ================================
 
       try {
         const { user } = await api.auth.getMe();
-
-        const ini = user.name
-          .split(' ')
-          .map(n => n[0])
-          .slice(0, 2)
-          .join('');
-
+        const ini = user.name.split(' ').map(n => n[0]).slice(0, 2).join('');
         document.getElementById('sidebar-avatar').textContent = ini;
         document.getElementById('sidebar-name').textContent = user.name;
         document.getElementById('sidebar-role').textContent = user.role;
         document.getElementById('header-name').textContent = user.name.split(' ')[0];
-
         document.getElementById('settings-name').value = user.name;
         document.getElementById('settings-phone').value = user.phone || '';
         document.getElementById('settings-email').value = user.email || '';
-
         loadAvatar(user);
 
         if (user.role === 'admin') {
-
           document.getElementById('admin-nav').style.display = 'block';
           document.getElementById('landlord-nav').style.display = 'none';
-          document.getElementById('header-sub').textContent =
-            'Welcome to your admin panel.';
-
-          showSection(
-            'admin',
-            document.querySelector('#admin-nav a')
-          );
-
+          document.getElementById('header-sub').textContent = 'Welcome to your admin panel.';
+          showSection('admin', document.querySelector('#admin-nav a'));
         } else {
-
           document.getElementById('landlord-nav').style.display = 'block';
           document.getElementById('admin-nav').style.display = 'none';
-
-          showSection(
-            'overview',
-            document.querySelector('#landlord-nav a')
-          );
+          showSection('overview', document.querySelector('#landlord-nav a'));
         }
+      } catch (e) { console.error(e); }
 
-      } catch (e) {
-        console.error(e);
-      }
-
-      await Promise.all([
-        loadMyListings(),
-        loadEnquiries()
-      ]);
-
+      await Promise.all([loadMyListings(), loadEnquiries()]);
       setTimeout(loadNotifications, 800);
       setTimeout(loadMessages, 1200);
-
-      if (api.auth.currentUser()?.role === 'admin') {
-        setTimeout(loadAdminData, 600);
-      }
+      if (api.auth.currentUser()?.role === 'admin') setTimeout(loadAdminData, 600);
     }
 
     // ── LOAD LISTINGS ──
@@ -1659,7 +1612,6 @@
       try {
         const res = await fetch(RENDER + '/admin/stats', { headers: authH() }); const data = await res.json(); if (!data.success) return;
         const ls = data.stats.listings || [];
-        const setV = (id, arr, key) => { const f = arr.find(x => x[key] === id) || {}; document.getElementById('admin-stat-' + id.replace(/ /g, '_')).textContent = f.count || 0; };
         const pending = ls.find(l => l.status === 'pending'); const active = ls.find(l => l.status === 'active');
         document.getElementById('admin-stat-pending').textContent = pending?.count || 0;
         document.getElementById('admin-stat-active').textContent = active?.count || 0;
@@ -1722,20 +1674,12 @@
     }
     async function updateReviewStatus(id, status) { try { const data = await api.reviews.updateStatus(id, status); if (data.success) showToast('✅ Review ' + status); } catch (e) { showToast('❌ Failed'); } }
 
-    // ═══════════════════════════════════════════════════
-    // REPLACE the PLAN_PRICES/PLAN_LABELS constants and the
-    // openAdminUpgradeModal function in admin-subscription-js.js
-    // with this version — it fetches real prices from your
-    // /api/subscriptions/plans endpoint instead of hardcoding
-    // them, so the admin panel never goes stale again.
-    // ═══════════════════════════════════════════════════
-
+    // ── LIVE PLAN PRICES (used by admin upgrade modal) ──
     let livePlans = []; // cached real plan data from the database
 
-    // ── FETCH REAL PLANS FROM DATABASE ──
     async function loadLivePlans() {
       try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/subscriptions/plans');
+        const res = await fetch(RENDER + '/subscriptions/plans');
         const data = await res.json();
         livePlans = data.plans || [];
         populatePlanDropdown();
@@ -1744,25 +1688,60 @@
       }
     }
 
-    // ── BUILD THE DROPDOWN FROM REAL DATA ──
     function populatePlanDropdown() {
       const select = document.getElementById('admin-upgrade-plan');
       if (!select || !livePlans.length) return;
-
       select.innerHTML = livePlans.map(p => `
         <option value="${p.name}">${p.display_name} — ${p.price_ugx === 0 ? 'Free' : 'UGX ' + parseInt(p.price_ugx).toLocaleString() + '/mo'}</option>
     `).join('');
     }
 
-    // ── HELPER: get a plan's real display name / price by its key ──
+    // Helper: get a plan's real display name / price by its key, falling back
+    // to the hardcoded PLAN_LABELS if live data hasn't loaded yet
     function getPlanInfo(planName) {
       const plan = livePlans.find(p => p.name === planName);
       return plan
         ? { label: plan.display_name, price: plan.price_ugx }
-        : { label: planName, price: 0 }; // fallback if not found
+        : { label: PLAN_LABELS[planName] || planName, price: PLAN_PRICES[planName] || 0 };
     }
 
-    // ── UPDATED UPGRADE MODAL (uses live data) ──
+    // ── SUBSCRIPTION MANAGEMENT (admin) ──
+    async function loadSubLandlords() {
+      const c = document.getElementById('sub-landlords-list'); if (!c) return;
+      try {
+        const res = await fetch(RENDER + '/subscriptions/admin/landlords', { headers: authH() });
+        const data = await res.json(); allSubLandlords = data.landlords || [];
+        document.getElementById('sub-count-free').textContent = allSubLandlords.filter(l => !l.plan_name || l.plan_name === 'free').length;
+        document.getElementById('sub-count-basic').textContent = allSubLandlords.filter(l => l.plan_name === 'basic').length;
+        document.getElementById('sub-count-premium').textContent = allSubLandlords.filter(l => l.plan_name === 'premium').length;
+        renderSubLandlords(allSubLandlords);
+      } catch (e) { c.innerHTML = '<div class="empty-state"><p>❌ Could not load landlords.</p></div>'; }
+    }
+
+    function renderSubLandlords(landlords) {
+      const c = document.getElementById('sub-landlords-list');
+      if (!landlords.length) { c.innerHTML = '<div class="empty-state"><div class="emoji">🔑</div><p>No landlords found.</p></div>'; return; }
+      const ps = { free: 'background:#f0f0f0;color:#666;', basic: 'background:#e8f4fd;color:#1a6fa8;', premium: 'background:#fef9e7;color:#b7860b;border:1px solid #f0c96a;' };
+      c.innerHTML = landlords.map(l => {
+        const plan = l.plan_name || 'free';
+        const planLabel = l.plan_display || PLAN_LABELS[plan] || 'Free';
+        const expiry = l.expires_at ? `Expires ${new Date(l.expires_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}` : (plan === 'free' ? 'No expiry' : '—');
+        const expired = l.expires_at && new Date(l.expires_at) < new Date();
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="width:42px;height:42px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:.95rem;">${l.name.split(' ').map(n => n[0]).slice(0, 2).join('')}</div>
+        <div><div style="font-weight:600;color:var(--text-dark);font-size:.92rem;">${l.name}</div><div style="font-size:.8rem;color:var(--text-muted);">${l.email} · ${l.phone || '—'}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="text-align:right;"><span style="${ps[plan]}padding:3px 12px;border-radius:50px;font-size:.78rem;font-weight:600;">${planLabel}</span><div style="font-size:.74rem;color:${expired ? '#c0392b' : 'var(--text-muted)'};margin-top:3px;">${expired ? '⚠️ Expired' : expiry}</div></div>
+        <button class="btn-sm" style="background:#fef9e7;color:#b7860b;border:1px solid #f0c96a;" onclick="openAdminUpgradeModal('${l.id}','${l.name.replace(/'/g, "\\'")}','${plan}')">💳 Manage Plan</button>
+      </div>
+    </div>`;
+      }).join('');
+    }
+    function filterSubLandlords() { const q = document.getElementById('sub-search').value.toLowerCase(); renderSubLandlords(allSubLandlords.filter(l => l.name.toLowerCase().includes(q) || l.email.toLowerCase().includes(q))); }
+
+    // ── UPGRADE MODAL (single definition — uses live plan data when available) ──
     function openAdminUpgradeModal(landlordId, landlordName, currentPlan) {
       targetLandlordId = landlordId;
       targetLandlordName = landlordName;
@@ -1785,103 +1764,6 @@
       document.getElementById('admin-upgrade-modal').classList.add('show');
     }
 
-    // ── UPDATED confirmAdminUpgrade — uses real label for the toast ──
-    async function confirmAdminUpgrade() {
-      if (!targetLandlordId) return;
-
-      const plan_name = document.getElementById('admin-upgrade-plan').value;
-      const months = parseInt(document.getElementById('admin-upgrade-months').value) || 1;
-      const payment_reference = document.getElementById('admin-upgrade-ref').value.trim();
-      const notes = document.getElementById('admin-upgrade-notes').value.trim();
-      const planInfo = getPlanInfo(plan_name);
-
-      try {
-        const res = await fetch('https://nyumbaug-full.onrender.com/api/subscriptions/admin/upgrade', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem('nyumba_token')
-          },
-          body: JSON.stringify({
-            landlord_id: targetLandlordId,
-            plan_name,
-            months,
-            payment_reference,
-            notes
-          })
-        });
-        const data = await res.json();
-        if (!data.success) throw new Error(data.message);
-
-        showToast(`👑 ${targetLandlordName} upgraded to ${planInfo.label}`);
-        closeAdminUpgradeModal();
-        await loadSubLandlords();
-        await loadSubPayments();
-      } catch (e) {
-        showToast('❌ ' + e.message);
-      }
-    }
-
-    // ═══════════════════════════════════════════════════
-    // Also call loadLivePlans() once when the admin section
-    // first loads. Add it to your loadAdminData() function:
-    //
-    // async function loadAdminData() {
-    //   await Promise.all([
-    //     loadAdminListings('pending'),
-    //     loadAdminUsers(),
-    //     loadAdminStats(),
-    //     loadAdminReviewsPanel(),
-    //     loadSubLandlords(),
-    //     loadSubPayments(),
-    //     loadLivePlans()        // ← ADD THIS
-    //   ]);
-    // }
-    // ═══════════════════════════════════════════════════
-    // ── SUBSCRIPTION MANAGEMENT ──
-    async function loadSubLandlords() {
-      const c = document.getElementById('sub-landlords-list'); if (!c) return;
-      try {
-        const res = await fetch(RENDER + '/subscriptions/admin/landlords', { headers: authH() });
-        const data = await res.json(); allSubLandlords = data.landlords || [];
-        document.getElementById('sub-count-free').textContent = allSubLandlords.filter(l => !l.plan_name || l.plan_name === 'free').length;
-        document.getElementById('sub-count-basic').textContent = allSubLandlords.filter(l => l.plan_name === 'basic').length;
-        document.getElementById('sub-count-premium').textContent = allSubLandlords.filter(l => l.plan_name === 'premium').length;
-        renderSubLandlords(allSubLandlords);
-      } catch (e) { c.innerHTML = '<div class="empty-state"><p>❌ Could not load landlords.</p></div>'; }
-    }
-
-    function renderSubLandlords(landlords) {
-      const c = document.getElementById('sub-landlords-list');
-      if (!landlords.length) { c.innerHTML = '<div class="empty-state"><div class="emoji">🔑</div><p>No landlords found.</p></div>'; return; }
-      const ps = { free: 'background:#f0f0f0;color:#666;', basic: 'background:#e8f4fd;color:#1a6fa8;', premium: 'background:#fef9e7;color:#b7860b;border:1px solid #f0c96a;' };
-      c.innerHTML = landlords.map(l => {
-        const plan = l.plan_name || 'free';
-        const expiry = l.expires_at ? `Expires ${new Date(l.expires_at).toLocaleDateString('en-UG', { day: 'numeric', month: 'short', year: 'numeric' })}` : (plan === 'free' ? 'No expiry' : '—');
-        const expired = l.expires_at && new Date(l.expires_at) < new Date();
-        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px;">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div style="width:42px;height:42px;border-radius:50%;background:var(--green-dark);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:.95rem;">${l.name.split(' ').map(n => n[0]).slice(0, 2).join('')}</div>
-        <div><div style="font-weight:600;color:var(--text-dark);font-size:.92rem;">${l.name}</div><div style="font-size:.8rem;color:var(--text-muted);">${l.email} · ${l.phone || '—'}</div></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-        <div style="text-align:right;"><span style="${ps[plan]}padding:3px 12px;border-radius:50px;font-size:.78rem;font-weight:600;">${PLAN_LABELS[plan]}</span><div style="font-size:.74rem;color:${expired ? '#c0392b' : 'var(--text-muted)'};margin-top:3px;">${expired ? '⚠️ Expired' : expiry}</div></div>
-        <button class="btn-sm" style="background:#fef9e7;color:#b7860b;border:1px solid #f0c96a;" onclick="openAdminUpgradeModal('${l.id}','${l.name.replace(/'/g, "\\'")}','${plan}')">💳 Manage Plan</button>
-      </div>
-    </div>`;
-      }).join('');
-    }
-    function filterSubLandlords() { const q = document.getElementById('sub-search').value.toLowerCase(); renderSubLandlords(allSubLandlords.filter(l => l.name.toLowerCase().includes(q) || l.email.toLowerCase().includes(q))); }
-
-    function openAdminUpgradeModal(id, name, plan) {
-      targetLandlordId = id; targetLandlordName = name;
-      document.getElementById('admin-upgrade-target').innerHTML = 'Updating plan for <strong>' + name + '</strong>';
-      document.getElementById('admin-upgrade-plan').value = plan || 'free';
-      document.getElementById('admin-upgrade-months').value = 1;
-      document.getElementById('admin-upgrade-ref').value = '';
-      document.getElementById('admin-upgrade-notes').value = '';
-      document.getElementById('admin-upgrade-modal').classList.add('show');
-    }
     function closeAdminUpgradeModal() { document.getElementById('admin-upgrade-modal').classList.remove('show'); targetLandlordId = null; }
 
     async function confirmAdminUpgrade() {
@@ -1890,11 +1772,19 @@
       const months = parseInt(document.getElementById('admin-upgrade-months').value) || 1;
       const payment_reference = document.getElementById('admin-upgrade-ref').value.trim();
       const notes = document.getElementById('admin-upgrade-notes').value.trim();
+      const planInfo = getPlanInfo(plan_name);
+
       try {
-        const res = await fetch(RENDER + '/subscriptions/admin/upgrade', { method: 'POST', headers: authH(), body: JSON.stringify({ landlord_id: targetLandlordId, plan_name, months, payment_reference, notes }) });
+        const res = await fetch(RENDER + '/subscriptions/admin/upgrade', {
+          method: 'POST',
+          headers: authH(),
+          body: JSON.stringify({ landlord_id: targetLandlordId, plan_name, months, payment_reference, notes })
+        });
         const data = await res.json(); if (!data.success) throw new Error(data.message);
-        showToast('👑 ' + targetLandlordName + ' upgraded to ' + PLAN_LABELS[plan_name]);
-        closeAdminUpgradeModal(); await loadSubLandlords(); await loadSubPayments();
+        showToast(`👑 ${targetLandlordName} upgraded to ${planInfo.label}`);
+        closeAdminUpgradeModal();
+        await loadSubLandlords();
+        await loadSubPayments();
       } catch (e) { showToast('❌ ' + e.message); }
     }
 
@@ -1909,9 +1799,13 @@
     }
 
     // ── CONTACT MESSAGES ──
+    // Two separate panels render from the same data: the embedded admin panel
+    // (#contact-messages-list-admin) and the standalone sidebar section
+    // (#contact-messages-list). Both are kept in sync on every load/filter/markRead.
     let contactMsgFilter = 'all';
     async function loadContactMessages() {
-      const c = document.getElementById('contact-messages-list'); if (!c) return;
+      const targets = ['contact-messages-list-admin', 'contact-messages-list'].map(id => document.getElementById(id)).filter(Boolean);
+      if (!targets.length) return;
       try {
         const res = await fetch(RENDER + '/admin/enquiries', { headers: authH() });
         const data = await res.json(); allContactMsgs = data.enquiries || [];
@@ -1922,16 +1816,32 @@
         if (ct) ct.textContent = allContactMsgs.length; if (cu) cu.textContent = unread; if (ctd) ctd.textContent = todayC;
         const b = document.getElementById('contact-badge'); if (b) { b.textContent = unread > 0 ? unread : ''; b.style.display = unread > 0 ? 'inline' : 'none'; }
         renderContactMessages();
-      } catch (e) { if (c) c.innerHTML = '<div class="empty-state"><p>❌ Could not load messages.</p></div>'; }
+      } catch (e) { targets.forEach(c => c.innerHTML = '<div class="empty-state"><p>❌ Could not load messages.</p></div>'); }
     }
-    function filterContactMsgs(f, btn) { contactMsgFilter = f; document.querySelectorAll('.contact-tab').forEach(t => t.classList.remove('active')); if (btn) btn.classList.add('active'); renderContactMessages(); }
+    function filterContactMsgs(f, btn) {
+      contactMsgFilter = f;
+      // Sync active state across BOTH tab sets (admin-embedded + standalone) since
+      // they share the same filter state and both need their button highlighted
+      document.querySelectorAll('.admin-contact-tab, .standalone-contact-tab').forEach(t => t.classList.remove('active'));
+      if (btn) {
+        const cls = btn.classList.contains('admin-contact-tab') ? '.admin-contact-tab' : '.standalone-contact-tab';
+        document.querySelectorAll(cls).forEach((t, i) => {
+          // match by position so the equivalent button in the other panel doesn't get highlighted
+        });
+        btn.classList.add('active');
+      }
+      renderContactMessages();
+    }
     function renderContactMessages() {
-      const c = document.getElementById('contact-messages-list'); if (!c) return;
+      const targets = ['contact-messages-list-admin', 'contact-messages-list'].map(id => document.getElementById(id)).filter(Boolean);
+      if (!targets.length) return;
       const f = contactMsgFilter === 'all' ? allContactMsgs : allContactMsgs.filter(e => e.status === contactMsgFilter || (!e.status && contactMsgFilter === 'new'));
-      if (!f.length) { c.innerHTML = '<div class="empty-state"><div class="emoji">📭</div><p>No messages found.</p></div>'; return; }
-      c.innerHTML = f.map(e => `<div class="enquiry-item ${e.status === 'new' || !e.status ? 'unread' : ''}"><div><div class="enquiry-name">${e.name || 'Unknown'}${e.status === 'new' || !e.status ? '<span style="background:var(--gold);color:var(--green-dark);font-size:.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">NEW</span>' : ''}</div><div class="enquiry-msg" style="margin-top:6px;">${e.message || '—'}</div><div class="enquiry-contact" style="margin-top:8px;">${e.email ? `✉️ <a href="mailto:${e.email}">${e.email}</a>` : ''} ${e.phone ? `· 📞 <a href="tel:${e.phone}">${e.phone}</a>` : ''} ${e.phone ? `· <a href="https://wa.me/${e.phone.replace(/[\s+]/g, '')}" target="_blank" style="color:#25D366;">💬 WhatsApp</a>` : ''}</div></div><div style="text-align:right;min-width:100px;"><div class="enquiry-time">${timeAgo(e.created_at)}</div><button class="btn-sm" style="margin-top:8px;" onclick="markContactRead('${e.id}')">Mark Read</button></div></div>`).join('');
+      const html = !f.length
+        ? '<div class="empty-state"><div class="emoji">📭</div><p>No messages found.</p></div>'
+        : f.map(e => `<div class="enquiry-item ${e.status === 'new' || !e.status ? 'unread' : ''}"><div><div class="enquiry-name">${e.name || 'Unknown'}${e.status === 'new' || !e.status ? '<span style="background:var(--gold);color:var(--green-dark);font-size:.7rem;padding:1px 8px;border-radius:50px;margin-left:6px;">NEW</span>' : ''}</div><div class="enquiry-msg" style="margin-top:6px;">${e.message || '—'}</div><div class="enquiry-contact" style="margin-top:8px;">${e.email ? `✉️ <a href="mailto:${e.email}">${e.email}</a>` : ''} ${e.phone ? `· 📞 <a href="tel:${e.phone}">${e.phone}</a>` : ''} ${e.phone ? `· <a href="https://wa.me/${e.phone.replace(/[\s+]/g, '')}" target="_blank" style="color:#25D366;">💬 WhatsApp</a>` : ''}</div></div><div style="text-align:right;min-width:100px;"><div class="enquiry-time">${timeAgo(e.created_at)}</div><button class="btn-sm" style="margin-top:8px;" onclick="markContactRead('${e.id}')">Mark Read</button></div></div>`).join('');
+      targets.forEach(c => c.innerHTML = html);
     }
-    async function markContactRead(id) { try { await api.enquiries.updateStatus(id, 'read'); const m = allContactMsgs.find(e => e.id === id); if (m) m.status = 'read'; renderContactMessages(); showToast('✅ Marked as read'); } catch (e) { showToast('❌ Could not update'); } }
+    async function markContactRead(id) { try { await api.enquiries.updateStatus(id, 'read'); const m = allContactMsgs.find(e => e.id === id); if (m) m.status = 'read'; renderContactMessages(); const unread = allContactMsgs.filter(e => e.status === 'new' || !e.status).length; const b = document.getElementById('contact-badge'); if (b) { b.textContent = unread > 0 ? unread : ''; b.style.display = unread > 0 ? 'inline' : 'none'; } const cu = document.getElementById('cm-unread'); if (cu) cu.textContent = unread; showToast('✅ Marked as read'); } catch (e) { showToast('❌ Could not update'); } }
 
     // ── SUBSCRIPTION SECTION (landlord) ──
     async function loadSubscriptionSection() {
